@@ -30,7 +30,7 @@ class BuildBasicButton extends StatelessWidget {
     return ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         elevation: enableShadow ? 1 : 0,
-        minimumSize: Size.fromHeight(height ?? 40.h),
+        minimumSize: Size.fromHeight(height ?? 46.h),
         backgroundColor: buttonColor,
         textStyle: textStyle,
         shape: RoundedRectangleBorder(

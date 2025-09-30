@@ -5,7 +5,7 @@ class AppTheme {
     fontFamily: GoogleFonts.robotoSlab().fontFamily, // Global font family
     primaryColor: AppColors.darkGrey, // Using darkGrey as primary
     scaffoldBackgroundColor:
-        AppColors.lightBeige, // Using lightBeige as background
+        AppColors.backgroundColor, // Using backgroundColor as background
     colorScheme: ColorScheme.light(
       primary: AppColors.darkGrey,
       secondary: AppColors.beige, // Using beige as secondary

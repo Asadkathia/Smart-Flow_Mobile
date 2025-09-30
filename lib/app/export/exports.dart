@@ -52,12 +52,16 @@ export '../modules/Home/controller/map_controller.dart';
 export '../modules/Home/controller/home_page_controller.dart';
 export '../modules/main_navigation/controller/main_navigation_controller.dart';
 export '../modules/schedule/controller/schedule_controller.dart';
+export '../modules/job_details/controller/job_details_controller.dart';
+export '../modules/more/controller/more_view_controller.dart';
+
 
 // Bindings
 export '../modules/Home/bindings/home_binding.dart';
 export '../modules/main_navigation/bindings/main_navigation_binding.dart';
 export '../modules/schedule/bindings/schedule_binding.dart';
-
+export '../modules/job_details/bindings/job_details_bindings.dart';
+export '../modules/more/bindings/more_view_bindings.dart';
 // Models
 
 export '../modules/Home/models/job.dart';
@@ -70,6 +74,9 @@ export '../modules/Home/models/job.dart';
 export '../modules/Home/view/home_view.dart';
 export '../modules/main_navigation/view/main_navigation_view.dart';
 export '../modules/schedule/view/schedule_view.dart';
+export '../modules/job_details/view/job_details_view.dart';
+export '../modules/more/view/more_view.dart';
+
 
 // Widgets
 export '../components/internet_excemptions.dart';
@@ -86,3 +93,8 @@ export '../modules/schedule/widgets/day_view_widget.dart';
 export '../modules/schedule/widgets/list_view_widget.dart';
 export '../modules/schedule/widgets/map_view_widget.dart';
 export '../modules/schedule/widgets/user_stats_widget.dart';
+export '../modules/job_details/widgets/job_details_header.dart';
+export '../modules/job_details/widgets/job_details_schedule_widget.dart';
+export '../modules/job_details/widgets/job_details_details_tab.dart';
+export '../modules/job_details/widgets/job_details_visit_tab.dart';
+export '../modules/job_details/widgets/job_details_notes_tab.dart';
