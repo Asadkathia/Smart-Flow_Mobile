@@ -98,9 +98,9 @@ class AppTextStyles {
 
   // AppBar Title
   static TextStyle appBarTitle = GoogleFonts.robotoSlab(
-    fontSize: 20.sp,
+    fontSize: 24.sp,
     fontWeight: FontWeight.w600,
-    color: AppColors.white,
+    color: AppColors.blackColor,
   );
 
   // TextField Styles

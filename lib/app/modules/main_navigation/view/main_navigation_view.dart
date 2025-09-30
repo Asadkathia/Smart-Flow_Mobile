@@ -8,7 +8,7 @@ class MainNavigationView extends GetView<MainNavigationController> {
     final pages = <Widget>[
       const HomeView(),
       const ScheduleView(),
-      const _AccountView(),
+      const MoreView(),
     ];
 
     return Scaffold(
@@ -21,23 +21,6 @@ class MainNavigationView extends GetView<MainNavigationController> {
         () => CustomBottomNavBar(
           currentIndex: controller.currentIndex.value,
           onTap: controller.changePage,
-        ),
-      ),
-    );
-  }
-}
-class _AccountView extends StatelessWidget {
-  const _AccountView();
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Text(
-            'Account',
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600),
-          ),
         ),
       ),
     );

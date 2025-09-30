@@ -1,4 +1,7 @@
+import 'package:smartflowpro/app/modules/job_details/view/job_details_view.dart';
 import '../export/exports.dart';
+import 'package:smartflowpro/app/modules/profile/view/profile_view.dart';
+import 'package:smartflowpro/app/modules/profile/bindings/profile_bindings.dart';
 
 class AppPages {
   static const initial = AppRoutes.mainNavigation;
@@ -24,6 +27,19 @@ class AppPages {
       binding: ScheduleBinding(),
       transition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.jobsDetailsView,
+      page: () => const JobDetailsView(),
+      binding: JobDetailsBinding(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfileView(),
+      binding: ProfileBinding(),
+      transition: Transition.cupertino,
     ),
   ];
 }

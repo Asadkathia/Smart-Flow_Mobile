@@ -1,5 +1,3 @@
-
-
 import '../export/exports.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -27,6 +25,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      backgroundColor: Colors.transparent,
       elevation: elevation,
       centerTitle: centerTitle,
       automaticallyImplyLeading: false, // Disable default back button
@@ -34,7 +33,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? IconButton(
               icon: Icon(
                 Icons.arrow_back_ios,
-                color: titleColor ?? AppColors.whiteColor,
+                color: titleColor ?? AppColors.blackColor,
                 size: 20.sp,
               ),
               onPressed: () => Get.back(),
@@ -43,7 +42,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Text(
         title,
         style:
-            titleStyle ??  AppTextStyles.appBarTitle
+            titleStyle ??
+            AppTextStyles.appBarTitle.copyWith(
+              color: titleColor ?? AppColors.blackColor,
+              fontSize: 26.sp,
+            ),
       ),
       actions: actions,
     );
