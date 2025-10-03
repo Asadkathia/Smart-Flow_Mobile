@@ -6,4 +6,5 @@ class AppRoutes {
   static const String jobsDetailsView = '/jobs-details-view';
   static const String profile = '/profile';
   static const String more = '/more';
+  static const String onMyWay = '/on-my-way';
 }

@@ -86,6 +86,7 @@ class JobDetailsHeader extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () {
+                  Get.toNamed(AppRoutes.onMyWay);
                   // TODO: Implement on my way logic
                 },
                 icon: Icon(
