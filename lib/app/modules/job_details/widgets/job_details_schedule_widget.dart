@@ -75,7 +75,8 @@ class JobDetailsScheduleWidget extends StatelessWidget {
               height: 48.h,
               width: 48.h,
               child: OutlinedButton(
-                onPressed: () {},
+                onPressed: () {
+Get.toNamed(AppRoutes.quotesList);                },
                 style: OutlinedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.0),

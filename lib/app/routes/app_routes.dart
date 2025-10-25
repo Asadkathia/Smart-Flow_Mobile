@@ -7,4 +7,6 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String more = '/more';
   static const String onMyWay = '/on-my-way';
+  static const String createQuotes = '/create-quotes';
+  static const String quotesList = '/quotes-list';
 }

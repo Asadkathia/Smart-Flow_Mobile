@@ -98,3 +98,6 @@ export '../modules/job_details/widgets/job_details_schedule_widget.dart';
 export '../modules/job_details/widgets/job_details_details_tab.dart';
 export '../modules/job_details/widgets/job_details_visit_tab.dart';
 export '../modules/job_details/widgets/job_details_notes_tab.dart';
+
+// Intl
+export 'package:intl/intl.dart' hide TextDirection;
