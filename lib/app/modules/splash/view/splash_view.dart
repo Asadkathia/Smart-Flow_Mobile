@@ -10,7 +10,8 @@ class _SplashViewState extends State<SplashView> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 3), () {
-      Get.offAllNamed(AppRoutes.mainNavigation);
+      // Get.offAllNamed(AppRoutes.home);
+      Get.offAllNamed(AppRoutes.auth);
     });
   }
 

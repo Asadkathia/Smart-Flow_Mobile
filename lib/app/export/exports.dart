@@ -54,6 +54,7 @@ export '../modules/main_navigation/controller/main_navigation_controller.dart';
 export '../modules/schedule/controller/schedule_controller.dart';
 export '../modules/job_details/controller/job_details_controller.dart';
 export '../modules/more/controller/more_view_controller.dart';
+export '../modules/create_quotes/controller/create_quotes_controller.dart';
 
 
 // Bindings
@@ -62,9 +63,17 @@ export '../modules/main_navigation/bindings/main_navigation_binding.dart';
 export '../modules/schedule/bindings/schedule_binding.dart';
 export '../modules/job_details/bindings/job_details_bindings.dart';
 export '../modules/more/bindings/more_view_bindings.dart';
+export '../modules/create_quotes/bindings/create_quotes_binding.dart';
+
+
+
 // Models
 
 export '../modules/Home/models/job.dart';
+export '../modules/create_quotes/models/material_item.dart';
+export '../modules/create_quotes/models/material_line.dart';
+export '../modules/create_quotes/models/service_item.dart';
+export '../modules/create_quotes/models/service_line.dart';
 
 // Repositories
 
@@ -76,6 +85,7 @@ export '../modules/main_navigation/view/main_navigation_view.dart';
 export '../modules/schedule/view/schedule_view.dart';
 export '../modules/job_details/view/job_details_view.dart';
 export '../modules/more/view/more_view.dart';
+export '../modules/create_quotes/view/create_quotes_view.dart';
 
 
 // Widgets
@@ -98,6 +108,19 @@ export '../modules/job_details/widgets/job_details_schedule_widget.dart';
 export '../modules/job_details/widgets/job_details_details_tab.dart';
 export '../modules/job_details/widgets/job_details_visit_tab.dart';
 export '../modules/job_details/widgets/job_details_notes_tab.dart';
+export '../modules/create_quotes/widgets/create_quotes_add_button.dart';
+export '../modules/create_quotes/widgets/create_quotes_edit_service_dialog.dart';
+export '../modules/create_quotes/widgets/create_quotes_line_item.dart';
+export '../modules/create_quotes/widgets/create_quotes_material_picker_dialog.dart';
+export '../modules/create_quotes/widgets/create_quotes_material_quantity_editor_dialog.dart';
+export '../modules/create_quotes/widgets/create_quotes_message_editor_dialog.dart';
+export '../modules/create_quotes/widgets/create_quotes_message_row.dart';
+export '../modules/create_quotes/widgets/create_quotes_section_header.dart';
+export '../modules/create_quotes/widgets/create_quotes_service_picker_dialog.dart';
+export '../modules/create_quotes/widgets/create_quotes_service_quantity_editor_dialog.dart';
+export '../modules/create_quotes/widgets/create_quotes_summary_row.dart';
+export '../modules/create_quotes/widgets/create_quotes_taxable_row.dart';
+export '../components/auth_base_layout.dart';
 
 // Intl
 export 'package:intl/intl.dart' hide TextDirection;

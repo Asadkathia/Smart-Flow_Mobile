@@ -9,4 +9,8 @@ class AppRoutes {
   static const String onMyWay = '/on-my-way';
   static const String createQuotes = '/create-quotes';
   static const String quotesList = '/quotes-list';
+  static const String auth = '/auth';
+  static const String forgetPassword = '/forget-password';
+  static const String verifyOtp = '/verify-otp';
+  static const String resetPassword = '/reset-password';
 }

@@ -28,6 +28,7 @@ class buildFormField extends StatelessWidget {
   TextStyle? hintstyle;
   void Function(String)? onChanged;
 
+String? labelText;
   buildFormField({
     super.key,
     this.helper,
@@ -55,6 +56,7 @@ class buildFormField extends StatelessWidget {
     this.radius,
     this.hintstyle,
     this.onChanged,
+    this.labelText
   });
 
   @override
@@ -62,6 +64,16 @@ class buildFormField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+          if(labelText != null) ...[
+            Text(
+              labelText!,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(height: 8.h),
+          ],
+        
         TextFormField(
           onChanged: onChanged,
           inputFormatters: inputFormatter,

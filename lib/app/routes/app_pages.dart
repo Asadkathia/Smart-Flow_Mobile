@@ -1,8 +1,16 @@
+import 'package:smartflowpro/app/modules/auth/binding/auth_binding.dart';
+import 'package:smartflowpro/app/modules/auth/forget_password/bindings/forget_password_binding.dart';
+import 'package:smartflowpro/app/modules/auth/reset_password/binding/reset_password_binding.dart';
+import 'package:smartflowpro/app/modules/auth/reset_password/view/reset_password_view.dart';
+import 'package:smartflowpro/app/modules/auth/verify_otp/binding/verify_otp_binding.dart';
+import 'package:smartflowpro/app/modules/auth/verify_otp/view/verify_otp_view.dart';
+import 'package:smartflowpro/app/modules/auth/view/auth_view.dart';
 import 'package:smartflowpro/app/modules/job_details/view/job_details_view.dart';
 import 'package:smartflowpro/app/modules/quotes_list/bindings/quotes_list_bindings.dart';
 import '../export/exports.dart';
 import 'package:smartflowpro/app/modules/profile/view/profile_view.dart';
 import 'package:smartflowpro/app/modules/profile/bindings/profile_bindings.dart';
+import '../modules/auth/forget_password/view/forget_password_view.dart';
 import '../modules/on_my_way/view/on_my_way_view.dart';
 import '../modules/on_my_way/bindings/on_my_way_bindings.dart';
 import '../modules/quotes_list/view/quotes_list_view.dart';
@@ -73,6 +81,34 @@ class AppPages {
       name: AppRoutes.quotesList,
       page: () => const QuotesListView(),
       binding: QuotesListBinding(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.auth,
+      page: () => AuthView(),
+      binding: AuthBinding(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.forgetPassword,
+      page: () => ForgotPasswordView(),
+      binding: ForgetPasswordBinding(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.verifyOtp,
+      page: () => VerifyOtpView(),
+      binding: VerifyOtpBinding(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+    GetPage(
+      name: AppRoutes.resetPassword,
+      page: () => ResetPasswordView(),
+      binding: ResetPasswordBinding(),
       transition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
     ),
