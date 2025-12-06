@@ -2,7 +2,6 @@ import 'app/export/exports.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const MainApp());
 }
 

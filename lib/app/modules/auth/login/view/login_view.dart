@@ -46,7 +46,8 @@ class LoginView extends GetView<LoginController> {
         SizedBox(height: 23.h),
         BuildBasicButton(onPressed: () 
         {
-          Get.toNamed(AppRoutes.home);
+          // Get.toNamed(AppRoutes.home);
+          Get.toNamed(AppRoutes.mainNavigation);
         }, title: "Login"),
         SizedBox(height: 200.h),
       ],

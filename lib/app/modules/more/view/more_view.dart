@@ -31,28 +31,28 @@ class MoreView extends StatelessWidget {
             ),
             SizedBox(height: 18.h),
             // Apps & integrations card
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 14.w),
-              decoration: BoxDecoration(
-                color: AppColors.greyColor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 30.h),
-                  Icon(Icons.grid_view_rounded, color: AppColors.darkGrey),
-                  Text(
-                    'Apps & integrations',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.darkGrey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // Container(
+            //   width: double.infinity,
+            //   padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 14.w),
+            //   decoration: BoxDecoration(
+            //     color: AppColors.greyColor.withOpacity(0.12),
+            //     borderRadius: BorderRadius.circular(12.r),
+            //   ),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       SizedBox(height: 30.h),
+            //       Icon(Icons.grid_view_rounded, color: AppColors.darkGrey),
+            //       Text(
+            //         'Apps & integrations',
+            //         style: AppTextStyles.bodyMedium.copyWith(
+            //           fontWeight: FontWeight.w600,
+            //           color: AppColors.darkGrey,
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
             SizedBox(height: 18.h),
             // Options list
             _MoreOption(
@@ -60,11 +60,11 @@ class MoreView extends StatelessWidget {
               label: 'Support',
               onTap: () {},
             ),
-            _MoreOption(
-              icon: Icons.card_giftcard,
-              label: 'Refer a friend',
-              onTap: () {},
-            ),
+            // _MoreOption(
+            //   icon: Icons.card_giftcard,
+            //   label: 'Refer a friend',
+            //   onTap: () {},
+            // ),
             _MoreOption(icon: Icons.info_outline, label: 'About', onTap: () {}),
             Divider(height: 32.h, color: AppColors.darkGrey.withAlpha(40)),
             _MoreOption(
