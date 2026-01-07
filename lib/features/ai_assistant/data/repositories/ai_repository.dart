@@ -1,8 +1,8 @@
 import 'dart:io';
 import '../models/ai_models.dart';
 import '../datasources/ai_mock_data.dart';
-import '../../../../shared/data/remote/api_client.dart';
-import '../../../../shared/data/services/media_upload_service.dart';
+import 'package:smartflowpro/shared/data/remote/api_client.dart';
+import 'package:smartflowpro/shared/data/services/media_upload_service.dart';
 
 /// AI Assistant Repository
 /// 

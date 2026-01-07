@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/invoice_model.dart';
 import '../../data/repositories/invoice_repository.dart';
-import '../../../../shared/data/models/pagination_model.dart';
+import 'package:smartflowpro/shared/data/models/pagination_model.dart';
 
 /// Paginated Invoice List Notifier
 /// 

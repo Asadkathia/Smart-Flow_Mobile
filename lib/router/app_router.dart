@@ -4,17 +4,29 @@ import 'package:go_router/go_router.dart';
 import '../shared/presentation/widgets/animations.dart' as app_animations;
 
 import '../features/auth/presentation/providers/auth_provider.dart';
-import '../app/modules/splash/view/splash_screen.dart';
-import '../app/modules/auth/view/auth_screen.dart';
-import '../app/modules/auth/forget_password/view/forget_password_screen.dart' show ForgotPasswordScreen;
-import '../app/modules/auth/verify_otp/view/verify_otp_screen.dart';
-import '../app/modules/auth/reset_password/view/reset_password_screen.dart';
-import '../app/modules/main_navigation/view/main_navigation_screen.dart';
-import '../app/modules/job_details/view/job_details_screen.dart';
-import '../app/modules/on_my_way/view/on_my_way_screen.dart';
-import '../app/modules/create_quotes/view/create_quotes_screen.dart';
-import '../app/modules/quotes_list/view/quotes_list_screen.dart';
-import '../app/modules/profile/view/profile_screen.dart';
+// All legacy modules have been migrated to feature-based structure:
+// - Splash -> core/splash ✓
+// - Main navigation -> shared/navigation ✓
+// - More/Settings -> features/settings/presentation/screens ✓
+// - Auth screens -> features/auth/presentation/screens ✓
+// - Visits screens (Home, Schedule, Job Details, On My Way) -> features/visits/presentation/screens ✓
+// - Quotes screens (Create Quotes, Quotes List) -> features/quotes/presentation/screens ✓
+// - Profile -> features/auth/presentation/screens ✓
+import '../core/splash/splash_screen.dart';
+// Auth screens - migrated to features/auth/presentation/screens
+import '../features/auth/presentation/screens/auth_screen.dart';
+import '../features/auth/presentation/screens/forget_password_screen.dart' show ForgotPasswordScreen;
+import '../features/auth/presentation/screens/verify_otp_screen.dart';
+import '../features/auth/presentation/screens/reset_password_screen.dart';
+import '../shared/navigation/screens/main_navigation_screen.dart';
+// Visits screens - migrated to features/visits/presentation/screens
+import '../features/visits/presentation/screens/job_details_screen.dart';
+import '../features/visits/presentation/screens/on_my_way_screen.dart';
+// Quotes screens - migrated to features/quotes/presentation/screens
+import '../features/quotes/presentation/screens/create_quotes_screen.dart';
+import '../features/quotes/presentation/screens/quotes_list_screen.dart';
+// Profile screen - migrated to features/auth/presentation/screens
+import '../features/auth/presentation/screens/profile_screen.dart';
 import '../features/inventory/presentation/screens/inventory_list_screen.dart';
 import '../features/invoices/presentation/screens/invoice_list_screen.dart';
 import '../features/chat/presentation/screens/chat_list_screen.dart';

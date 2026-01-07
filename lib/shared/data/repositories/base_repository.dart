@@ -68,9 +68,15 @@ abstract class BaseRepository {
     bool cacheResult = true,
     bool ignoreCache = false,
   }) async {
-    // 0. If mock data is enabled, use it directly (skip API call and cache)
-    // This ensures mock data is always used when enabled, regardless of cache or API state
+    // 0. If mock data is enabled, check cache first for optimistic updates
+    // Then fall back to mock data if cache is empty
     if (_useMockData && mockData != null) {
+      if (!ignoreCache) {
+        final cached = await _getCachedData<T>(cacheKey, fromJson);
+        if (cached != null) {
+          return cached;
+        }
+      }
       return mockData()!;
     }
     
@@ -239,6 +245,11 @@ abstract class BaseRepository {
       if (optimisticUpdate != null) {
         final optimistic = optimisticUpdate();
         if (optimistic != null) {
+          // When using mock data, cache the optimistic update so it persists
+          // This ensures UI updates are reflected when providers refresh
+          if (_useMockData && updateCache && AppConfig.enableCache) {
+            await _cacheData(cacheKey, optimistic);
+          }
           return optimistic;
         }
       }

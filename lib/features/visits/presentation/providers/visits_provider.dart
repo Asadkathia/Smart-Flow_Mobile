@@ -5,7 +5,7 @@ import '../../data/models/visit_model.dart';
 import '../../data/models/note_model.dart';
 import '../../data/repositories/visit_repository.dart';
 import '../../data/mock_data/visit_mock_data.dart';
-import '../../../../shared/data/services/signature_upload_service.dart';
+import 'package:smartflowpro/shared/data/services/signature_upload_service.dart';
 
 part 'visits_provider.g.dart';
 
@@ -17,13 +17,9 @@ part 'visits_provider.g.dart';
 class TodayVisits extends _$TodayVisits {
   @override
   Future<List<VisitModel>> build() async {
-    // TODO (Phase 2): Replace with actual API call when backend is ready
-    // final repository = ref.read(visitRepositoryProvider);
-    // return repository.getTodayVisits();
-    
-    // Mock data for development - using centralized mock data
-    await Future.delayed(const Duration(milliseconds: 500));
-    return VisitMockData.getMockVisits();
+    // Use repository to get visits - this will use mock data when enabled
+    final repository = ref.read(visitRepositoryProvider);
+    return repository.getTodayVisits();
   }
 
   /// Refresh the visits list
@@ -55,19 +51,9 @@ class TodayVisits extends _$TodayVisits {
 class VisitDetails extends _$VisitDetails {
   @override
   Future<VisitModel> build(String visitId) async {
-    // TODO (Phase 2): Replace with actual API call when backend is ready
-    // final repository = ref.read(visitRepositoryProvider);
-    // return repository.getVisitDetails(visitId);
-    
-    // Mock data for development/UI testing
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _getMockVisitDetails(visitId);
-  }
-
-  /// Mock visit details for development
-  /// Uses centralized mock data to ensure consistency
-  VisitModel _getMockVisitDetails(String visitId) {
-    return VisitMockData.getMockVisitDetails(visitId);
+    // Use repository to get visit details - this will use cached/updated data
+    final repository = ref.read(visitRepositoryProvider);
+    return repository.getVisitDetails(visitId);
   }
 
   /// Start the visit
@@ -236,8 +222,9 @@ class VisitActions extends _$VisitActions {
       final repository = ref.read(visitRepositoryProvider);
       await repository.startVisit(visitId);
       
-      // Refresh today's visits
+      // Invalidate both providers to refresh UI
       ref.invalidate(todayVisitsProvider);
+      ref.invalidate(visitDetailsProvider(visitId));
     });
     
     return !state.hasError;
@@ -251,6 +238,7 @@ class VisitActions extends _$VisitActions {
       await repository.pauseVisit(visitId, reason: reason);
       
       ref.invalidate(todayVisitsProvider);
+      ref.invalidate(visitDetailsProvider(visitId));
     });
     
     return !state.hasError;
@@ -286,6 +274,7 @@ class VisitActions extends _$VisitActions {
       await repository.completeVisit(visitId, signaturePath: signatureUrl);
       
       ref.invalidate(todayVisitsProvider);
+      ref.invalidate(visitDetailsProvider(visitId));
     });
     
     return !state.hasError;

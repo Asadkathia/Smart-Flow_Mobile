@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/ai_models.dart';
 import '../../data/repositories/ai_repository.dart';
 import '../../data/datasources/ai_mock_data.dart';
-import '../../../../shared/data/remote/api_client.dart';
-import '../../../../shared/data/services/media_upload_service.dart';
+import 'package:smartflowpro/shared/data/remote/api_client.dart';
+import 'package:smartflowpro/shared/data/services/media_upload_service.dart';
 
 /// AI Repository Provider
 final aiRepositoryProvider = Provider<AiRepository>((ref) {

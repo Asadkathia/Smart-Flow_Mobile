@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -32,33 +33,53 @@ class _SignatureCaptureWidgetState extends State<SignatureCaptureWidget> {
   );
 
   bool _hasSignature = false;
+  Timer? _checkTimer;
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(() {
-      if (_controller.isEmpty != _hasSignature) {
-        setState(() {
-          _hasSignature = !_controller.isEmpty;
-        });
+    // Listen to controller changes
+    _controller.addListener(_checkSignatureState);
+    // Check periodically to catch any missed updates (every 200ms)
+    _checkTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      if (mounted) {
+        _checkSignatureState();
       }
     });
   }
 
+  void _checkSignatureState() {
+    if (!mounted) return;
+    // Check if controller has points (value is List<Point>)
+    final hasPoints = _controller.value.isNotEmpty;
+    final isEmpty = _controller.isEmpty;
+    final newHasSignature = hasPoints && !isEmpty;
+    
+    if (newHasSignature != _hasSignature) {
+      setState(() {
+        _hasSignature = newHasSignature;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _checkTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
 
   Future<void> _saveSignature() async {
-    if (_controller.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please provide a signature'),
-          backgroundColor: AppColors.errorRed,
-        ),
-      );
+    // Check if signature has points (value is List<Point>)
+    if (_controller.value.isEmpty || _controller.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please provide a signature'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
       return;
     }
 
@@ -95,6 +116,9 @@ class _SignatureCaptureWidgetState extends State<SignatureCaptureWidget> {
 
   void _clearSignature() {
     _controller.clear();
+    setState(() {
+      _hasSignature = false;
+    });
   }
 
   @override
@@ -181,7 +205,10 @@ class _SignatureCaptureWidgetState extends State<SignatureCaptureWidget> {
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
-                    onPressed: _hasSignature ? _saveSignature : null,
+                    onPressed: () {
+                      // Always allow button press, check inside
+                      _saveSignature();
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _hasSignature
                           ? AppColors.successGreen

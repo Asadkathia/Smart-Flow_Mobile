@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/services/auth_storage.dart';
+import 'package:smartflowpro/core/services/logger.dart';
 import '../../data/models/user_model.dart';
 
 part 'auth_provider.g.dart';
@@ -57,18 +59,24 @@ class Auth extends _$Auth {
   /// Check for existing session
   Future<void> _checkExistingSession() async {
     try {
+      final authStorage = AuthStorage.instance;
+      final hasValidTokens = await authStorage.hasValidTokens();
+      
+      // Check non-sensitive flag in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(StorageKeys.accessToken);
       final isLoggedIn = prefs.getBool(StorageKeys.isLoggedIn) ?? false;
 
-      if (token != null && token.isNotEmpty && isLoggedIn) {
-        // TODO: Validate token with backend
+      if (hasValidTokens && isLoggedIn) {
+        // TODO(backend): Validate token with backend
         // For now, assume valid if exists
+        Logger.debug('Existing session found - user authenticated');
         state = state.copyWith(status: AuthStatus.authenticated);
       } else {
+        Logger.debug('No valid session found');
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      Logger.error('Error checking existing session', e, stackTrace);
       state = state.copyWith(status: AuthStatus.unauthenticated);
     }
   }
@@ -99,11 +107,17 @@ class Auth extends _$Auth {
         updatedAt: DateTime.now(),
       );
 
-      // Save to preferences
+      // Save tokens securely using AuthStorage
+      final authStorage = AuthStorage.instance;
+      await authStorage.saveAccessToken('mock_token');
+      await authStorage.saveRefreshToken('mock_refresh_token'); // TODO(backend): Get from API response
+      await authStorage.saveUserId(mockUser.id);
+      
+      // Save non-sensitive flag in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(StorageKeys.accessToken, 'mock_token');
-      await prefs.setString(StorageKeys.userId, mockUser.id);
       await prefs.setBool(StorageKeys.isLoggedIn, true);
+      
+      Logger.info('Login successful - tokens saved securely');
 
       state = AuthState(
         status: AuthStatus.authenticated,
@@ -151,15 +165,19 @@ class Auth extends _$Auth {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
-      // Clear stored data
+      // Clear all auth data securely
+      final authStorage = AuthStorage.instance;
+      await authStorage.clearAll();
+      
+      // Clear non-sensitive flag in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(StorageKeys.accessToken);
-      await prefs.remove(StorageKeys.refreshToken);
-      await prefs.remove(StorageKeys.userId);
       await prefs.setBool(StorageKeys.isLoggedIn, false);
+      
+      Logger.info('Logout successful - all auth data cleared');
 
       state = const AuthState(status: AuthStatus.unauthenticated);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      Logger.error('Error during logout', e, stackTrace);
       state = const AuthState(status: AuthStatus.unauthenticated);
     }
   }

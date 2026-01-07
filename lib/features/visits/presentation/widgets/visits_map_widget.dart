@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../../../core/constants/app_constants.dart';
+import 'package:smartflowpro/core/constants/app_constants.dart';
 import '../../data/models/visit_model.dart';
 
 /// Visits Map Widget

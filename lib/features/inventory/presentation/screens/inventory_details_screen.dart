@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../router/app_router.dart';
+import 'package:smartflowpro/core/theme/app_colors.dart';
+import 'package:smartflowpro/core/theme/app_text_styles.dart';
+import 'package:smartflowpro/router/app_router.dart';
 import '../../data/models/inventory_item_model.dart';
 import '../providers/inventory_provider.dart';
 import '../widgets/inventory_item_card.dart';
-import '../../../../shared/presentation/widgets/standard_states.dart';
-import '../../../../shared/presentation/widgets/media_gallery_widget.dart';
+import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
+import 'package:smartflowpro/shared/presentation/widgets/media_gallery_widget.dart';
 
 /// Inventory Details Screen
 /// 

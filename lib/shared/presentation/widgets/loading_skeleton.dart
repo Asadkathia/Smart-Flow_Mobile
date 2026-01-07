@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_colors.dart';
 
 /// Loading Skeleton Widget
 /// 
@@ -429,6 +429,102 @@ class ListLoadingSkeleton extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 8.h),
       itemCount: itemCount,
       itemBuilder: itemBuilder,
+    );
+  }
+}
+
+/// Card Skeleton
+/// 
+/// Skeleton loader for card widgets.
+class CardSkeleton extends StatelessWidget {
+  final double? height;
+
+  const CardSkeleton({
+    super.key,
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.whiteColor,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greyColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LoadingSkeleton(width: double.infinity, height: 20.h),
+          SizedBox(height: 12.h),
+          LoadingSkeleton(width: 150.w, height: 16.h),
+          SizedBox(height: 8.h),
+          LoadingSkeleton(width: 200.w, height: 14.h),
+          if (height != null) ...[
+            SizedBox(height: 12.h),
+            LoadingSkeleton(width: double.infinity, height: height!),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Grid Item Skeleton
+/// 
+/// Skeleton loader for grid items (e.g., inventory items).
+class GridItemSkeleton extends StatelessWidget {
+  const GridItemSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(8.w),
+      decoration: BoxDecoration(
+        color: AppColors.whiteColor,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.greyColor.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          LoadingSkeleton(
+            width: double.infinity,
+            height: 120.h,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(12.r),
+              topRight: Radius.circular(12.r),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(12.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LoadingSkeleton(width: double.infinity, height: 16.h),
+                SizedBox(height: 8.h),
+                LoadingSkeleton(width: 100.w, height: 14.h),
+                SizedBox(height: 8.h),
+                LoadingSkeleton(width: 80.w, height: 18.h),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

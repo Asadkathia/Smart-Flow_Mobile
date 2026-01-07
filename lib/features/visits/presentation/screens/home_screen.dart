@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../router/app_router.dart';
+import 'package:smartflowpro/core/theme/app_colors.dart';
+import 'package:smartflowpro/core/theme/app_text_styles.dart';
+import 'package:smartflowpro/router/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/visits_provider.dart';
 import '../widgets/visit_card_widget.dart';
@@ -104,7 +104,7 @@ class HomeScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildUpNextHeader(),
+                      _buildUpNextHeader(context),
                       SizedBox(height: 15.h),
                       _buildVisitsList(ref, visitsAsync),
                     ],
@@ -153,7 +153,7 @@ class HomeScreen extends ConsumerWidget {
     return 'Good evening';
   }
 
-  Widget _buildUpNextHeader() {
+  Widget _buildUpNextHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

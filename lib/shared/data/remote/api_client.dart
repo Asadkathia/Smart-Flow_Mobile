@@ -22,8 +22,8 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  // Add auth interceptor
-  dio.interceptors.add(ApiInterceptor(ref));
+  // Add auth interceptor (pass Dio instance for retry reuse)
+  dio.interceptors.add(ApiInterceptor(ref, dio));
 
   // Add logging in debug mode
   dio.interceptors.add(

@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../router/app_router.dart';
+import 'package:smartflowpro/core/theme/app_colors.dart';
+import 'package:smartflowpro/core/theme/app_text_styles.dart';
+import 'package:smartflowpro/router/app_router.dart';
 import '../../data/models/chat_models.dart';
 import '../providers/chat_provider.dart';
 import '../providers/chat_paginated_provider.dart';
 import '../widgets/chat_thread_card.dart';
-import '../../../../shared/presentation/widgets/loading_skeleton.dart';
+import 'package:smartflowpro/shared/presentation/widgets/loading_skeleton.dart';
 
 /// Chat List Screen
 /// 

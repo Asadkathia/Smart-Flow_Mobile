@@ -28,16 +28,12 @@ class SupabaseConfig {
     return 'your-anon-key';
   }
   
-  /// Supabase Service Role Key (admin key - use with caution)
-  /// Set via environment variable: SUPABASE_SERVICE_ROLE_KEY
-  /// Only use for admin operations, never expose to client
-  static String get supabaseServiceRoleKey {
-    const envKey = String.fromEnvironment('SUPABASE_SERVICE_ROLE_KEY');
-    if (envKey.isNotEmpty) return envKey;
-    
-    // Default for development (should be overridden)
-    return 'your-service-role-key';
-  }
+  // SECURITY: Service Role Key removed from mobile client
+  // The service role key should NEVER be included in mobile applications.
+  // It bypasses Row Level Security (RLS) and grants full database access.
+  // If admin operations are needed, they must be performed via Edge Functions
+  // on the backend, not directly from the mobile client.
+  // TODO(backend): Ensure all admin operations are implemented as Edge Functions
   
   // ============ API Configuration ============
   

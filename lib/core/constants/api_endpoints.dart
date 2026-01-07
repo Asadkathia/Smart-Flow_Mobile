@@ -4,10 +4,27 @@ import '../config/supabase_config.dart';
 /// 
 /// This file contains all API endpoint constants used throughout the app.
 /// Uses Supabase Edge Functions for business logic and REST API for direct database access.
+/// 
+/// Edge Function Routing Modes:
+/// - Router style: /functions/v1/api/<path> (single Edge Function with routing)
+/// - Direct style: /functions/v1/<function_name> (individual Edge Functions)
 class ApiEndpoints {
   ApiEndpoints._();
 
-  /// Base URL - Uses Supabase configuration
+  // ============ Edge Function Routing Configuration ============
+  
+  /// Edge Function routing mode
+  /// Set to true to use router style: /functions/v1/api/<path>
+  /// Set to false to use direct style: /functions/v1/<function_name>
+  /// TODO(backend): Update this based on actual backend implementation
+  static const bool useRouterStyle = true;
+  
+  /// Router path prefix (only used when useRouterStyle is true)
+  static const String routerPrefix = '/api';
+
+  // ============ Base URLs ============
+  
+  /// Base URL - Uses Supabase Edge Functions configuration
   static String get baseUrl => SupabaseConfig.edgeFunctionsBase;
   
   /// REST API Base URL (for direct database access)
@@ -17,10 +34,34 @@ class ApiEndpoints {
   static const String apiVersion = '/v1';
   
   /// Full API Base (Edge Functions)
-  static String get apiBase => '$baseUrl$apiVersion';
+  /// Returns router style or direct style based on useRouterStyle
+  static String get apiBase {
+    if (useRouterStyle) {
+      return '$baseUrl$apiVersion$routerPrefix';
+    }
+    return '$baseUrl$apiVersion';
+  }
   
   /// Full REST API Base
   static String get restApiBaseFull => '$restApiBase';
+  
+  // ============ Helper Methods ============
+  
+  /// Build endpoint path for router style
+  /// Example: buildRouterPath('/tech/visits') -> '/api/tech/visits'
+  static String buildRouterPath(String path) {
+    if (useRouterStyle) {
+      return '$routerPrefix$path';
+    }
+    return path;
+  }
+  
+  /// Build endpoint path for direct function style
+  /// Example: buildDirectPath('visits') -> '/visits'
+  /// Note: Function name should match the Edge Function name
+  static String buildDirectPath(String functionName) {
+    return '/$functionName';
+  }
 
   // ============ Auth Endpoints ============
   static const String auth = '/auth';

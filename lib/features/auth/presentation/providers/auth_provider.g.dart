@@ -61,7 +61,7 @@ final authErrorProvider = AutoDisposeProvider<String?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthErrorRef = AutoDisposeProviderRef<String?>;
-String _$authHash() => r'bde9814986c31e0c79f6a6d3e040e23eb2480109';
+String _$authHash() => r'5739809e503331f81aeef4484bf4e69fae52973d';
 
 /// Auth Notifier
 ///

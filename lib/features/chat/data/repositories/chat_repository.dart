@@ -2,11 +2,11 @@ import 'dart:io';
 import 'dart:convert';
 import '../models/chat_models.dart';
 import '../datasources/chat_mock_data.dart';
-import '../../../../shared/data/remote/api_client.dart';
-import '../../../../shared/data/local/offline_queue_service.dart';
-import '../../../../shared/data/local/hive_service.dart';
-import '../../../../shared/data/repositories/base_repository.dart';
-import '../../../../core/constants/storage_keys.dart';
+import 'package:smartflowpro/shared/data/remote/api_client.dart';
+import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
+import 'package:smartflowpro/shared/data/local/hive_service.dart';
+import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
+import 'package:smartflowpro/core/constants/storage_keys.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Chat Repository

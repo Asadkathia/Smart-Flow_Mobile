@@ -3,15 +3,19 @@ import 'package:http/http.dart' as http;
 
 import '../export/exports.dart';
 import '../../core/errors/app_exceptions.dart';
+import '../../core/services/logger.dart';
 
+/// @deprecated This class uses the legacy `http` package and is not integrated
+/// with the modern Dio-based API client. Use `Dio` from `lib/shared/data/remote/api_client.dart`
+/// instead, which includes authentication, retry logic, and proper error handling.
+/// 
+/// This class will be removed in a future version.
+@Deprecated('Use Dio from lib/shared/data/remote/api_client.dart instead')
 class NetworkApiServices extends BaseApiServices {
   @override
   Future<dynamic> getApi(String url, {Map<String, String>? headersData}) async {
-    if (kDebugMode) {
-      print("GET URL: $url");
-      print("Headers: $headersData");
-    }
-
+    Logger.network('GET', url, headersData ?? {});
+    
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -21,10 +25,7 @@ class NetworkApiServices extends BaseApiServices {
         },
       );
 
-      if (kDebugMode) {
-        print("Response Code: ${response.statusCode}");
-        print("Response Body: ${response.body}");
-      }
+      Logger.networkResponse('GET', url, response.statusCode);
 
       final decodedBody = response.body.isNotEmpty
           ? jsonDecode(response.body)
@@ -41,10 +42,9 @@ class NetworkApiServices extends BaseApiServices {
   }
 
   Future<dynamic> postApi(var data, String url, dynamic headerData) async {
-    if (kDebugMode) {
-      print(url);
-      print(data);
-    }
+    Logger.network('POST', url, headerData as Map<String, dynamic>? ?? {});
+    Logger.debug('POST data: $data');
+    
     dynamic response;
     try {
       response = await http.post(
@@ -55,10 +55,9 @@ class NetworkApiServices extends BaseApiServices {
           if (headerData != null) ...headerData,
         },
       );
-      print(headerData);
 
       if (response.statusCode == 302 || response.statusCode == 301) {}
-      print(response.statusCode);
+      Logger.networkResponse('POST', url, response.statusCode);
     } on SocketException {
       throw NetworkException.noConnection();
     } on TimeoutException {
@@ -92,25 +91,18 @@ class NetworkApiServices extends BaseApiServices {
 
       // Add files only if they are present
       if (files != null && files.isNotEmpty) {
-        if (kDebugMode) {
-          print("📂 Uploading ${files.length} files...");
-        }
+        Logger.info("Uploading ${files.length} files...");
         request.files.addAll(files);
       } else {
-        if (kDebugMode) {
-          print("⚠️ No files to upload.");
-        }
+        Logger.warning("No files to upload.");
       }
 
-      print("🚀 Sending Request...");
+      Logger.network('POST', url, headers ?? {});
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
-      print(
-        "✅ Response Received - Status Code: ${streamedResponse.statusCode}",
-      );
-      print("📜 Response Body: ${response.body}");
+      Logger.networkResponse('POST', url, streamedResponse.statusCode);
 
       // Decode JSON response
       return {
@@ -118,13 +110,13 @@ class NetworkApiServices extends BaseApiServices {
         'body': jsonDecode(response.body),
       };
     } on SocketException {
-      print("❌ Internet Issue: No Connection");
+      Logger.error("Internet Issue: No Connection");
       throw NetworkException.noConnection();
     } on TimeoutException {
-      print("⏳ Request Timeout");
+      Logger.error("Request Timeout");
       throw NetworkException.timeout();
-    } catch (e) {
-      print("🔥 Unknown Error: $e");
+    } catch (e, stackTrace) {
+      Logger.error("Unknown Error during upload", e, stackTrace);
       throw Exception('Failed to upload');
     }
   }

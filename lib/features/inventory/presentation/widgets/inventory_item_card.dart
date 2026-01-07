@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import 'package:smartflowpro/core/theme/app_colors.dart';
+import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../../data/models/inventory_item_model.dart';
 
 /// Inventory Item Card Widget

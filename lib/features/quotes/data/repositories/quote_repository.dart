@@ -2,14 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/quote_model.dart';
 import '../models/line_item_model.dart';
-import '../../../../shared/data/remote/api_client.dart';
-import '../../../../shared/data/local/offline_queue_service.dart';
-import '../../../../shared/data/local/hive_service.dart';
-import '../../../../shared/data/repositories/base_repository.dart';
-import '../../../../core/constants/storage_keys.dart';
-import '../../../../core/errors/error_handler.dart';
-import '../../../../core/validation/validation_rules.dart';
-import '../../../../core/validation/quote_validator.dart';
+import 'package:smartflowpro/shared/data/remote/api_client.dart';
+import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
+import 'package:smartflowpro/shared/data/local/hive_service.dart';
+import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
+import 'package:smartflowpro/core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/errors/error_handler.dart';
+import 'package:smartflowpro/core/validation/validation_rules.dart';
+import 'package:smartflowpro/core/validation/quote_validator.dart';
 
 /// Quote Repository
 /// 

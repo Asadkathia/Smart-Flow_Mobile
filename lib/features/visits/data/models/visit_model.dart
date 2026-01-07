@@ -68,7 +68,7 @@ extension VisitModelX on VisitModel {
   bool get canResume => status == VisitStatus.paused;
 
   /// Check if visit can be completed
-  bool get canComplete => status == VisitStatus.inProgress;
+  bool get canComplete => status == VisitStatus.inProgress || status == VisitStatus.paused;
 
   /// Get status display text
   String get statusText {

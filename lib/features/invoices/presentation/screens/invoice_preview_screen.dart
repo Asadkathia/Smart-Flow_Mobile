@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../router/app_router.dart';
+import 'package:smartflowpro/core/theme/app_colors.dart';
+import 'package:smartflowpro/core/theme/app_text_styles.dart';
+import 'package:smartflowpro/router/app_router.dart';
 import '../../data/models/invoice_model.dart';
 import '../../../quotes/data/models/line_item_model.dart';
 import '../providers/invoice_provider.dart';
-import '../../../../core/validation/validation_rules.dart';
-import '../../../../shared/presentation/widgets/standard_states.dart';
+import 'package:smartflowpro/core/validation/validation_rules.dart';
+import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
 
 /// Invoice Preview Screen
 /// 
