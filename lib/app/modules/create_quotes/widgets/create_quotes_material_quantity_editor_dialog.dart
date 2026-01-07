@@ -1,14 +1,30 @@
 import '../../../export/exports.dart';
-import '../controller/create_quotes_controller.dart';
 import '../models/material_line.dart';
 
-class CreateQuotesMaterialQuantityEditorDialog extends StatelessWidget {
+class CreateQuotesMaterialQuantityEditorDialog extends StatefulWidget {
   final MaterialLine line;
+  final Function(int delta) onUpdate;
 
   const CreateQuotesMaterialQuantityEditorDialog({
     super.key,
     required this.line,
+    required this.onUpdate,
   });
+
+  @override
+  State<CreateQuotesMaterialQuantityEditorDialog> createState() =>
+      _CreateQuotesMaterialQuantityEditorDialogState();
+}
+
+class _CreateQuotesMaterialQuantityEditorDialogState
+    extends State<CreateQuotesMaterialQuantityEditorDialog> {
+  late int _currentQuantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentQuantity = widget.line.quantity;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +38,7 @@ class CreateQuotesMaterialQuantityEditorDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            line.material.name,
+            widget.line.material.name,
             style: AppTextStyles.heading4.copyWith(
               fontSize: 18.sp,
               color: AppColors.blackColor,
@@ -41,26 +57,35 @@ class CreateQuotesMaterialQuantityEditorDialog extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                onPressed: () => Get.find<CreateQuotesController>().updateMaterialQty(line, -1),
+                onPressed: () {
+                  if (_currentQuantity > 1) {
+                    setState(() {
+                      _currentQuantity--;
+                    });
+                    widget.onUpdate(-1);
+                  }
+                },
                 icon: const Icon(Icons.remove_circle),
                 iconSize: 32.sp,
               ),
               SizedBox(width: 24.w),
-              Obx(() {
-                final controller = Get.find<CreateQuotesController>();
-                final updatedLine = controller.materialLines
-                    .firstWhere((l) => l.material.name == line.material.name);
-                return Text(
-                  '${updatedLine.quantity}',
-                  style: AppTextStyles.heading3.copyWith(
-                    fontSize: 24.sp,
-                    color: AppColors.blackColor,
-                  ),
-                );
-              }),
+              Text(
+                '$_currentQuantity',
+                style: AppTextStyles.heading3.copyWith(
+                  fontSize: 24.sp,
+                  color: AppColors.blackColor,
+                ),
+              ),
               SizedBox(width: 24.w),
               IconButton(
-                onPressed: () => Get.find<CreateQuotesController>().updateMaterialQty(line, 1),
+                onPressed: () {
+                  if (_currentQuantity < 999) {
+                    setState(() {
+                      _currentQuantity++;
+                    });
+                    widget.onUpdate(1);
+                  }
+                },
                 icon: const Icon(Icons.add_circle),
                 iconSize: 32.sp,
               ),
@@ -68,7 +93,7 @@ class CreateQuotesMaterialQuantityEditorDialog extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           ElevatedButton(
-            onPressed: () => Get.back(),
+            onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
               minimumSize: Size(double.infinity, 48.h),
               backgroundColor: AppColors.skyAqua,

@@ -1,32 +1,81 @@
 name: smartflowpro
-description: "A new Flutter project."
+description: "SmartFlowPro - Field Service Management App"
 publish_to: 'none'
-version: 1.0.0+1
+version: 2.0.0+1
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.8.0
 
 dependencies:
-  app_settings: ^6.1.1
-  cached_network_image: ^3.4.1
   flutter:
     sdk: flutter
+
+  # State Management (Riverpod - replacing GetX)
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+  
+  # Routing (GoRouter - will replace GetX routing)
+  go_router: ^13.2.0
+  
+  # Networking (Dio - replacing http)
+  dio: ^5.4.3
+  pretty_dio_logger: ^1.3.1
+  
+  # JSON & Code Generation
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+  
+  # Local Storage (Hive for offline support)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.3
+  path_provider: ^2.1.2
+  
+  # Connectivity
+  connectivity_plus: ^5.0.2
+  
+  # Image & Media
+  image_picker: ^1.0.7
+  cached_network_image: ^3.4.1
+  signature: ^5.5.0
+  permission_handler: ^11.3.1
+  
+  # Voice Input
+  speech_to_text: ^6.6.0
+  
+  # Existing UI packages (KEEP)
   flutter_screenutil: ^5.9.3
-  fluttertoast: ^9.0.0
-  get: ^4.7.2
   google_fonts: ^6.3.2
   google_maps_flutter: ^2.13.1
-  http: ^1.5.0
-  intl: ^0.20.2
-  maps_launcher: ^3.0.0+1
-  pinput: ^5.0.2
-  shared_preferences: ^2.5.3
   table_calendar: ^3.2.0
+  fluttertoast: ^9.0.0
+  pinput: ^5.0.2
+  shimmer: ^3.0.0
+  
+  # Utilities
+  intl: ^0.20.2
+  equatable: ^2.0.5
+  uuid: ^4.3.3
+  
+  # Keep existing packages
+  app_settings: ^6.1.1
+  maps_launcher: ^3.0.0+1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.4.0
+  json_serializable: ^6.7.1
+  freezed: ^2.4.7
+  hive_generator: ^2.0.1
+  
+  # Testing
+  mockito: ^5.4.4
+  mocktail: ^1.0.3
 
 flutter:
   uses-material-design: true

@@ -1,4 +1,6 @@
+import 'package:go_router/go_router.dart';
 import '../../../export/exports.dart';
+import '../../../../router/app_router.dart';
 
 class JobCardWidget extends StatelessWidget {
   final Job job;
@@ -9,7 +11,7 @@ class JobCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed(AppRoutes.jobsDetailsView);
+        context.goToJobDetails(job.id);
       },
       child: Card(
         color: AppColors.whiteColor, // Using white for card background

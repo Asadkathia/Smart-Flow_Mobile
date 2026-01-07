@@ -56,5 +56,10 @@
 	<!-- Google Maps API Key -->
 	<key>GoogleMapsAPIKey</key>
 	<string>AIzaSyCihk-1twQc1HoRdm_xZrXvz97sFBoV-Y8</string>
+	<!-- Speech Recognition Permissions -->
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app needs access to speech recognition to convert your voice input to text in the AI Assistant.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to the microphone to record your voice for speech recognition in the AI Assistant.</string>
 </dict>
 </plist>

@@ -2,6 +2,7 @@
 import 'package:http/http.dart' as http;
 
 import '../export/exports.dart';
+import '../../core/errors/app_exceptions.dart';
 
 class NetworkApiServices extends BaseApiServices {
   @override
@@ -31,9 +32,9 @@ class NetworkApiServices extends BaseApiServices {
 
       return {'statusCode': response.statusCode, 'body': decodedBody};
     } on SocketException {
-      throw InternetException('No Internet Connection');
+      throw NetworkException.noConnection();
     } on TimeoutException {
-      throw RequestTimeOut('Request Timed Out');
+      throw NetworkException.timeout();
     } catch (e) {
       throw Exception('Unexpected error: $e');
     }
@@ -59,9 +60,9 @@ class NetworkApiServices extends BaseApiServices {
       if (response.statusCode == 302 || response.statusCode == 301) {}
       print(response.statusCode);
     } on SocketException {
-      throw InternetException('');
-    } on RequestTimeOut {
-      throw RequestTimeOut('');
+      throw NetworkException.noConnection();
+    } on TimeoutException {
+      throw NetworkException.timeout();
     }
     return {
       'statusCode': response.statusCode,
@@ -118,10 +119,10 @@ class NetworkApiServices extends BaseApiServices {
       };
     } on SocketException {
       print("❌ Internet Issue: No Connection");
-      throw InternetException('');
-    } on RequestTimeOut {
+      throw NetworkException.noConnection();
+    } on TimeoutException {
       print("⏳ Request Timeout");
-      throw RequestTimeOut('');
+      throw NetworkException.timeout();
     } catch (e) {
       print("🔥 Unknown Error: $e");
       throw Exception('Failed to upload');

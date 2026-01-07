@@ -1,13 +1,14 @@
 import '../../../export/exports.dart';
-import '../controller/create_quotes_controller.dart';
 import '../models/service_line.dart';
 
 class CreateQuotesEditServiceDialog extends StatelessWidget {
   final ServiceLine line;
+  final Function(String name, double price) onUpdate;
 
   const CreateQuotesEditServiceDialog({
     super.key,
     required this.line,
+    required this.onUpdate,
   });
 
   @override
@@ -65,7 +66,7 @@ class CreateQuotesEditServiceDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.pop(context),
           child: Text(
             'Cancel',
             style: AppTextStyles.buttonMedium.copyWith(color: AppColors.neutralDarkGray),
@@ -77,9 +78,9 @@ class CreateQuotesEditServiceDialog extends StatelessWidget {
             final price = double.tryParse(priceController.text.trim()) ?? 0;
 
             if (name.isNotEmpty && price > 0) {
-              Get.find<CreateQuotesController>().updateService(line, name, price);
-              Get.back(); // Close dialog
-              Get.back(); // Close bottom sheet
+              onUpdate(name, price);
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Close bottom sheet
               CustomToast.success('Service updated');
             } else {
               CustomToast.error('Please enter valid service name and price');

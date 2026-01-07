@@ -1,0 +1,112 @@
+# Updated pubspec.yaml with Riverpod
+# This is a reference file - copy contents to actual pubspec.yaml when ready to migrate
+
+name: smartflowpro
+description: "SmartFlowPro - Field Service Management App"
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management (NEW - Riverpod)
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+  
+  # Routing (NEW - GoRouter instead of GetX)
+  go_router: ^13.2.0
+  
+  # Networking (NEW - Better than http)
+  dio: ^5.4.3
+  retrofit: ^4.1.0
+  pretty_dio_logger: ^1.3.1
+  
+  # JSON & Code Generation (NEW)
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+  
+  # Local Storage (NEW - Offline support)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  
+  # Connectivity (NEW)
+  connectivity_plus: ^5.0.2
+  internet_connection_checker: ^1.0.0+1
+  
+  # Image & Media
+  image_picker: ^1.0.7
+  cached_network_image: ^3.3.1
+  signature: ^5.5.0  # NEW - For signature capture
+  flutter_image_compress: ^2.1.0  # NEW - Image optimization
+  
+  # Existing UI packages (KEEP)
+  flutter_screenutil: ^5.9.3
+  google_fonts: ^6.3.2
+  google_maps_flutter: ^2.13.1
+  table_calendar: ^3.2.0
+  fluttertoast: ^9.0.0
+  pinput: ^5.0.2
+  
+  # Utilities
+  intl: ^0.20.2
+  equatable: ^2.0.5
+  uuid: ^4.3.3  # NEW - For generating IDs
+  
+  # Error Tracking & Analytics (NEW)
+  sentry_flutter: ^7.18.0
+  firebase_crashlytics: ^3.4.9  # Optional
+  
+  # Permissions (NEW)
+  permission_handler: ^11.2.0
+  
+  # Device Info (NEW)
+  device_info_plus: ^9.1.1
+  package_info_plus: ^5.0.1
+  
+  # Supabase (COMING SOON - for backend)
+  # supabase_flutter: ^2.3.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  
+  # Code Generation (NEW)
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.4.0
+  json_serializable: ^6.7.1
+  freezed: ^2.4.7
+  retrofit_generator: ^8.1.0
+  hive_generator: ^2.0.1
+  
+  # Testing (NEW - Better testing tools)
+  mockito: ^5.4.4
+  mocktail: ^1.0.3
+
+flutter:
+  uses-material-design: true
+  
+  # Add assets here
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/
+
+# Code generation configuration
+# Run: flutter pub run build_runner build --delete-conflicting-outputs
+# Or watch: flutter pub run build_runner watch
+
+# MIGRATION STEPS:
+# 1. Backup current pubspec.yaml
+# 2. Remove 'get: ^4.7.2' line
+# 3. Copy dependencies from this file
+# 4. Run: flutter pub get
+# 5. Run: flutter pub run build_runner build --delete-conflicting-outputs
+
+
+

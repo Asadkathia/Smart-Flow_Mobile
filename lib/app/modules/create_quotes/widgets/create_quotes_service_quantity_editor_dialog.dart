@@ -1,15 +1,33 @@
 import '../../../export/exports.dart';
-import '../controller/create_quotes_controller.dart';
 import '../models/service_line.dart';
 import 'create_quotes_edit_service_dialog.dart';
 
-class CreateQuotesServiceQuantityEditorDialog extends StatelessWidget {
+class CreateQuotesServiceQuantityEditorDialog extends StatefulWidget {
   final ServiceLine line;
+  final Function(int delta) onUpdate;
+  final Function(String name, double price) onEditService;
 
   const CreateQuotesServiceQuantityEditorDialog({
     super.key,
     required this.line,
+    required this.onUpdate,
+    required this.onEditService,
   });
+
+  @override
+  State<CreateQuotesServiceQuantityEditorDialog> createState() =>
+      _CreateQuotesServiceQuantityEditorDialogState();
+}
+
+class _CreateQuotesServiceQuantityEditorDialogState
+    extends State<CreateQuotesServiceQuantityEditorDialog> {
+  late int _currentQuantity;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentQuantity = widget.line.quantity;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +49,7 @@ class CreateQuotesServiceQuantityEditorDialog extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           ElevatedButton.icon(
-            onPressed: () => _showEditServiceDialog(context, line),
+            onPressed: () => _showEditServiceDialog(context, widget.line),
             icon: const Icon(Icons.edit),
             label: Text(
               'Edit Service Details',
@@ -58,26 +76,35 @@ class CreateQuotesServiceQuantityEditorDialog extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                onPressed: () => Get.find<CreateQuotesController>().updateServiceQty(line, -1),
+                onPressed: () {
+                  if (_currentQuantity > 1) {
+                    setState(() {
+                      _currentQuantity--;
+                    });
+                    widget.onUpdate(-1);
+                  }
+                },
                 icon: const Icon(Icons.remove_circle),
                 iconSize: 32.sp,
               ),
               SizedBox(width: 24.w),
-              Obx(() {
-                final controller = Get.find<CreateQuotesController>();
-                final updatedLine = controller.serviceLines
-                    .firstWhere((l) => l.service.name == line.service.name);
-                return Text(
-                  '${updatedLine.quantity}',
-                  style: AppTextStyles.heading3.copyWith(
-                    fontSize: 24.sp,
-                    color: AppColors.blackColor,
-                  ),
-                );
-              }),
+              Text(
+                '$_currentQuantity',
+                style: AppTextStyles.heading3.copyWith(
+                  fontSize: 24.sp,
+                  color: AppColors.blackColor,
+                ),
+              ),
               SizedBox(width: 24.w),
               IconButton(
-                onPressed: () => Get.find<CreateQuotesController>().updateServiceQty(line, 1),
+                onPressed: () {
+                  if (_currentQuantity < 999) {
+                    setState(() {
+                      _currentQuantity++;
+                    });
+                    widget.onUpdate(1);
+                  }
+                },
                 icon: const Icon(Icons.add_circle),
                 iconSize: 32.sp,
               ),
@@ -85,7 +112,7 @@ class CreateQuotesServiceQuantityEditorDialog extends StatelessWidget {
           ),
           SizedBox(height: 16.h),
           ElevatedButton(
-            onPressed: () => Get.back(),
+            onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
               minimumSize: Size(double.infinity, 48.h),
               backgroundColor: AppColors.skyAqua,
@@ -105,9 +132,14 @@ class CreateQuotesServiceQuantityEditorDialog extends StatelessWidget {
   }
 
   void _showEditServiceDialog(BuildContext context, ServiceLine line) {
-    Get.dialog(
-      CreateQuotesEditServiceDialog(
+    showDialog(
+      context: context,
+      builder: (dialogContext) => CreateQuotesEditServiceDialog(
         line: line,
+        onUpdate: (name, price) {
+          widget.onEditService(name, price);
+          Navigator.pop(dialogContext);
+        },
       ),
     );
   }

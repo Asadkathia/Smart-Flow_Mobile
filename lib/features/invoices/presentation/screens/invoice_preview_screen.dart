@@ -1,0 +1,533 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text_styles.dart';
+import '../../../../router/app_router.dart';
+import '../../data/models/invoice_model.dart';
+import '../../../quotes/data/models/line_item_model.dart';
+import '../providers/invoice_provider.dart';
+import '../../../../core/validation/validation_rules.dart';
+import '../../../../shared/presentation/widgets/standard_states.dart';
+
+/// Invoice Preview Screen
+/// 
+/// Displays a formatted invoice with print and share functionality.
+class InvoicePreviewScreen extends ConsumerWidget {
+  final String invoiceId;
+
+  const InvoicePreviewScreen({
+    super.key,
+    required this.invoiceId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final invoiceAsync = ref.watch(invoiceDetailProvider(invoiceId));
+    final actionsState = ref.watch(invoiceActionsProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.whiteColor,
+      appBar: AppBar(
+        title: Text(
+          'Invoice Preview',
+          style: AppTextStyles.heading3.copyWith(color: AppColors.whiteColor),
+        ),
+        backgroundColor: AppColors.primaryTextColor,
+        elevation: 0,
+        actions: [
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: AppColors.whiteColor),
+            onSelected: (value) {
+              switch (value) {
+                case 'print':
+                  _printInvoice(context);
+                  break;
+                case 'share':
+                  _shareInvoice(context);
+                  break;
+                case 'finalize':
+                  if (invoiceAsync.value?.canFinalize ?? false) {
+                    _finalizeInvoice(context, ref, invoiceAsync.value!);
+                  }
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'print',
+                child: Row(
+                  children: [
+                    Icon(Icons.print, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text('Print'),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'share',
+                child: Row(
+                  children: [
+                    Icon(Icons.share, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text('Share'),
+                  ],
+                ),
+              ),
+              if (invoiceAsync.value?.canFinalize ?? false)
+                PopupMenuItem(
+                  value: 'finalize',
+                  child: Row(
+                    children: [
+                      Icon(Icons.check_circle, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text('Finalize Invoice'),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+      body: invoiceAsync.when(
+        data: (invoice) => SingleChildScrollView(
+          child: _buildInvoiceContent(context, invoice),
+        ),
+        loading: () => StandardLoadingState(message: 'Loading invoice...'),
+        error: (error, stack) => StandardErrorState(
+          title: 'Failed to load invoice',
+          message: 'Please try again',
+          onRetry: () => ref.invalidate(invoiceDetailProvider(invoiceId)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvoiceContent(BuildContext context, InvoiceModel invoice) {
+    return Container(
+      color: AppColors.whiteColor,
+      padding: EdgeInsets.all(24.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Section
+          _buildHeader(invoice),
+          SizedBox(height: 32.h),
+
+          // Customer & Invoice Info Section
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Customer Info
+              Expanded(
+                child: _buildCustomerSection(invoice),
+              ),
+              SizedBox(width: 32.w),
+              // Invoice Info
+              Expanded(
+                child: _buildInvoiceInfoSection(invoice),
+              ),
+            ],
+          ),
+          SizedBox(height: 32.h),
+
+          // Line Items Table
+          _buildLineItemsTable(invoice),
+          SizedBox(height: 32.h),
+
+          // Totals Section
+          _buildTotalsSection(invoice),
+          SizedBox(height: 32.h),
+
+          // Notes Section
+          if (invoice.notes != null && invoice.notes!.isNotEmpty)
+            _buildNotesSection(invoice.notes!),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(InvoiceModel invoice) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'INVOICE',
+              style: AppTextStyles.heading2.copyWith(
+                color: AppColors.primaryTextColor,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              invoice.invoiceNumber,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.secondaryTextColor,
+              ),
+            ),
+          ],
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          decoration: BoxDecoration(
+            color: _getStatusColor(invoice.status).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8.r),
+            border: Border.all(
+              color: _getStatusColor(invoice.status).withOpacity(0.3),
+            ),
+          ),
+          child: Text(
+            invoice.statusText.toUpperCase(),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: _getStatusColor(invoice.status),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomerSection(InvoiceModel invoice) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Bill To:',
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.primaryTextColor,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        if (invoice.customerName != null)
+          Text(
+            invoice.customerName!,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        if (invoice.propertyAddress != null) ...[
+          SizedBox(height: 4.h),
+          Text(
+            invoice.propertyAddress!,
+            style: AppTextStyles.bodyMedium,
+          ),
+        ],
+        if (invoice.customerEmail != null) ...[
+          SizedBox(height: 4.h),
+          Text(
+            invoice.customerEmail!,
+            style: AppTextStyles.bodyMedium,
+          ),
+        ],
+        if (invoice.customerPhone != null) ...[
+          SizedBox(height: 4.h),
+          Text(
+            invoice.customerPhone!,
+            style: AppTextStyles.bodyMedium,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildInvoiceInfoSection(InvoiceModel invoice) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInfoRow('Invoice Date:', invoice.createdAt != null
+            ? DateFormat('MMM d, yyyy').format(invoice.createdAt!)
+            : 'N/A'),
+        if (invoice.dueDate != null)
+          _buildInfoRow('Due Date:', DateFormat('MMM d, yyyy').format(invoice.dueDate!)),
+        if (invoice.visitTitle != null)
+          _buildInfoRow('Service:', invoice.visitTitle!),
+        if (invoice.paidAt != null)
+          _buildInfoRow('Paid Date:', DateFormat('MMM d, yyyy').format(invoice.paidAt!)),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100.w,
+            child: Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.secondaryTextColor,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLineItemsTable(InvoiceModel invoice) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Table Header
+        Container(
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: AppColors.lightGray,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(8.r),
+              topRight: Radius.circular(8.r),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(flex: 3, child: Text('Description', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
+              Expanded(child: Text('Qty', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text('Unit', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
+              Expanded(child: Text('Price', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+              Expanded(child: Text('Total', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+            ],
+          ),
+        ),
+        // Table Rows
+        ...invoice.lineItems.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          final isLast = index == invoice.lineItems.length - 1;
+          
+          return Container(
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: AppColors.whiteColor,
+              border: Border(
+                bottom: BorderSide(
+                  color: AppColors.lightGray,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.description,
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                      if (item.type == LineItemType.material && item.referenceId != null)
+                        Text(
+                          'SKU: ${item.referenceId}',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.secondaryTextColor,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    item.qty.toString(),
+                    style: AppTextStyles.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    item.unit,
+                    style: AppTextStyles.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    '\$${item.unitPrice.toStringAsFixed(2)}',
+                    style: AppTextStyles.bodyMedium,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    '\$${(item.qty * item.unitPrice).toStringAsFixed(2)}',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildTotalsSection(InvoiceModel invoice) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.lightGray.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Column(
+        children: [
+          _buildTotalRow('Subtotal:', invoice.subtotal),
+          if (invoice.taxAmount > 0)
+            _buildTotalRow('Tax:', invoice.taxAmount),
+          Divider(height: 24.h),
+          _buildTotalRow(
+            'Total:',
+            invoice.total,
+            isTotal: true,
+          ),
+          if (invoice.status == InvoiceStatus.partiallyPaid) ...[
+            SizedBox(height: 8.h),
+            _buildTotalRow('Paid:', invoice.paidAmount, color: AppColors.successGreen),
+            _buildTotalRow('Remaining:', invoice.remainingBalance, color: AppColors.errorRed),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTotalRow(String label, double amount, {bool isTotal = false, Color? color}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: isTotal
+                ? AppTextStyles.heading5.copyWith(
+                    fontWeight: FontWeight.w700,
+                  )
+                : AppTextStyles.bodyMedium,
+          ),
+          Text(
+            '\$${amount.toStringAsFixed(2)}',
+            style: (isTotal
+                ? AppTextStyles.heading5
+                : AppTextStyles.bodyMedium).copyWith(
+              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotesSection(String notes) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.lightGray.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Notes:',
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            notes,
+            style: AppTextStyles.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(InvoiceStatus status) {
+    switch (status) {
+      case InvoiceStatus.draft:
+        return AppColors.greyColor;
+      case InvoiceStatus.unpaid:
+        return Colors.orange;
+      case InvoiceStatus.partiallyPaid:
+        return Colors.blue;
+      case InvoiceStatus.paid:
+        return AppColors.successGreen;
+      case InvoiceStatus.void_:
+        return AppColors.errorRed;
+      case InvoiceStatus.refunded:
+        return Colors.purple;
+    }
+  }
+
+  void _printInvoice(BuildContext context) {
+    // TODO (Phase 2): Implement print functionality
+    context.showSnackBar('Print functionality coming soon');
+  }
+
+  void _shareInvoice(BuildContext context) {
+    // TODO (Phase 2): Implement share functionality (PDF generation)
+    context.showSnackBar('Share functionality coming soon');
+  }
+
+  Future<void> _finalizeInvoice(
+    BuildContext context,
+    WidgetRef ref,
+    InvoiceModel invoice,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Finalize Invoice'),
+        content: Text('Are you sure you want to finalize this invoice? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+            ),
+            child: Text('Finalize'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final result = await ref.read(invoiceActionsProvider.notifier).finalize(invoice.id);
+      if (result != null && context.mounted) {
+        context.showSuccessSnackBar('Invoice finalized successfully');
+        ref.invalidate(invoiceDetailProvider(invoiceId));
+      } else if (context.mounted) {
+        context.showErrorSnackBar('Failed to finalize invoice');
+      }
+    }
+  }
+}
+

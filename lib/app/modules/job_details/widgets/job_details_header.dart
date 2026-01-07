@@ -1,4 +1,6 @@
+import 'package:go_router/go_router.dart';
 import '../../../export/exports.dart';
+import '../../../../router/app_router.dart';
 
 class JobDetailsHeader extends StatelessWidget {
   const JobDetailsHeader({super.key});
@@ -86,8 +88,14 @@ class JobDetailsHeader extends StatelessWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () {
-                  Get.toNamed(AppRoutes.onMyWay);
-                  // TODO: Implement on my way logic
+                  // Navigate to on my way screen
+                  context.goToOnMyWay(
+                    visitId: '', // TODO: Pass actual visitId
+                    customerName: 'Scott Martin',
+                    address: '1290 East Springfield Place, Chandler, Arizona 85286',
+                    latitude: 33.3062,
+                    longitude: -111.8413,
+                  );
                 },
                 icon: Icon(
                   Icons.delivery_dining,

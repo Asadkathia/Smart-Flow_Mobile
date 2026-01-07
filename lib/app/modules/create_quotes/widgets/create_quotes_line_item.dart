@@ -4,16 +4,16 @@ class CreateQuotesLineItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final String amount;
-  final VoidCallback onRemove;
-  final VoidCallback onTap;
+  final VoidCallback? onRemove;
+  final VoidCallback? onTap;
 
   const CreateQuotesLineItem({
     super.key,
     required this.title,
     required this.subtitle,
     required this.amount,
-    required this.onRemove,
-    required this.onTap,
+    this.onRemove,
+    this.onTap,
   });
 
   @override
@@ -29,24 +29,27 @@ class CreateQuotesLineItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Remove button
-            GestureDetector(
-              onTap: onRemove,
-              child: Container(
-                width: 24.w,
-                height: 24.w,
-                decoration: BoxDecoration(
-                  color: AppColors.errorRed,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.remove,
-                  color: AppColors.white,
-                  size: 16.sp,
+            // Remove button (only show if onRemove is provided)
+            if (onRemove != null) ...[
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  width: 24.w,
+                  height: 24.w,
+                  decoration: BoxDecoration(
+                    color: AppColors.errorRed,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.remove,
+                    color: AppColors.white,
+                    size: 16.sp,
+                  ),
                 ),
               ),
-            ),
-            SizedBox(width: 12.w),
+              SizedBox(width: 12.w),
+            ] else
+              SizedBox(width: 12.w), // Spacing when remove button is hidden
             // Title and subtitle
             Expanded(
               child: Column(

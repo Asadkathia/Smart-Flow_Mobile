@@ -1,13 +1,20 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../../utils/app_theme/app_colors.dart';
+import '../controller/map_controller.dart';
+import '../models/job.dart';
 
-
-
-import '../../../export/exports.dart';
-
-
+/// Map Widget for displaying jobs on Google Maps
+/// 
+/// Displays job locations as markers on an interactive map.
+/// Uses ChangeNotifier pattern for state management.
 class MapWidget extends StatefulWidget {
   final List<Job> jobs;
 
-  const MapWidget({Key? key, this.jobs = const []}) : super(key: key);
+  const MapWidget({super.key, this.jobs = const []});
 
   @override
   State<MapWidget> createState() => _MapWidgetState();
@@ -19,11 +26,15 @@ class _MapWidgetState extends State<MapWidget> {
   @override
   void initState() {
     super.initState();
-    // Get or create controller
-    _controller = Get.isRegistered<MapController>()
-        ? Get.find<MapController>()
-        : Get.put(MapController());
+    _controller = MapController();
     _controller.setJobs(widget.jobs);
+    _controller.addListener(_onControllerUpdate);
+  }
+
+  void _onControllerUpdate() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -35,13 +46,17 @@ class _MapWidgetState extends State<MapWidget> {
   }
 
   @override
+  void dispose() {
+    _controller.removeListener(_onControllerUpdate);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final hasError = _controller.hasError.value;
-      return SizedBox.expand(
-        child: hasError ? _buildFallbackMap() : _buildGoogleMap(),
-      );
-    });
+    return SizedBox.expand(
+      child: _controller.hasError ? _buildFallbackMap() : _buildGoogleMap(),
+    );
   }
 
   Widget _buildGoogleMap() {
@@ -52,11 +67,6 @@ class _MapWidgetState extends State<MapWidget> {
           debugPrint(
             'Map created successfully with ${_controller.markers.length} markers',
           );
-          Future.delayed(const Duration(seconds: 3), () {
-            if (mounted) {
-              debugPrint('Map should be loaded by now');
-            }
-          });
         },
         initialCameraPosition: CameraPosition(
           target: _controller.center,
@@ -78,7 +88,7 @@ class _MapWidgetState extends State<MapWidget> {
     } catch (e) {
       debugPrint('Error creating GoogleMap: $e');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _controller.hasError.value = true;
+        _controller.setError(true);
       });
       return _buildFallbackMap();
     }
@@ -103,18 +113,18 @@ class _MapWidgetState extends State<MapWidget> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Unable to load map\nCheck your internet connection',
-              textAlign: TextAlign.center,
+              '${widget.jobs.length} job${widget.jobs.length != 1 ? 's' : ''} scheduled',
               style: TextStyle(fontSize: 14, color: AppColors.greyColor),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: _controller.retry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.darkGrey,
-                foregroundColor: AppColors.whiteColor,
+                foregroundColor: Colors.white,
               ),
-              child: const Text('Retry'),
             ),
           ],
         ),
