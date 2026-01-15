@@ -7,6 +7,7 @@ import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
 import 'package:smartflowpro/shared/data/local/hive_service.dart';
 import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
 import 'package:smartflowpro/core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/constants/api_endpoints.dart';
 import 'package:smartflowpro/core/errors/error_handler.dart';
 import 'package:smartflowpro/core/validation/validation_rules.dart';
 import 'package:smartflowpro/core/validation/quote_validator.dart';
@@ -26,6 +27,9 @@ class QuoteRepository extends BaseRepository {
 
   /// Get all quotes for a visit
   /// 
+  /// Uses REST API directly to avoid ES256 JWT issues with Edge Functions.
+  /// RLS policies will filter by technician's organization automatically.
+  /// 
   /// [page] and [pageSize] are optional for backward compatibility.
   /// When provided, enables pagination support.
   Future<List<QuoteModel>> getQuotes({
@@ -39,29 +43,32 @@ class QuoteRepository extends BaseRepository {
     return await fetchList<QuoteModel>(
       cacheKey: cacheKey,
       apiCall: () async {
-        final queryParams = <String, dynamic>{};
-        if (visitId != null) queryParams['visit_id'] = visitId;
-        if (status != null) queryParams['status'] = status.name;
-        if (page != null) queryParams['page'] = page;
-        if (pageSize != null) queryParams['page_size'] = pageSize;
+        // Use REST API directly (works with ES256 JWT)
+        String url = '${ApiEndpoints.restApiBaseFull}/quotes?select=*&order=created_at.desc';
         
-        final response = await apiClient.get(
-          '/v1/tech/quotes',
-          queryParameters: queryParams.isEmpty ? null : queryParams,
-        );
-        
-        // Handle paginated response if page/pageSize provided
-        if (page != null || pageSize != null) {
-          // Backend should return paginated response
-          // For now, handle both formats
-          if (response.data is Map && response.data['data'] != null) {
-            final List<dynamic> data = response.data['data'] as List;
-            return data.map((json) => QuoteModel.fromJson(json)).toList();
-          }
+        // Add filters
+        if (visitId != null) {
+          url += '&visit_id=eq.$visitId';
+        }
+        if (status != null) {
+          url += '&status=eq.${status.name}';
         }
         
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => QuoteModel.fromJson(json)).toList();
+        // Add pagination
+        if (page != null && pageSize != null) {
+          final offset = (page - 1) * pageSize;
+          url += '&limit=$pageSize&offset=$offset';
+        }
+        
+        final response = await apiClient.get(url);
+        
+        // REST API returns array directly
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => QuoteModel.fromJson(json)).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => QuoteModel.fromJson(data as Map<String, dynamic>),
       mockData: null, // TODO: Add mock data if needed
@@ -73,8 +80,14 @@ class QuoteRepository extends BaseRepository {
     return await fetch<QuoteModel>(
       cacheKey: 'quote_$id',
       apiCall: () async {
-        final response = await apiClient.get('/v1/tech/quotes/$id');
-        return QuoteModel.fromJson(response.data);
+        // Use REST API directly
+        final url = '${ApiEndpoints.restApiBaseFull}/quotes?id=eq.$id&select=*';
+        final response = await apiClient.get(url);
+        
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return QuoteModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Quote not found');
       },
       fromJson: (data) => QuoteModel.fromJson(data as Map<String, dynamic>),
       mockData: null, // TODO: Add mock data if needed
@@ -86,11 +99,39 @@ class QuoteRepository extends BaseRepository {
     return await mutate<QuoteModel>(
       cacheKey: 'quote_${quote.id}',
       apiCall: () async {
-        final response = await apiClient.post(
-          '/v1/tech/quotes',
-          data: quote.toJson(),
-        );
-        return QuoteModel.fromJson(response.data);
+        // Use REST API to insert
+        // Convert quote to JSON and map camelCase to snake_case for database
+        final quoteJson = quote.toJson();
+        final dbJson = <String, dynamic>{
+          'id': quoteJson['id'],
+          'org_id': quoteJson['org_id'],
+          'visit_id': quoteJson['visit_id'],
+          'quote_number': quoteJson['quote_number'],
+          'status': quoteJson['status'],
+          'taxable': quoteJson['taxable'],
+          'subtotal': quoteJson['subtotal'],
+          'discount_total': quoteJson['discount_total'],
+          'tax_total': quoteJson['tax_total'],
+          'grand_total': quoteJson['grand_total'],
+          'locked_at': quoteJson['locked_at'],
+          'locked_by': quoteJson['locked_by'],
+          'version': quoteJson['version'],
+          'created_at': quoteJson['created_at']?.toIso8601String(),
+          'updated_at': quoteJson['updated_at']?.toIso8601String(),
+        };
+        
+        // Note: line_items are stored in a separate table, not in quotes table
+        // They should be inserted separately after quote creation
+        
+        final url = '${ApiEndpoints.restApiBaseFull}/quotes';
+        
+        final response = await apiClient.post(url, data: dbJson);
+        
+        // REST API returns array with single item on insert
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return QuoteModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        return QuoteModel.fromJson(response.data as Map<String, dynamic>);
       },
       actionType: PendingActionType.createQuote,
       actionData: {
@@ -108,11 +149,34 @@ class QuoteRepository extends BaseRepository {
     return await mutate<QuoteModel>(
       cacheKey: 'quote_${quote.id}',
       apiCall: () async {
-        final response = await apiClient.patch(
-          '/v1/tech/quotes/${quote.id}',
-          data: quote.toJson(),
-        );
-        return QuoteModel.fromJson(response.data);
+        // Use REST API to update
+        // Convert quote to JSON and map camelCase to snake_case for database
+        final quoteJson = quote.toJson();
+        final dbJson = <String, dynamic>{
+          'org_id': quoteJson['org_id'],
+          'visit_id': quoteJson['visit_id'],
+          'quote_number': quoteJson['quote_number'],
+          'status': quoteJson['status'],
+          'taxable': quoteJson['taxable'],
+          'subtotal': quoteJson['subtotal'],
+          'discount_total': quoteJson['discount_total'],
+          'tax_total': quoteJson['tax_total'],
+          'grand_total': quoteJson['grand_total'],
+          'locked_at': quoteJson['locked_at'],
+          'locked_by': quoteJson['locked_by'],
+          'version': quoteJson['version'],
+          'updated_at': quoteJson['updated_at']?.toIso8601String(),
+        };
+        
+        final url = '${ApiEndpoints.restApiBaseFull}/quotes?id=eq.${quote.id}';
+        
+        final response = await apiClient.patch(url, data: dbJson);
+        
+        // REST API returns array on update
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return QuoteModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Failed to update quote');
       },
       actionType: PendingActionType.updateQuote,
       actionData: {
@@ -135,19 +199,32 @@ class QuoteRepository extends BaseRepository {
     // Validate using QuoteValidator (PRD Section 18)
     QuoteValidator.validateCanFinalize(current);
     
+    final now = DateTime.now();
+    
     return await mutate<QuoteModel>(
       cacheKey: 'quote_$id',
       apiCall: () async {
-        final response = await apiClient.post('/v1/tech/quotes/$id/finalize');
-        return QuoteModel.fromJson(response.data);
+        // Use REST API to update status to finalized
+        final url = '${ApiEndpoints.restApiBaseFull}/quotes?id=eq.$id';
+        
+        final response = await apiClient.patch(url, data: {
+          'status': 'finalized',
+          'locked_at': now.toIso8601String(),
+        });
+        
+        // REST API returns array on update
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return QuoteModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Failed to finalize quote');
       },
       actionType: PendingActionType.updateQuote,
       actionData: {'quote_id': id, 'action': 'finalize'},
       fromJson: (data) => QuoteModel.fromJson(data as Map<String, dynamic>),
       optimisticUpdate: () => current.copyWith(
         status: QuoteStatus.finalized,
-        lockedAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        lockedAt: now,
+        updatedAt: now,
       ),
       localEntity: current,
       entityType: 'quote',
@@ -166,7 +243,7 @@ class QuoteRepository extends BaseRepository {
       if (ErrorHandler.isNetworkError(e)) {
         await offlineQueue.addAction(PendingAction(
           id: generateId(),
-          type: PendingActionType.updateQuote, // TODO: Add deleteQuote action type
+          type: PendingActionType.deleteQuote,
           data: {'quote_id': id, 'action': 'delete'},
           timestamp: DateTime.now(),
         ));

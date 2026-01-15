@@ -13,7 +13,7 @@ import '../widgets/ai_message_bubble.dart';
 /// AI Assistant Screen
 /// 
 /// Displays AI assistant chat interface for the current visit.
-/// Allows text and image-based questions.
+/// Allows text and image-based questions with multi-language speech recognition.
 class AiAssistantScreen extends ConsumerStatefulWidget {
   final String? visitId;
 
@@ -34,8 +34,19 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   File? selectedImage;
   bool isListening = false;
   String recognizedText = '';
+  
+  // Language selection state
+  List<stt.LocaleName>? availableLocales;
+  String? selectedLocaleId;
+  bool isLoadingLocales = false;
 
   String get visitId => widget.visitId ?? 'default-visit';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvailableLocales();
+  }
 
   @override
   void dispose() {
@@ -43,6 +54,83 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
     scrollController.dispose();
     speech.stop();
     super.dispose();
+  }
+
+  /// Load available speech recognition locales
+  Future<void> _loadAvailableLocales() async {
+    setState(() {
+      isLoadingLocales = true;
+    });
+
+    try {
+      final locales = await speech.locales();
+      
+      // Get device locale as default
+      final deviceLocale = Platform.localeName; // e.g., "en_US"
+      final deviceLangCode = deviceLocale.split('_')[0];
+
+      // Find best match for device locale
+      String? defaultLocale;
+      for (final locale in locales) {
+        if (locale.localeId == deviceLocale) {
+          defaultLocale = locale.localeId;
+          break;
+        }
+      }
+
+      // If no exact match, try language code match
+      if (defaultLocale == null) {
+        for (final locale in locales) {
+          if (locale.localeId.startsWith(deviceLangCode)) {
+            defaultLocale = locale.localeId;
+            break;
+          }
+        }
+      }
+
+      // Fallback to English (US)
+      defaultLocale ??= locales.firstWhere(
+        (locale) => locale.localeId.startsWith('en'),
+        orElse: () => locales.first,
+      ).localeId;
+
+      setState(() {
+        availableLocales = locales;
+        selectedLocaleId = defaultLocale;
+        isLoadingLocales = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingLocales = false;
+        // Fallback to en_US if loading fails
+        selectedLocaleId = 'en_US';
+      });
+    }
+  }
+
+  /// Get display name for locale
+  String _getLocaleDisplayName(stt.LocaleName locale) {
+    // Map common locale IDs to friendly names
+    final localeMap = {
+      'en_US': 'English (US)',
+      'en_GB': 'English (UK)',
+      'es_US': 'Spanish (US)',
+      'es_ES': 'Spanish (Spain)',
+      'es_MX': 'Spanish (Mexico)',
+      'ru_RU': 'Russian',
+      'uz_UZ': 'Uzbek',
+      'zh_CN': 'Chinese (Simplified)',
+      'zh_TW': 'Chinese (Traditional)',
+      'ar_SA': 'Arabic',
+      'vi_VN': 'Vietnamese',
+      'ko_KR': 'Korean',
+      'hi_IN': 'Hindi',
+      'pt_BR': 'Portuguese (Brazil)',
+      'pt_PT': 'Portuguese (Portugal)',
+    };
+
+    return localeMap[locale.localeId] ?? 
+           '${locale.name} (${locale.localeId})';
   }
 
   @override
@@ -66,6 +154,74 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
         backgroundColor: AppColors.primaryTextColor,
         elevation: 0,
         actions: [
+          // Language Selector
+          if (availableLocales != null && availableLocales!.isNotEmpty)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.language, color: AppColors.whiteColor),
+              tooltip: 'Select language for speech recognition',
+              onSelected: (localeId) {
+                setState(() {
+                  selectedLocaleId = localeId;
+                });
+                // Show confirmation
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Speech recognition language set to: ${_getLocaleDisplayName(availableLocales!.firstWhere((l) => l.localeId == localeId))}',
+                    ),
+                    duration: const Duration(seconds: 2),
+                    backgroundColor: AppColors.primaryColor,
+                  ),
+                );
+              },
+              itemBuilder: (context) {
+                // Build menu items
+                final items = <PopupMenuEntry<String>>[];
+                
+                // Add selected locale first (if exists)
+                if (selectedLocaleId != null) {
+                  final selected = availableLocales!.firstWhere(
+                    (l) => l.localeId == selectedLocaleId,
+                    orElse: () => availableLocales!.first,
+                  );
+                  items.add(
+                    PopupMenuItem(
+                      value: selected.localeId,
+                      child: Row(
+                        children: [
+                          Icon(Icons.check, size: 20, color: AppColors.primaryColor),
+                          SizedBox(width: 8.w),
+                          Text(
+                            _getLocaleDisplayName(selected),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                  items.add(const PopupMenuDivider());
+                }
+
+                // Add other locales
+                for (final locale in availableLocales!) {
+                  if (locale.localeId != selectedLocaleId) {
+                    items.add(
+                      PopupMenuItem(
+                        value: locale.localeId,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 28.w),
+                          child: Text(_getLocaleDisplayName(locale)),
+                        ),
+                      ),
+                    );
+                  }
+                }
+
+                return items;
+              },
+            ),
           IconButton(
             icon: Icon(Icons.refresh, color: AppColors.whiteColor),
             onPressed: () {
@@ -131,6 +287,16 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                             textAlign: TextAlign.center,
                           ),
                         ),
+                        if (selectedLocaleId != null && availableLocales != null)
+                          Padding(
+                            padding: EdgeInsets.only(top: 16.h),
+                            child: Text(
+                              'Speech: ${_getLocaleDisplayName(availableLocales!.firstWhere((l) => l.localeId == selectedLocaleId))}',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.secondaryTextColor,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   )
@@ -214,7 +380,9 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
                       isListening ? Icons.mic : Icons.mic_none,
                       color: isListening ? AppColors.errorRed : AppColors.primaryColor,
                     ),
-                    tooltip: isListening ? 'Stop recording' : 'Voice input',
+                    tooltip: isListening 
+                        ? 'Stop recording' 
+                        : 'Voice input (${selectedLocaleId != null && availableLocales != null ? _getLocaleDisplayName(availableLocales!.firstWhere((l) => l.localeId == selectedLocaleId)) : "Language"})',
                   ),
                   SizedBox(width: 8.w),
                   // Text Input
@@ -319,6 +487,17 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
   }
 
   Future<void> _startListening() async {
+    // Check if locale is selected
+    if (selectedLocaleId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please select a language first'),
+          backgroundColor: AppColors.errorRed,
+        ),
+      );
+      return;
+    }
+
     bool available = await speech.initialize(
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
@@ -356,7 +535,7 @@ class _AiAssistantScreenState extends ConsumerState<AiAssistantScreen> {
         listenFor: const Duration(seconds: 30),
         pauseFor: const Duration(seconds: 3),
         partialResults: true,
-        localeId: 'en_US',
+        localeId: selectedLocaleId!, // ✅ Use selected locale
       );
     } else {
       if (mounted) {

@@ -21,6 +21,7 @@ class InventoryItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Card(
       margin: EdgeInsets.only(bottom: 12.h),
       elevation: 2,
@@ -42,11 +43,11 @@ class InventoryItemCard extends StatelessWidget {
                   color: AppColors.lightGray,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: item.imageUrl != null
+                child: item.imageUrl != null && _isValidImageUrl(item.imageUrl!)
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(8.r),
                         child: CachedNetworkImage(
-                          imageUrl: item.imageUrl!,
+                          imageUrl: _getFullImageUrl(item.imageUrl!),
                           width: 60.w,
                           height: 60.w,
                           fit: BoxFit.cover,
@@ -59,17 +60,35 @@ class InventoryItemCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Icon(
-                            Icons.inventory_2_outlined,
-                            size: 30.sp,
-                            color: AppColors.greyColor,
-                          ),
+                          errorWidget: (context, url, error) {
+                            return Container(
+                              color: AppColors.lightGray,
+                              child: Center(
+                                child: Container(
+                                  width: 30.sp,
+                                  height: 30.sp,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.greyColor.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(4.r),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       )
-                    : Icon(
-                        Icons.inventory_2_outlined,
-                        size: 30.sp,
-                        color: AppColors.greyColor,
+                    : Container(
+                        color: AppColors.lightGray,
+                        child: Center(
+                          child: Container(
+                            width: 30.sp,
+                            height: 30.sp,
+                            decoration: BoxDecoration(
+                              color: AppColors.greyColor.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                        ),
                       ),
               ),
               SizedBox(width: 16.w),
@@ -181,6 +200,35 @@ class InventoryItemCard extends StatelessWidget {
     );
   }
 
+  /// Convert storage path to full Supabase Storage URL
+  String _getFullImageUrl(String imagePath) {
+    // If already a full URL, return as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // Fix for existing data: strip duplicate /inventory/ from old paths
+    // Old format: orgId/inventory/itemId/filename
+    // New format: orgId/itemId/filename
+    String cleanPath = imagePath;
+    
+    // Handle cases where path starts with inventory/ (e.g. migration artifact)
+    if (cleanPath.startsWith('inventory/')) {
+      cleanPath = cleanPath.substring('inventory/'.length);
+    }
+    
+    final regex = RegExp(r'^([^/]+)/inventory/(.+)$');
+    final match = regex.firstMatch(imagePath);
+    if (match != null) {
+      // Convert old format to new: strip the /inventory/ part
+      cleanPath = '${match.group(1)}/${match.group(2)}';
+    }
+    
+    const supabaseUrl = String.fromEnvironment('SUPABASE_URL', 
+      defaultValue: 'https://pbqbsdmwbjpsvxuuwjiv.supabase.co');
+    return '$supabaseUrl/storage/v1/object/public/inventory/$cleanPath';
+  }
+
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'hvac parts':
@@ -192,6 +240,23 @@ class InventoryItemCard extends StatelessWidget {
       default:
         return AppColors.greyColor;
     }
+  }
+
+  /// Validate that the image URL/path is valid before loading
+  bool _isValidImageUrl(String imagePath) {
+    // Don't load if path is empty or whitespace only
+    if (imagePath.trim().isEmpty) return false;
+    
+    // Don't load if path is the string "null" (database artifact)
+    if (imagePath.trim().toLowerCase() == 'null') return false;
+    
+    // Don't load if path looks like a placeholder or invalid UUID
+    if (imagePath.contains('00000000-0000-0000-0000-000000000000')) return false;
+    
+    // Basic validation - must have at least one slash (path structure)
+    if (!imagePath.contains('/')) return false;
+    
+    return true;
   }
 }
 

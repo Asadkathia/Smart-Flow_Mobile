@@ -53,11 +53,15 @@ class AiChatNotifier extends StateNotifier<List<AiChatMessage>> {
       );
       state = [...state, aiMessage];
     } catch (e) {
-      // Add error message
+      // Add error message with actual error details
+      final errorText = e.toString().contains('temporarily unavailable')
+          ? e.toString().replaceAll('Exception: ', '')
+          : 'Sorry, I encountered an error. Please try again.\n\nError: ${e.toString()}';
+      
       final errorMessage = AiChatMessage(
         id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: errorText,
         createdAt: DateTime.now(),
       );
       state = [...state, errorMessage];

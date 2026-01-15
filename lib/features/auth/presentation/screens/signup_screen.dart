@@ -6,6 +6,7 @@ import 'package:smartflowpro/shared/presentation/widgets/build_form_field.dart';
 import 'package:smartflowpro/shared/presentation/widgets/build_basic_button.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../providers/signup_provider.dart';
+import '../providers/auth_provider.dart';
 import 'package:smartflowpro/router/app_router.dart';
 
 /// Signup Screen - Riverpod Version
@@ -41,11 +42,27 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       final email = emailController.text.trim();
       final password = passwordController.text.trim();
 
-      // TODO: Implement actual signup with authProvider
-      // For now, show success and navigate
+      // Split full name into first and last name
+      final nameParts = fullName.split(' ');
+      final firstName = nameParts.isNotEmpty ? nameParts.first : fullName;
+      final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      final success = await ref.read(authProvider.notifier).signup(
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+      );
+
       if (mounted) {
-        context.showSuccessSnackBar("Account created successfully!");
-        context.go(AppRoutePaths.mainNavigation);
+        if (success) {
+          context.showSuccessSnackBar("Account created! Please verify OTP sent to your email.");
+          // Navigate to verify OTP screen
+          context.push(AppRoutePaths.verifyOtp, extra: {'email': email});
+        } else {
+          final error = ref.read(authProvider).error;
+          context.showErrorSnackBar(error ?? 'Signup failed. Please try again.');
+        }
       }
     }
   }

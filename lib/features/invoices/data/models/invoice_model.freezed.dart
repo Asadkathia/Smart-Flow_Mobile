@@ -619,13 +619,27 @@ PaymentModel _$PaymentModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$PaymentModel {
   String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'org_id')
+  String get orgId =>
+      throw _privateConstructorUsedError; // PRD: required for multi-tenancy
+  @JsonKey(name: 'invoice_id')
   String get invoiceId => throw _privateConstructorUsedError;
-  double get amount => throw _privateConstructorUsedError;
-  PaymentMethod get method => throw _privateConstructorUsedError;
-  String? get reference => throw _privateConstructorUsedError;
-  String? get receivedBy => throw _privateConstructorUsedError;
-  DateTime? get receivedAt => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
+  double get amount =>
+      throw _privateConstructorUsedError; // Must be > 0, cannot exceed remaining invoice balance
+  PaymentMethod get method =>
+      throw _privateConstructorUsedError; // cash, bank_transfer, card, stripe_link
+  String? get reference =>
+      throw _privateConstructorUsedError; // Optional reference number
+  @JsonKey(name: 'received_by')
+  String get receivedBy =>
+      throw _privateConstructorUsedError; // User who recorded the payment
+  @JsonKey(name: 'received_at')
+  DateTime get receivedAt =>
+      throw _privateConstructorUsedError; // When payment was received
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
+  DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this PaymentModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -645,13 +659,15 @@ abstract class $PaymentModelCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      String invoiceId,
+      @JsonKey(name: 'org_id') String orgId,
+      @JsonKey(name: 'invoice_id') String invoiceId,
       double amount,
       PaymentMethod method,
       String? reference,
-      String? receivedBy,
-      DateTime? receivedAt,
-      DateTime? createdAt});
+      @JsonKey(name: 'received_by') String receivedBy,
+      @JsonKey(name: 'received_at') DateTime receivedAt,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -670,18 +686,24 @@ class _$PaymentModelCopyWithImpl<$Res, $Val extends PaymentModel>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? invoiceId = null,
     Object? amount = null,
     Object? method = null,
     Object? reference = freezed,
-    Object? receivedBy = freezed,
-    Object? receivedAt = freezed,
-    Object? createdAt = freezed,
+    Object? receivedBy = null,
+    Object? receivedAt = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       invoiceId: null == invoiceId
           ? _value.invoiceId
@@ -699,18 +721,22 @@ class _$PaymentModelCopyWithImpl<$Res, $Val extends PaymentModel>
           ? _value.reference
           : reference // ignore: cast_nullable_to_non_nullable
               as String?,
-      receivedBy: freezed == receivedBy
+      receivedBy: null == receivedBy
           ? _value.receivedBy
           : receivedBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      receivedAt: freezed == receivedAt
+              as String,
+      receivedAt: null == receivedAt
           ? _value.receivedAt
           : receivedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      createdAt: freezed == createdAt
+              as DateTime,
+      createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
     ) as $Val);
   }
 }
@@ -725,13 +751,15 @@ abstract class _$$PaymentModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {String id,
-      String invoiceId,
+      @JsonKey(name: 'org_id') String orgId,
+      @JsonKey(name: 'invoice_id') String invoiceId,
       double amount,
       PaymentMethod method,
       String? reference,
-      String? receivedBy,
-      DateTime? receivedAt,
-      DateTime? createdAt});
+      @JsonKey(name: 'received_by') String receivedBy,
+      @JsonKey(name: 'received_at') DateTime receivedAt,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
 
 /// @nodoc
@@ -748,18 +776,24 @@ class __$$PaymentModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? invoiceId = null,
     Object? amount = null,
     Object? method = null,
     Object? reference = freezed,
-    Object? receivedBy = freezed,
-    Object? receivedAt = freezed,
-    Object? createdAt = freezed,
+    Object? receivedBy = null,
+    Object? receivedAt = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
   }) {
     return _then(_$PaymentModelImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       invoiceId: null == invoiceId
           ? _value.invoiceId
@@ -777,18 +811,22 @@ class __$$PaymentModelImplCopyWithImpl<$Res>
           ? _value.reference
           : reference // ignore: cast_nullable_to_non_nullable
               as String?,
-      receivedBy: freezed == receivedBy
+      receivedBy: null == receivedBy
           ? _value.receivedBy
           : receivedBy // ignore: cast_nullable_to_non_nullable
-              as String?,
-      receivedAt: freezed == receivedAt
+              as String,
+      receivedAt: null == receivedAt
           ? _value.receivedAt
           : receivedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      createdAt: freezed == createdAt
+              as DateTime,
+      createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
     ));
   }
 }
@@ -798,13 +836,15 @@ class __$$PaymentModelImplCopyWithImpl<$Res>
 class _$PaymentModelImpl implements _PaymentModel {
   const _$PaymentModelImpl(
       {required this.id,
-      required this.invoiceId,
+      @JsonKey(name: 'org_id') required this.orgId,
+      @JsonKey(name: 'invoice_id') required this.invoiceId,
       required this.amount,
       required this.method,
       this.reference,
-      this.receivedBy,
-      this.receivedAt,
-      this.createdAt});
+      @JsonKey(name: 'received_by') required this.receivedBy,
+      @JsonKey(name: 'received_at') required this.receivedAt,
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$PaymentModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PaymentModelImplFromJson(json);
@@ -812,23 +852,39 @@ class _$PaymentModelImpl implements _PaymentModel {
   @override
   final String id;
   @override
+  @JsonKey(name: 'org_id')
+  final String orgId;
+// PRD: required for multi-tenancy
+  @override
+  @JsonKey(name: 'invoice_id')
   final String invoiceId;
   @override
   final double amount;
+// Must be > 0, cannot exceed remaining invoice balance
   @override
   final PaymentMethod method;
+// cash, bank_transfer, card, stripe_link
   @override
   final String? reference;
+// Optional reference number
   @override
-  final String? receivedBy;
+  @JsonKey(name: 'received_by')
+  final String receivedBy;
+// User who recorded the payment
   @override
-  final DateTime? receivedAt;
+  @JsonKey(name: 'received_at')
+  final DateTime receivedAt;
+// When payment was received
   @override
-  final DateTime? createdAt;
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+  @override
+  @JsonKey(name: 'updated_at')
+  final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'PaymentModel(id: $id, invoiceId: $invoiceId, amount: $amount, method: $method, reference: $reference, receivedBy: $receivedBy, receivedAt: $receivedAt, createdAt: $createdAt)';
+    return 'PaymentModel(id: $id, orgId: $orgId, invoiceId: $invoiceId, amount: $amount, method: $method, reference: $reference, receivedBy: $receivedBy, receivedAt: $receivedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -837,6 +893,7 @@ class _$PaymentModelImpl implements _PaymentModel {
         (other.runtimeType == runtimeType &&
             other is _$PaymentModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.orgId, orgId) || other.orgId == orgId) &&
             (identical(other.invoiceId, invoiceId) ||
                 other.invoiceId == invoiceId) &&
             (identical(other.amount, amount) || other.amount == amount) &&
@@ -848,13 +905,15 @@ class _$PaymentModelImpl implements _PaymentModel {
             (identical(other.receivedAt, receivedAt) ||
                 other.receivedAt == receivedAt) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, invoiceId, amount, method,
-      reference, receivedBy, receivedAt, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, invoiceId, amount,
+      method, reference, receivedBy, receivedAt, createdAt, updatedAt);
 
   /// Create a copy of PaymentModel
   /// with the given fields replaced by the non-null parameter values.
@@ -874,14 +933,17 @@ class _$PaymentModelImpl implements _PaymentModel {
 
 abstract class _PaymentModel implements PaymentModel {
   const factory _PaymentModel(
-      {required final String id,
-      required final String invoiceId,
-      required final double amount,
-      required final PaymentMethod method,
-      final String? reference,
-      final String? receivedBy,
-      final DateTime? receivedAt,
-      final DateTime? createdAt}) = _$PaymentModelImpl;
+          {required final String id,
+          @JsonKey(name: 'org_id') required final String orgId,
+          @JsonKey(name: 'invoice_id') required final String invoiceId,
+          required final double amount,
+          required final PaymentMethod method,
+          final String? reference,
+          @JsonKey(name: 'received_by') required final String receivedBy,
+          @JsonKey(name: 'received_at') required final DateTime receivedAt,
+          @JsonKey(name: 'created_at') required final DateTime createdAt,
+          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
+      _$PaymentModelImpl;
 
   factory _PaymentModel.fromJson(Map<String, dynamic> json) =
       _$PaymentModelImpl.fromJson;
@@ -889,19 +951,29 @@ abstract class _PaymentModel implements PaymentModel {
   @override
   String get id;
   @override
+  @JsonKey(name: 'org_id')
+  String get orgId; // PRD: required for multi-tenancy
+  @override
+  @JsonKey(name: 'invoice_id')
   String get invoiceId;
   @override
-  double get amount;
+  double get amount; // Must be > 0, cannot exceed remaining invoice balance
   @override
-  PaymentMethod get method;
+  PaymentMethod get method; // cash, bank_transfer, card, stripe_link
   @override
-  String? get reference;
+  String? get reference; // Optional reference number
   @override
-  String? get receivedBy;
+  @JsonKey(name: 'received_by')
+  String get receivedBy; // User who recorded the payment
   @override
-  DateTime? get receivedAt;
+  @JsonKey(name: 'received_at')
+  DateTime get receivedAt; // When payment was received
   @override
-  DateTime? get createdAt;
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt;
+  @override
+  @JsonKey(name: 'updated_at')
+  DateTime get updatedAt;
 
   /// Create a copy of PaymentModel
   /// with the given fields replaced by the non-null parameter values.

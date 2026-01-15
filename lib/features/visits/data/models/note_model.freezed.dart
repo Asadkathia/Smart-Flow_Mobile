@@ -27,14 +27,9 @@ mixin _$NoteModel {
   String get visitId => throw _privateConstructorUsedError;
   @JsonKey(name: 'author_id')
   String get authorId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'author_name')
-  String? get authorName => throw _privateConstructorUsedError;
   @JsonKey(name: 'body')
-  String get content => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_internal')
-  bool get isInternal => throw _privateConstructorUsedError;
-  @JsonKey(name: 'image_urls')
-  List<String> get imageUrls => throw _privateConstructorUsedError;
+  String get body =>
+      throw _privateConstructorUsedError; // PRD: body (not content)
   int get version => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
@@ -61,10 +56,7 @@ abstract class $NoteModelCopyWith<$Res> {
       @JsonKey(name: 'org_id') String orgId,
       @JsonKey(name: 'visit_id') String visitId,
       @JsonKey(name: 'author_id') String authorId,
-      @JsonKey(name: 'author_name') String? authorName,
-      @JsonKey(name: 'body') String content,
-      @JsonKey(name: 'is_internal') bool isInternal,
-      @JsonKey(name: 'image_urls') List<String> imageUrls,
+      @JsonKey(name: 'body') String body,
       int version,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
@@ -89,10 +81,7 @@ class _$NoteModelCopyWithImpl<$Res, $Val extends NoteModel>
     Object? orgId = null,
     Object? visitId = null,
     Object? authorId = null,
-    Object? authorName = freezed,
-    Object? content = null,
-    Object? isInternal = null,
-    Object? imageUrls = null,
+    Object? body = null,
     Object? version = null,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -114,22 +103,10 @@ class _$NoteModelCopyWithImpl<$Res, $Val extends NoteModel>
           ? _value.authorId
           : authorId // ignore: cast_nullable_to_non_nullable
               as String,
-      authorName: freezed == authorName
-          ? _value.authorName
-          : authorName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      content: null == content
-          ? _value.content
-          : content // ignore: cast_nullable_to_non_nullable
+      body: null == body
+          ? _value.body
+          : body // ignore: cast_nullable_to_non_nullable
               as String,
-      isInternal: null == isInternal
-          ? _value.isInternal
-          : isInternal // ignore: cast_nullable_to_non_nullable
-              as bool,
-      imageUrls: null == imageUrls
-          ? _value.imageUrls
-          : imageUrls // ignore: cast_nullable_to_non_nullable
-              as List<String>,
       version: null == version
           ? _value.version
           : version // ignore: cast_nullable_to_non_nullable
@@ -159,10 +136,7 @@ abstract class _$$NoteModelImplCopyWith<$Res>
       @JsonKey(name: 'org_id') String orgId,
       @JsonKey(name: 'visit_id') String visitId,
       @JsonKey(name: 'author_id') String authorId,
-      @JsonKey(name: 'author_name') String? authorName,
-      @JsonKey(name: 'body') String content,
-      @JsonKey(name: 'is_internal') bool isInternal,
-      @JsonKey(name: 'image_urls') List<String> imageUrls,
+      @JsonKey(name: 'body') String body,
       int version,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
@@ -185,10 +159,7 @@ class __$$NoteModelImplCopyWithImpl<$Res>
     Object? orgId = null,
     Object? visitId = null,
     Object? authorId = null,
-    Object? authorName = freezed,
-    Object? content = null,
-    Object? isInternal = null,
-    Object? imageUrls = null,
+    Object? body = null,
     Object? version = null,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -210,22 +181,10 @@ class __$$NoteModelImplCopyWithImpl<$Res>
           ? _value.authorId
           : authorId // ignore: cast_nullable_to_non_nullable
               as String,
-      authorName: freezed == authorName
-          ? _value.authorName
-          : authorName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      content: null == content
-          ? _value.content
-          : content // ignore: cast_nullable_to_non_nullable
+      body: null == body
+          ? _value.body
+          : body // ignore: cast_nullable_to_non_nullable
               as String,
-      isInternal: null == isInternal
-          ? _value.isInternal
-          : isInternal // ignore: cast_nullable_to_non_nullable
-              as bool,
-      imageUrls: null == imageUrls
-          ? _value._imageUrls
-          : imageUrls // ignore: cast_nullable_to_non_nullable
-              as List<String>,
       version: null == version
           ? _value.version
           : version // ignore: cast_nullable_to_non_nullable
@@ -250,14 +209,10 @@ class _$NoteModelImpl implements _NoteModel {
       @JsonKey(name: 'org_id') required this.orgId,
       @JsonKey(name: 'visit_id') required this.visitId,
       @JsonKey(name: 'author_id') required this.authorId,
-      @JsonKey(name: 'author_name') this.authorName,
-      @JsonKey(name: 'body') required this.content,
-      @JsonKey(name: 'is_internal') this.isInternal = false,
-      @JsonKey(name: 'image_urls') final List<String> imageUrls = const [],
+      @JsonKey(name: 'body') required this.body,
       this.version = 1,
       @JsonKey(name: 'created_at') required this.createdAt,
-      @JsonKey(name: 'updated_at') required this.updatedAt})
-      : _imageUrls = imageUrls;
+      @JsonKey(name: 'updated_at') required this.updatedAt});
 
   factory _$NoteModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$NoteModelImplFromJson(json);
@@ -274,23 +229,9 @@ class _$NoteModelImpl implements _NoteModel {
   @JsonKey(name: 'author_id')
   final String authorId;
   @override
-  @JsonKey(name: 'author_name')
-  final String? authorName;
-  @override
   @JsonKey(name: 'body')
-  final String content;
-  @override
-  @JsonKey(name: 'is_internal')
-  final bool isInternal;
-  final List<String> _imageUrls;
-  @override
-  @JsonKey(name: 'image_urls')
-  List<String> get imageUrls {
-    if (_imageUrls is EqualUnmodifiableListView) return _imageUrls;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_imageUrls);
-  }
-
+  final String body;
+// PRD: body (not content)
   @override
   @JsonKey()
   final int version;
@@ -303,7 +244,7 @@ class _$NoteModelImpl implements _NoteModel {
 
   @override
   String toString() {
-    return 'NoteModel(id: $id, orgId: $orgId, visitId: $visitId, authorId: $authorId, authorName: $authorName, content: $content, isInternal: $isInternal, imageUrls: $imageUrls, version: $version, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'NoteModel(id: $id, orgId: $orgId, visitId: $visitId, authorId: $authorId, body: $body, version: $version, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -316,13 +257,7 @@ class _$NoteModelImpl implements _NoteModel {
             (identical(other.visitId, visitId) || other.visitId == visitId) &&
             (identical(other.authorId, authorId) ||
                 other.authorId == authorId) &&
-            (identical(other.authorName, authorName) ||
-                other.authorName == authorName) &&
-            (identical(other.content, content) || other.content == content) &&
-            (identical(other.isInternal, isInternal) ||
-                other.isInternal == isInternal) &&
-            const DeepCollectionEquality()
-                .equals(other._imageUrls, _imageUrls) &&
+            (identical(other.body, body) || other.body == body) &&
             (identical(other.version, version) || other.version == version) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
@@ -332,19 +267,8 @@ class _$NoteModelImpl implements _NoteModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      orgId,
-      visitId,
-      authorId,
-      authorName,
-      content,
-      isInternal,
-      const DeepCollectionEquality().hash(_imageUrls),
-      version,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, visitId, authorId,
+      body, version, createdAt, updatedAt);
 
   /// Create a copy of NoteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -368,10 +292,7 @@ abstract class _NoteModel implements NoteModel {
           @JsonKey(name: 'org_id') required final String orgId,
           @JsonKey(name: 'visit_id') required final String visitId,
           @JsonKey(name: 'author_id') required final String authorId,
-          @JsonKey(name: 'author_name') final String? authorName,
-          @JsonKey(name: 'body') required final String content,
-          @JsonKey(name: 'is_internal') final bool isInternal,
-          @JsonKey(name: 'image_urls') final List<String> imageUrls,
+          @JsonKey(name: 'body') required final String body,
           final int version,
           @JsonKey(name: 'created_at') required final DateTime createdAt,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
@@ -392,17 +313,8 @@ abstract class _NoteModel implements NoteModel {
   @JsonKey(name: 'author_id')
   String get authorId;
   @override
-  @JsonKey(name: 'author_name')
-  String? get authorName;
-  @override
   @JsonKey(name: 'body')
-  String get content;
-  @override
-  @JsonKey(name: 'is_internal')
-  bool get isInternal;
-  @override
-  @JsonKey(name: 'image_urls')
-  List<String> get imageUrls;
+  String get body; // PRD: body (not content)
   @override
   int get version;
   @override

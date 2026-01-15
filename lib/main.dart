@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'router/app_router.dart';
@@ -10,27 +11,35 @@ import 'shared/presentation/widgets/error_boundary.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Validate Supabase configuration before proceeding
-  if (!SupabaseConfig.isValid) {
+  // Initialize Supabase (only if configured)
+  if (SupabaseConfig.isValid) {
+    try {
+      await Supabase.initialize(
+        url: SupabaseConfig.supabaseUrl,
+        anonKey: SupabaseConfig.supabaseAnonKey,
+      );
+      debugPrint('✅ Supabase initialized successfully');
+    } catch (e) {
+      debugPrint('⚠️ Supabase initialization failed: $e');
+      debugPrint('   App will continue with mock data mode');
+    }
+  } else {
     final errors = SupabaseConfig.validationErrors;
-    debugPrint('❌ Supabase Configuration Error:');
+    debugPrint('⚠️ Supabase Configuration Missing:');
     for (final error in errors) {
       debugPrint('   - $error');
     }
     debugPrint('');
-    debugPrint('Please set the required environment variables:');
+    debugPrint('App will use mock data mode.');
+    debugPrint('To enable Supabase, set environment variables:');
     debugPrint('   - SUPABASE_URL');
     debugPrint('   - SUPABASE_ANON_KEY');
     debugPrint('');
-    debugPrint('See .env.example for reference.');
     
-    // In production, you might want to show a user-friendly error screen
-    // For now, we'll continue but log the error
+    // In production, throw error if Supabase is required
     if (SupabaseConfig.isProduction) {
-      throw Exception('Supabase configuration is invalid. Please check your environment variables.');
+      throw Exception('Supabase configuration is required in production. Please check your environment variables.');
     }
-  } else {
-    debugPrint('✅ Supabase configuration validated successfully');
   }
   
   // Initialize Hive for offline storage

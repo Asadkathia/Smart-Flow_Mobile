@@ -25,9 +25,12 @@ import '../features/visits/presentation/screens/on_my_way_screen.dart';
 // Quotes screens - migrated to features/quotes/presentation/screens
 import '../features/quotes/presentation/screens/create_quotes_screen.dart';
 import '../features/quotes/presentation/screens/quotes_list_screen.dart';
+import '../features/quotes/presentation/screens/quote_details_screen.dart';
 // Profile screen - migrated to features/auth/presentation/screens
 import '../features/auth/presentation/screens/profile_screen.dart';
 import '../features/inventory/presentation/screens/inventory_list_screen.dart';
+import '../features/inventory/presentation/screens/add_inventory_item_screen.dart';
+import '../features/inventory/presentation/screens/ai_detect_inventory_screen.dart';
 import '../features/invoices/presentation/screens/invoice_list_screen.dart';
 import '../features/chat/presentation/screens/chat_list_screen.dart';
 import '../features/chat/presentation/screens/chat_thread_screen.dart';
@@ -52,6 +55,8 @@ class AppRoutePaths {
   static const String createQuotes = '/create-quotes';
   static const String quotesList = '/quotes-list';
   static const String inventoryList = '/inventory';
+  static const String addInventoryItem = '/inventory/add';
+  static const String aiDetectInventory = '/inventory/ai-detect';
   static const String invoiceList = '/invoices';
   static const String chatList = '/chat';
   static const String chatThread = '/chat/:chatId';
@@ -109,6 +114,16 @@ extension GoRouterExtension on BuildContext {
   /// Navigate to inventory item details
   void goToInventoryDetails(String itemId) {
     push('/inventory/$itemId');
+  }
+
+  /// Navigate to add inventory item (manual entry)
+  void goToAddInventoryItem() {
+    push(AppRoutePaths.addInventoryItem);
+  }
+
+  /// Navigate to AI detect inventory
+  void goToAiDetectInventory() {
+    push(AppRoutePaths.aiDetectInventory);
   }
 
   /// Navigate to invoice preview
@@ -297,6 +312,30 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const InventoryListScreen(),
       ),
 
+      // Add Inventory Item (Manual Entry)
+      GoRoute(
+        path: AppRoutePaths.addInventoryItem,
+        name: 'addInventoryItem',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const AddInventoryItemScreen(),
+          transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
+
+      // AI Detect Inventory
+      GoRoute(
+        path: AppRoutePaths.aiDetectInventory,
+        name: 'aiDetectInventory',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const AiDetectInventoryScreen(),
+          transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
+
       // Invoices
       GoRoute(
         path: AppRoutePaths.invoiceList,
@@ -342,17 +381,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ConflictResolutionScreen(),
       ),
 
-      // Quote Details (placeholder - will be implemented)
+      // Quote Details
       GoRoute(
         path: AppRoutePaths.quoteDetails,
         name: 'quoteDetails',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final quoteId = state.pathParameters['id'] ?? '';
-          return Scaffold(
-            appBar: AppBar(title: Text('Quote $quoteId')),
-            body: Center(
-              child: Text('Quote details screen coming soon'),
-            ),
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: QuoteDetailsScreen(quoteId: quoteId),
+            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionDuration: const Duration(milliseconds: 300),
           );
         },
       ),

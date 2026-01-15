@@ -25,22 +25,12 @@ mixin _$PropertyModel {
   String get orgId => throw _privateConstructorUsedError;
   @JsonKey(name: 'customer_id')
   String get customerId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'address_line1')
-  String get addressLine1 => throw _privateConstructorUsedError;
-  @JsonKey(name: 'address_line2')
-  String? get addressLine2 => throw _privateConstructorUsedError;
-  String get city => throw _privateConstructorUsedError;
-  String get state => throw _privateConstructorUsedError;
-  @JsonKey(name: 'postal_code')
-  String get postalCode => throw _privateConstructorUsedError;
-  String? get country => throw _privateConstructorUsedError;
-  double? get latitude => throw _privateConstructorUsedError;
-  double? get longitude => throw _privateConstructorUsedError;
-  String? get notes => throw _privateConstructorUsedError;
-  @JsonKey(name: 'access_instructions')
-  String? get accessInstructions => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_primary')
-  bool get isPrimary => throw _privateConstructorUsedError;
+  String get address =>
+      throw _privateConstructorUsedError; // PRD: single address field (text)
+  double? get latitude =>
+      throw _privateConstructorUsedError; // Valid range: -90 to 90
+  double? get longitude =>
+      throw _privateConstructorUsedError; // Valid range: -180 to 180
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
@@ -66,17 +56,9 @@ abstract class $PropertyModelCopyWith<$Res> {
       {String id,
       @JsonKey(name: 'org_id') String orgId,
       @JsonKey(name: 'customer_id') String customerId,
-      @JsonKey(name: 'address_line1') String addressLine1,
-      @JsonKey(name: 'address_line2') String? addressLine2,
-      String city,
-      String state,
-      @JsonKey(name: 'postal_code') String postalCode,
-      String? country,
+      String address,
       double? latitude,
       double? longitude,
-      String? notes,
-      @JsonKey(name: 'access_instructions') String? accessInstructions,
-      @JsonKey(name: 'is_primary') bool isPrimary,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
@@ -99,17 +81,9 @@ class _$PropertyModelCopyWithImpl<$Res, $Val extends PropertyModel>
     Object? id = null,
     Object? orgId = null,
     Object? customerId = null,
-    Object? addressLine1 = null,
-    Object? addressLine2 = freezed,
-    Object? city = null,
-    Object? state = null,
-    Object? postalCode = null,
-    Object? country = freezed,
+    Object? address = null,
     Object? latitude = freezed,
     Object? longitude = freezed,
-    Object? notes = freezed,
-    Object? accessInstructions = freezed,
-    Object? isPrimary = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -126,30 +100,10 @@ class _$PropertyModelCopyWithImpl<$Res, $Val extends PropertyModel>
           ? _value.customerId
           : customerId // ignore: cast_nullable_to_non_nullable
               as String,
-      addressLine1: null == addressLine1
-          ? _value.addressLine1
-          : addressLine1 // ignore: cast_nullable_to_non_nullable
+      address: null == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
               as String,
-      addressLine2: freezed == addressLine2
-          ? _value.addressLine2
-          : addressLine2 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      city: null == city
-          ? _value.city
-          : city // ignore: cast_nullable_to_non_nullable
-              as String,
-      state: null == state
-          ? _value.state
-          : state // ignore: cast_nullable_to_non_nullable
-              as String,
-      postalCode: null == postalCode
-          ? _value.postalCode
-          : postalCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      country: freezed == country
-          ? _value.country
-          : country // ignore: cast_nullable_to_non_nullable
-              as String?,
       latitude: freezed == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
@@ -158,18 +112,6 @@ class _$PropertyModelCopyWithImpl<$Res, $Val extends PropertyModel>
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double?,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
-      accessInstructions: freezed == accessInstructions
-          ? _value.accessInstructions
-          : accessInstructions // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPrimary: null == isPrimary
-          ? _value.isPrimary
-          : isPrimary // ignore: cast_nullable_to_non_nullable
-              as bool,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -194,17 +136,9 @@ abstract class _$$PropertyModelImplCopyWith<$Res>
       {String id,
       @JsonKey(name: 'org_id') String orgId,
       @JsonKey(name: 'customer_id') String customerId,
-      @JsonKey(name: 'address_line1') String addressLine1,
-      @JsonKey(name: 'address_line2') String? addressLine2,
-      String city,
-      String state,
-      @JsonKey(name: 'postal_code') String postalCode,
-      String? country,
+      String address,
       double? latitude,
       double? longitude,
-      String? notes,
-      @JsonKey(name: 'access_instructions') String? accessInstructions,
-      @JsonKey(name: 'is_primary') bool isPrimary,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
@@ -225,17 +159,9 @@ class __$$PropertyModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? orgId = null,
     Object? customerId = null,
-    Object? addressLine1 = null,
-    Object? addressLine2 = freezed,
-    Object? city = null,
-    Object? state = null,
-    Object? postalCode = null,
-    Object? country = freezed,
+    Object? address = null,
     Object? latitude = freezed,
     Object? longitude = freezed,
-    Object? notes = freezed,
-    Object? accessInstructions = freezed,
-    Object? isPrimary = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -252,30 +178,10 @@ class __$$PropertyModelImplCopyWithImpl<$Res>
           ? _value.customerId
           : customerId // ignore: cast_nullable_to_non_nullable
               as String,
-      addressLine1: null == addressLine1
-          ? _value.addressLine1
-          : addressLine1 // ignore: cast_nullable_to_non_nullable
+      address: null == address
+          ? _value.address
+          : address // ignore: cast_nullable_to_non_nullable
               as String,
-      addressLine2: freezed == addressLine2
-          ? _value.addressLine2
-          : addressLine2 // ignore: cast_nullable_to_non_nullable
-              as String?,
-      city: null == city
-          ? _value.city
-          : city // ignore: cast_nullable_to_non_nullable
-              as String,
-      state: null == state
-          ? _value.state
-          : state // ignore: cast_nullable_to_non_nullable
-              as String,
-      postalCode: null == postalCode
-          ? _value.postalCode
-          : postalCode // ignore: cast_nullable_to_non_nullable
-              as String,
-      country: freezed == country
-          ? _value.country
-          : country // ignore: cast_nullable_to_non_nullable
-              as String?,
       latitude: freezed == latitude
           ? _value.latitude
           : latitude // ignore: cast_nullable_to_non_nullable
@@ -284,18 +190,6 @@ class __$$PropertyModelImplCopyWithImpl<$Res>
           ? _value.longitude
           : longitude // ignore: cast_nullable_to_non_nullable
               as double?,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
-      accessInstructions: freezed == accessInstructions
-          ? _value.accessInstructions
-          : accessInstructions // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPrimary: null == isPrimary
-          ? _value.isPrimary
-          : isPrimary // ignore: cast_nullable_to_non_nullable
-              as bool,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -315,17 +209,9 @@ class _$PropertyModelImpl implements _PropertyModel {
       {required this.id,
       @JsonKey(name: 'org_id') required this.orgId,
       @JsonKey(name: 'customer_id') required this.customerId,
-      @JsonKey(name: 'address_line1') required this.addressLine1,
-      @JsonKey(name: 'address_line2') this.addressLine2,
-      required this.city,
-      required this.state,
-      @JsonKey(name: 'postal_code') required this.postalCode,
-      this.country,
+      required this.address,
       this.latitude,
       this.longitude,
-      this.notes,
-      @JsonKey(name: 'access_instructions') this.accessInstructions,
-      @JsonKey(name: 'is_primary') this.isPrimary = true,
       @JsonKey(name: 'created_at') required this.createdAt,
       @JsonKey(name: 'updated_at') required this.updatedAt});
 
@@ -341,32 +227,14 @@ class _$PropertyModelImpl implements _PropertyModel {
   @JsonKey(name: 'customer_id')
   final String customerId;
   @override
-  @JsonKey(name: 'address_line1')
-  final String addressLine1;
-  @override
-  @JsonKey(name: 'address_line2')
-  final String? addressLine2;
-  @override
-  final String city;
-  @override
-  final String state;
-  @override
-  @JsonKey(name: 'postal_code')
-  final String postalCode;
-  @override
-  final String? country;
+  final String address;
+// PRD: single address field (text)
   @override
   final double? latitude;
+// Valid range: -90 to 90
   @override
   final double? longitude;
-  @override
-  final String? notes;
-  @override
-  @JsonKey(name: 'access_instructions')
-  final String? accessInstructions;
-  @override
-  @JsonKey(name: 'is_primary')
-  final bool isPrimary;
+// Valid range: -180 to 180
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
@@ -376,7 +244,7 @@ class _$PropertyModelImpl implements _PropertyModel {
 
   @override
   String toString() {
-    return 'PropertyModel(id: $id, orgId: $orgId, customerId: $customerId, addressLine1: $addressLine1, addressLine2: $addressLine2, city: $city, state: $state, postalCode: $postalCode, country: $country, latitude: $latitude, longitude: $longitude, notes: $notes, accessInstructions: $accessInstructions, isPrimary: $isPrimary, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'PropertyModel(id: $id, orgId: $orgId, customerId: $customerId, address: $address, latitude: $latitude, longitude: $longitude, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -388,24 +256,11 @@ class _$PropertyModelImpl implements _PropertyModel {
             (identical(other.orgId, orgId) || other.orgId == orgId) &&
             (identical(other.customerId, customerId) ||
                 other.customerId == customerId) &&
-            (identical(other.addressLine1, addressLine1) ||
-                other.addressLine1 == addressLine1) &&
-            (identical(other.addressLine2, addressLine2) ||
-                other.addressLine2 == addressLine2) &&
-            (identical(other.city, city) || other.city == city) &&
-            (identical(other.state, state) || other.state == state) &&
-            (identical(other.postalCode, postalCode) ||
-                other.postalCode == postalCode) &&
-            (identical(other.country, country) || other.country == country) &&
+            (identical(other.address, address) || other.address == address) &&
             (identical(other.latitude, latitude) ||
                 other.latitude == latitude) &&
             (identical(other.longitude, longitude) ||
                 other.longitude == longitude) &&
-            (identical(other.notes, notes) || other.notes == notes) &&
-            (identical(other.accessInstructions, accessInstructions) ||
-                other.accessInstructions == accessInstructions) &&
-            (identical(other.isPrimary, isPrimary) ||
-                other.isPrimary == isPrimary) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -414,24 +269,8 @@ class _$PropertyModelImpl implements _PropertyModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      orgId,
-      customerId,
-      addressLine1,
-      addressLine2,
-      city,
-      state,
-      postalCode,
-      country,
-      latitude,
-      longitude,
-      notes,
-      accessInstructions,
-      isPrimary,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, customerId, address,
+      latitude, longitude, createdAt, updatedAt);
 
   /// Create a copy of PropertyModel
   /// with the given fields replaced by the non-null parameter values.
@@ -451,23 +290,15 @@ class _$PropertyModelImpl implements _PropertyModel {
 
 abstract class _PropertyModel implements PropertyModel {
   const factory _PropertyModel(
-      {required final String id,
-      @JsonKey(name: 'org_id') required final String orgId,
-      @JsonKey(name: 'customer_id') required final String customerId,
-      @JsonKey(name: 'address_line1') required final String addressLine1,
-      @JsonKey(name: 'address_line2') final String? addressLine2,
-      required final String city,
-      required final String state,
-      @JsonKey(name: 'postal_code') required final String postalCode,
-      final String? country,
-      final double? latitude,
-      final double? longitude,
-      final String? notes,
-      @JsonKey(name: 'access_instructions') final String? accessInstructions,
-      @JsonKey(name: 'is_primary') final bool isPrimary,
-      @JsonKey(name: 'created_at') required final DateTime createdAt,
-      @JsonKey(name: 'updated_at')
-      required final DateTime updatedAt}) = _$PropertyModelImpl;
+          {required final String id,
+          @JsonKey(name: 'org_id') required final String orgId,
+          @JsonKey(name: 'customer_id') required final String customerId,
+          required final String address,
+          final double? latitude,
+          final double? longitude,
+          @JsonKey(name: 'created_at') required final DateTime createdAt,
+          @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
+      _$PropertyModelImpl;
 
   factory _PropertyModel.fromJson(Map<String, dynamic> json) =
       _$PropertyModelImpl.fromJson;
@@ -481,32 +312,11 @@ abstract class _PropertyModel implements PropertyModel {
   @JsonKey(name: 'customer_id')
   String get customerId;
   @override
-  @JsonKey(name: 'address_line1')
-  String get addressLine1;
+  String get address; // PRD: single address field (text)
   @override
-  @JsonKey(name: 'address_line2')
-  String? get addressLine2;
+  double? get latitude; // Valid range: -90 to 90
   @override
-  String get city;
-  @override
-  String get state;
-  @override
-  @JsonKey(name: 'postal_code')
-  String get postalCode;
-  @override
-  String? get country;
-  @override
-  double? get latitude;
-  @override
-  double? get longitude;
-  @override
-  String? get notes;
-  @override
-  @JsonKey(name: 'access_instructions')
-  String? get accessInstructions;
-  @override
-  @JsonKey(name: 'is_primary')
-  bool get isPrimary;
+  double? get longitude; // Valid range: -180 to 180
   @override
   @JsonKey(name: 'created_at')
   DateTime get createdAt;

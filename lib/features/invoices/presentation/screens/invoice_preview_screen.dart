@@ -37,6 +37,15 @@ class InvoicePreviewScreen extends ConsumerWidget {
         ),
         backgroundColor: AppColors.primaryTextColor,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.whiteColor,
+            size: 22.sp,
+          ),
+          iconSize: 22.sp,
+          onPressed: () => context.pop(),
+        ),
         actions: [
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert, color: AppColors.whiteColor),

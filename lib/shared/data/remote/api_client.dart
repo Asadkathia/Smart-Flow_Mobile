@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Response, MultipartFile;
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../../core/services/logger.dart';
 import 'api_interceptor.dart';
 
 /// Dio Provider - Main HTTP client instance
@@ -25,14 +28,15 @@ final dioProvider = Provider<Dio>((ref) {
   // Add auth interceptor (pass Dio instance for retry reuse)
   dio.interceptors.add(ApiInterceptor(ref, dio));
 
-  // Add logging in debug mode
+  // Add minimal logging in debug mode (reduced from verbose to avoid clutter)
+  // Only log errors, not full request/response details
   dio.interceptors.add(
     PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
+      requestHeader: false,  // Disabled - headers already logged by ApiInterceptor
+      requestBody: false,    // Disabled - too verbose
+      responseBody: false,   // Disabled - too verbose  
       responseHeader: false,
-      error: true,
+      error: true,           // Keep error logging
       compact: true,
       maxWidth: 90,
     ),
@@ -44,20 +48,96 @@ final dioProvider = Provider<Dio>((ref) {
 /// API Client for SmartFlowPro
 /// 
 /// Provides type-safe API methods for all endpoints.
-/// Uses Dio for HTTP requests with automatic error handling.
+/// - Uses Supabase functions.invoke() for Edge Functions (handles ES256 JWT auth)
+/// - Uses Dio for REST API and other endpoints
 class ApiClient {
   final Dio _dio;
 
   ApiClient(this._dio);
+  
+  /// Check if path is an Edge Function call
+  bool _isEdgeFunction(String path) {
+    return path.contains('/functions/v1/') || path.startsWith('tech-');
+  }
+  
+  /// Extract function name from path
+  String _extractFunctionName(String path) {
+    // Handle full URL: https://xxx.supabase.co/functions/v1/tech-visits-today
+    if (path.contains('/functions/v1/')) {
+      final parts = path.split('/functions/v1/');
+      if (parts.length > 1) {
+        // Remove any trailing query params
+        return parts[1].split('?')[0];
+      }
+    }
+    // Handle relative path: tech-visits-today
+    return path.split('?')[0];
+  }
+  
+  /// Convert query parameters to string map
+  Map<String, String>? _toStringMap(Map<String, dynamic>? params) {
+    if (params == null || params.isEmpty) return null;
+    return params.map((k, v) => MapEntry(k, v.toString()));
+  }
 
   // ============ Generic Request Methods ============
 
   /// GET request
+  /// For Edge Functions, uses Supabase functions.invoke() to handle ES256 JWT auth
   Future<Response<T>> get<T>(
     String path, {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
+    // Use Supabase functions.invoke() for Edge Functions
+    if (_isEdgeFunction(path)) {
+      final functionName = _extractFunctionName(path);
+      Logger.debug('GET Edge Function via Supabase client: $functionName');
+      
+      try {
+        final response = await Supabase.instance.client.functions.invoke(
+          functionName,
+          headers: {'X-Channel': 'mobile_technician'},
+          method: HttpMethod.get,
+          queryParameters: _toStringMap(queryParameters),
+        ).timeout(
+          const Duration(seconds: 30),
+          onTimeout: () {
+            Logger.error('Edge Function GET timeout: $functionName after 30 seconds');
+            throw TimeoutException('Edge Function request timed out', const Duration(seconds: 30));
+          },
+        );
+        
+        // Convert to Dio Response format for compatibility
+        return Response<T>(
+          requestOptions: RequestOptions(path: path),
+          data: response.data as T,
+          statusCode: response.status,
+        );
+      } on TimeoutException catch (e) {
+        Logger.error('Edge Function GET timeout: $functionName', e);
+        throw DioException(
+          requestOptions: RequestOptions(path: path),
+          error: e,
+          type: DioExceptionType.connectionTimeout,
+          message: 'Request timed out after 30 seconds',
+        );
+      } catch (e) {
+        Logger.error('Edge Function GET error: $functionName', e);
+        // Convert FunctionException to DioException for consistent error handling
+        throw DioException(
+          requestOptions: RequestOptions(path: path),
+          error: e,
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: path),
+            statusCode: 500,
+            data: {'error': e.toString()},
+          ),
+        );
+      }
+    }
+    
     return _dio.get<T>(
       path,
       queryParameters: queryParameters,
@@ -66,12 +146,48 @@ class ApiClient {
   }
 
   /// POST request
+  /// For Edge Functions, uses Supabase functions.invoke() to handle ES256 JWT auth
   Future<Response<T>> post<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
+    // Use Supabase functions.invoke() for Edge Functions
+    if (_isEdgeFunction(path)) {
+      final functionName = _extractFunctionName(path);
+      Logger.debug('POST Edge Function via Supabase client: $functionName');
+      
+      try {
+        final response = await Supabase.instance.client.functions.invoke(
+          functionName,
+          body: data is Map<String, dynamic> ? data : null,
+          headers: {'X-Channel': 'mobile_technician'},
+          method: HttpMethod.post,
+        );
+        
+        // Convert to Dio Response format for compatibility
+        return Response<T>(
+          requestOptions: RequestOptions(path: path),
+          data: response.data as T,
+          statusCode: response.status,
+        );
+      } catch (e) {
+        Logger.error('Edge Function POST error: $functionName', e);
+        // Convert FunctionException to DioException for consistent error handling
+        throw DioException(
+          requestOptions: RequestOptions(path: path),
+          error: e,
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(path: path),
+            statusCode: 500,
+            data: {'error': e.toString()},
+          ),
+        );
+      }
+    }
+    
     return _dio.post<T>(
       path,
       data: data,

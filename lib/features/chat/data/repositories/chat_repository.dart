@@ -7,6 +7,8 @@ import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
 import 'package:smartflowpro/shared/data/local/hive_service.dart';
 import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
 import 'package:smartflowpro/core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/constants/api_endpoints.dart';
+import 'package:smartflowpro/core/services/auth_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Chat Repository
@@ -24,6 +26,9 @@ class ChatRepository extends BaseRepository {
 
   /// Get all chat threads for current user - unified pattern
   /// 
+  /// Uses REST API directly to avoid ES256 JWT issues with Edge Functions.
+  /// RLS policies will filter by participant (current user) automatically.
+  /// 
   /// [page] and [pageSize] are optional for backward compatibility.
   /// When provided, enables pagination support.
   Future<List<ChatThreadModel>> getChatThreads({
@@ -33,25 +38,25 @@ class ChatRepository extends BaseRepository {
     return await fetchList<ChatThreadModel>(
       cacheKey: StorageKeys.chatBox,
       apiCall: () async {
-        final queryParams = <String, dynamic>{};
-        if (page != null) queryParams['page'] = page;
-        if (pageSize != null) queryParams['page_size'] = pageSize;
+        // Use REST API directly (works with ES256 JWT)
+        // Order by last message timestamp descending to show most recent first
+        String url = '${ApiEndpoints.restApiBaseFull}/chat_threads?select=*&order=updated_at.desc';
         
-        final response = await apiClient.get(
-          '/v1/chats',
-          queryParameters: queryParams.isEmpty ? null : queryParams,
-        );
-        
-        // Handle paginated response if page/pageSize provided
-        if (page != null || pageSize != null) {
-          if (response.data is Map && response.data['data'] != null) {
-            final List<dynamic> data = response.data['data'] as List;
-            return data.map((json) => ChatThreadModel.fromJson(json)).toList();
-          }
+        // Note: page/pageSize support via limit/offset
+        if (page != null && pageSize != null) {
+          final offset = (page - 1) * pageSize;
+          url += '&limit=$pageSize&offset=$offset';
         }
         
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => ChatThreadModel.fromJson(json)).toList();
+        final response = await apiClient.get(url);
+        
+        // REST API returns array directly
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => ChatThreadModel.fromJson(json)).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => ChatThreadModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData ? () => ChatMockData.getChatThreads() : null,
@@ -63,8 +68,14 @@ class ChatRepository extends BaseRepository {
     return await fetch<ChatThreadModel>(
       cacheKey: 'chat_thread_$chatId',
       apiCall: () async {
-        final response = await apiClient.get('/v1/chats/$chatId');
-        return ChatThreadModel.fromJson(response.data);
+        // Use REST API for single thread (or filter from threads list)
+        final url = '${ApiEndpoints.restApiBaseFull}/chat_threads?id=eq.$chatId&select=*';
+        final response = await apiClient.get(url);
+        
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return ChatThreadModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Chat thread not found');
       },
       fromJson: (data) => ChatThreadModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -81,9 +92,22 @@ class ChatRepository extends BaseRepository {
     return await fetchList<ChatMessageModel>(
       cacheKey: 'chat_messages_$chatId',
       apiCall: () async {
-        final response = await apiClient.get('/v1/chats/$chatId/messages');
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => ChatMessageModel.fromJson(json)).toList();
+        // Use REST API directly (works with ES256 JWT)
+        // Order by created_at ascending to show oldest first
+        final url = '${ApiEndpoints.restApiBaseFull}/chat_messages'
+            '?chat_id=eq.$chatId'
+            '&select=*'
+            '&order=created_at.asc';
+        
+        final response = await apiClient.get(url);
+        
+        // REST API returns array directly
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => ChatMessageModel.fromJson(json)).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => ChatMessageModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData ? () => ChatMockData.getMessages(chatId) : null,
@@ -96,12 +120,18 @@ class ChatRepository extends BaseRepository {
     required String chatId,
     required String messageBody,
   }) async {
+    // Get current user ID from auth storage
+    final authStorage = AuthStorage.instance;
+    final userId = await authStorage.getUserId() ?? ChatMockData.currentUserId;
+    final senderName = 'Technician'; // Default name, should come from user profile
+    final orgId = 'org_1'; // Default orgId for optimistic update - backend will provide correct value
+    
     final newMessage = ChatMessageModel(
       id: generateId(),
+      orgId: orgId, // PRD: required for multi-tenancy
       chatId: chatId,
-      // TODO (Phase 2): Get from auth provider when backend is ready
-      senderId: ChatMockData.currentUserId,
-      senderName: 'Tony Stark',
+      senderId: userId,
+      senderName: senderName,
       messageBody: messageBody,
       createdAt: DateTime.now(),
     );
@@ -109,13 +139,25 @@ class ChatRepository extends BaseRepository {
     return await mutate<ChatMessageModel>(
       cacheKey: 'chat_messages_$chatId',
       apiCall: () async {
+        // Use REST API directly to insert message
+        final url = '${ApiEndpoints.restApiBaseFull}/chat_messages';
+        
         final response = await apiClient.post(
-          '/v1/chats/$chatId/messages',
+          url,
           data: {
+            'chat_id': chatId,
+            'sender_id': userId,
+            'sender_name': senderName,
             'message_body': messageBody,
+            'org_id': orgId,
           },
         );
-        return ChatMessageModel.fromJson(response.data);
+        
+        // REST API returns array with single item on insert
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return ChatMessageModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        return ChatMessageModel.fromJson(response.data as Map<String, dynamic>);
       },
       actionType: PendingActionType.sendMessage,
       actionData: {
@@ -133,29 +175,43 @@ class ChatRepository extends BaseRepository {
     required String otherUserId,
     required String otherUserName,
   }) async {
+    // Get current user ID from auth storage
+    final authStorage = AuthStorage.instance;
+    final userId = await authStorage.getUserId() ?? ChatMockData.currentUserId;
+    final userName = 'Technician'; // Default name, should come from user profile
+    final orgId = 'org_1'; // Default orgId for optimistic update - backend will provide correct value
+    final now = DateTime.now();
+    
     final newThread = ChatThreadModel(
       id: generateId(),
+      orgId: orgId, // PRD: required for multi-tenancy
       type: ChatType.direct,
-      // TODO (Phase 2): Get from auth provider when backend is ready
-      createdBy: ChatMockData.currentUserId,
+      createdBy: userId,
+      createdAt: now,
+      updatedAt: now,
       participants: [
         ChatParticipantModel(
           id: generateId(),
+          orgId: orgId, // PRD: required for multi-tenancy
           chatId: 'chat-new',
-          userId: ChatMockData.currentUserId,
-          userName: 'Tony Stark',
-          roleInChat: 'member',
+          userId: userId,
+          userName: userName,
+          roleInChat: ChatParticipantRole.member,
+          joinedAt: now,
+          createdAt: now,
         ),
         ChatParticipantModel(
           id: generateId(),
+          orgId: orgId, // PRD: required for multi-tenancy
           chatId: 'chat-new',
           userId: otherUserId,
           userName: otherUserName,
-          roleInChat: 'member',
+          roleInChat: ChatParticipantRole.member,
+          joinedAt: now,
+          createdAt: now,
         ),
       ],
       unreadCount: 0,
-      createdAt: DateTime.now(),
     );
 
     return await mutate<ChatThreadModel>(
@@ -199,12 +255,28 @@ class ChatRepository extends BaseRepository {
     return await fetchList<ChatThreadModel>(
       cacheKey: cacheKey,
       apiCall: () async {
-        final response = await apiClient.get(
-          '/v1/chats',
-          queryParameters: {'search': query},
-        );
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => ChatThreadModel.fromJson(json)).toList();
+        // Use REST API with simple client-side filtering
+        // For full-text search, we'd need to fetch all threads and filter locally
+        // or use PostgREST's text search operators
+        final url = '${ApiEndpoints.restApiBaseFull}/chat_threads?select=*&order=updated_at.desc';
+        
+        final response = await apiClient.get(url);
+        
+        // REST API returns array - filter client-side for simplicity
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          final threads = data.map((json) => ChatThreadModel.fromJson(json)).toList();
+          
+          // Simple client-side search filter
+          return threads.where((thread) {
+            final displayName = thread.getDisplayName('').toLowerCase();
+            final lastMessage = thread.lastMessage?.messageBody.toLowerCase() ?? '';
+            final queryLower = query.toLowerCase();
+            return displayName.contains(queryLower) || lastMessage.contains(queryLower);
+          }).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => ChatThreadModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../providers/job_details_provider.dart';
@@ -52,23 +53,25 @@ class _JobDetailsScreenState extends ConsumerState<JobDetailsScreen> {
     
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: AppColors.backgroundColor,
+        elevation: 0,
+        automaticallyImplyLeading: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.primaryTextColor),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.call_outlined, color: AppColors.primaryTextColor),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with back button
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: Icon(Icons.arrow_back_ios_new_rounded),
-                ),
-                Spacer(),
-                IconButton(onPressed: () {}, icon: Icon(Icons.call_outlined)),
-              ],
-            ),
             // Scrollable content area
             Expanded(
               child: SingleChildScrollView(

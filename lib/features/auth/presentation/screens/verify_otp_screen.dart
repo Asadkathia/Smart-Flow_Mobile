@@ -8,6 +8,7 @@ import 'package:smartflowpro/shared/presentation/widgets/build_basic_button.dart
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../providers/verify_otp_provider.dart';
+import '../providers/auth_provider.dart';
 import 'package:smartflowpro/router/app_router.dart';
 
 /// Verify OTP Screen - Riverpod Version
@@ -37,22 +38,50 @@ class _VerifyOtpScreenState extends ConsumerState<VerifyOtpScreen> {
   Future<void> _verifyOtp() async {
     if (formKey.currentState!.validate()) {
       final otp = otpController.text.trim();
+      final email = widget.email;
       
-      // TODO: Implement actual OTP verification with authProvider
-      // For now, just navigate to reset password
+      if (email.isEmpty) {
+        if (mounted) {
+          context.showErrorSnackBar('Email is required');
+        }
+        return;
+      }
+      
+      final success = await ref.read(authProvider.notifier).verifyOtp(email, otp);
+      
       if (mounted) {
-        context.showSuccessSnackBar("OTP Verified Successfully!");
-        context.go(AppRoutePaths.resetPassword);
+        if (success) {
+          context.showSuccessSnackBar("OTP Verified Successfully!");
+          context.go(AppRoutePaths.resetPassword, extra: {'email': email, 'otp': otp});
+        } else {
+          final error = ref.read(authProvider).error;
+          context.showErrorSnackBar(error ?? 'Invalid OTP. Please try again.');
+        }
       }
     }
   }
 
   void _resendOtp() {
-    // TODO: Implement actual OTP resend with authProvider
-    ref.read(otpTimerProvider.notifier).reset();
-    if (mounted) {
-      context.showSuccessSnackBar("A new OTP has been sent to your email.");
+    final email = widget.email;
+    if (email.isEmpty) {
+      if (mounted) {
+        context.showErrorSnackBar('Email is required');
+      }
+      return;
     }
+    
+    // Resend OTP by calling forgotPassword again
+    ref.read(authProvider.notifier).forgotPassword(email).then((success) {
+      ref.read(otpTimerProvider.notifier).reset();
+      if (mounted) {
+        if (success) {
+          context.showSuccessSnackBar("A new OTP has been sent to your email.");
+        } else {
+          final error = ref.read(authProvider).error;
+          context.showErrorSnackBar(error ?? 'Failed to resend OTP. Please try again.');
+        }
+      }
+    });
   }
 
   @override

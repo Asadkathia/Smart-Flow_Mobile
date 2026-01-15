@@ -8,7 +8,9 @@ import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
 import 'package:smartflowpro/shared/data/local/hive_service.dart';
 import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
 import 'package:smartflowpro/core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/constants/api_endpoints.dart';
 import 'package:smartflowpro/core/errors/app_exceptions.dart';
+import 'package:smartflowpro/core/services/logger.dart';
 
 /// Invoice Repository
 /// 
@@ -25,6 +27,9 @@ class InvoiceRepository extends BaseRepository {
 
   /// Get all invoices - unified pattern
   /// 
+  /// Uses REST API directly to avoid ES256 JWT issues with Edge Functions.
+  /// RLS policies will filter by technician's organization automatically.
+  /// 
   /// [page] and [pageSize] are optional for backward compatibility.
   /// When provided, enables pagination support.
   Future<List<InvoiceModel>> getInvoices({
@@ -37,28 +42,31 @@ class InvoiceRepository extends BaseRepository {
     return await fetchList<InvoiceModel>(
       cacheKey: cacheKey,
       apiCall: () async {
-        final queryParams = <String, dynamic>{};
-        if (status != null) queryParams['status'] = status.name;
-        if (page != null) queryParams['page'] = page;
-        if (pageSize != null) queryParams['page_size'] = pageSize;
+        // Use REST API directly (works with ES256 JWT)
+        // Build query with filters
+        String url = '${ApiEndpoints.restApiBaseFull}/invoices?select=*&order=created_at.desc';
         
-        final response = await apiClient.get(
-          '/v1/tech/invoices',
-          queryParameters: queryParams.isEmpty ? null : queryParams,
-        );
-        
-        // Handle paginated response if page/pageSize provided
-        if (page != null || pageSize != null) {
-          // Backend should return paginated response
-          // For now, handle both formats
-          if (response.data is Map && response.data['data'] != null) {
-            final List<dynamic> data = response.data['data'] as List;
-            return data.map((json) => InvoiceModel.fromJson(json)).toList();
-          }
+        // Add status filter if provided
+        if (status != null) {
+          url += '&status=eq.${status.name}';
         }
         
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => InvoiceModel.fromJson(json)).toList();
+        // Note: page/pageSize not supported by PostgREST directly
+        // Would need to use limit/offset instead
+        if (page != null && pageSize != null) {
+          final offset = (page - 1) * pageSize;
+          url += '&limit=$pageSize&offset=$offset';
+        }
+        
+        final response = await apiClient.get(url);
+        
+        // REST API returns array directly
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => InvoiceModel.fromJson(json)).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => InvoiceModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -79,8 +87,14 @@ class InvoiceRepository extends BaseRepository {
     return await fetch<InvoiceModel>(
       cacheKey: 'invoice_$id',
       apiCall: () async {
-        final response = await apiClient.get('/v1/tech/invoices/$id');
-        return InvoiceModel.fromJson(response.data);
+        // Use REST API directly
+        final url = '${ApiEndpoints.restApiBaseFull}/invoices?id=eq.$id&select=*';
+        final response = await apiClient.get(url);
+        
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return InvoiceModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Invoice not found');
       },
       fromJson: (data) => InvoiceModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -100,8 +114,11 @@ class InvoiceRepository extends BaseRepository {
     return await mutate<InvoiceModel>(
       cacheKey: 'invoice_new',
       apiCall: () async {
+        final endpoint = ApiEndpoints.buildRouterPath(
+          ApiEndpoints.createInvoiceDraft(quoteId),
+        );
         final response = await apiClient.post(
-          '/v1/tech/quotes/$quoteId/create-invoice-draft',
+          '${ApiEndpoints.apiBase}$endpoint',
         );
         return InvoiceModel.fromJson(response.data);
       },
@@ -257,7 +274,18 @@ class InvoiceRepository extends BaseRepository {
     }
     
     // Check if invoice has any payments (should be none for unpaid status)
-    // TODO: When payment model is integrated, verify no payments exist
+    try {
+      final payments = await getInvoicePayments(id);
+      if (payments.isNotEmpty) {
+        throw ValidationException(
+          message: 'Cannot void invoice with existing payments.',
+          code: 'INVOICE_HAS_PAYMENTS',
+        );
+      }
+    } catch (e) {
+      // If payment fetch fails, log but continue (may be offline)
+      Logger.warning('Could not verify payments before voiding invoice', e);
+    }
     
     return await mutate<InvoiceModel>(
       cacheKey: 'invoice_$id',

@@ -12,13 +12,7 @@ _$NoteModelImpl _$$NoteModelImplFromJson(Map<String, dynamic> json) =>
       orgId: json['org_id'] as String,
       visitId: json['visit_id'] as String,
       authorId: json['author_id'] as String,
-      authorName: json['author_name'] as String?,
-      content: json['body'] as String,
-      isInternal: json['is_internal'] as bool? ?? false,
-      imageUrls: (json['image_urls'] as List<dynamic>?)
-              ?.map((e) => e as String)
-              .toList() ??
-          const [],
+      body: json['body'] as String,
       version: (json['version'] as num?)?.toInt() ?? 1,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -30,10 +24,7 @@ Map<String, dynamic> _$$NoteModelImplToJson(_$NoteModelImpl instance) =>
       'org_id': instance.orgId,
       'visit_id': instance.visitId,
       'author_id': instance.authorId,
-      'author_name': instance.authorName,
-      'body': instance.content,
-      'is_internal': instance.isInternal,
-      'image_urls': instance.imageUrls,
+      'body': instance.body,
       'version': instance.version,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),

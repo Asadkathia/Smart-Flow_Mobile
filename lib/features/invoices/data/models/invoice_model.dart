@@ -82,36 +82,79 @@ extension InvoiceModelX on InvoiceModel {
   bool get isFinalized => status != InvoiceStatus.draft;
 
   /// Get remaining balance (for partially paid invoices)
+  /// 
+  /// Note: This is a computed property. For accurate calculation,
+  /// use PaymentValidator.calculateRemainingBalance() with actual payments list.
   double get remainingBalance {
+    // This is a fallback calculation based on status
+    // For accurate balance, fetch payments and use PaymentValidator
+    if (status == InvoiceStatus.paid || status == InvoiceStatus.void_ || status == InvoiceStatus.refunded) {
+      return 0.0;
+    }
     if (status == InvoiceStatus.partiallyPaid) {
-      // TODO: Calculate from payments when payment model is integrated
-      return total * 0.5; // Mock: assume 50% paid
+      // Cannot calculate without payments - return placeholder
+      // Callers should use PaymentValidator.calculateRemainingBalance() with payments
+      return total * 0.5; // Placeholder - should be calculated from payments
     }
     return status == InvoiceStatus.unpaid ? total : 0.0;
   }
 
   /// Get paid amount
+  /// 
+  /// Note: This is a computed property. For accurate calculation,
+  /// use PaymentValidator with actual payments list.
   double get paidAmount {
     if (status == InvoiceStatus.paid) return total;
     if (status == InvoiceStatus.partiallyPaid) {
+      // Cannot calculate without payments - return placeholder
+      // Callers should fetch payments and calculate
       return total - remainingBalance;
     }
     return 0.0;
   }
+
+  /// Calculate remaining balance from payments list
+  /// 
+  /// Use this method when you have the payments list available.
+  static double calculateRemainingBalanceFromPayments(
+    InvoiceModel invoice,
+    List<PaymentModel> payments,
+  ) {
+    final totalPaid = payments.fold<double>(
+      0.0,
+      (sum, payment) => sum + payment.amount,
+    );
+    final remaining = invoice.total - totalPaid;
+    return remaining > 0 ? remaining : 0.0;
+  }
+
+  /// Calculate paid amount from payments list
+  /// 
+  /// Use this method when you have the payments list available.
+  static double calculatePaidAmountFromPayments(List<PaymentModel> payments) {
+    return payments.fold<double>(
+      0.0,
+      (sum, payment) => sum + payment.amount,
+    );
+  }
 }
 
-/// Payment Model (for recording payments against invoices)
+/// Payment Model (PRD Section 3.13)
+/// 
+/// For recording payments against invoices.
 @freezed
 class PaymentModel with _$PaymentModel {
   const factory PaymentModel({
     required String id,
-    required String invoiceId,
-    required double amount,
-    required PaymentMethod method,
-    String? reference,
-    String? receivedBy,
-    DateTime? receivedAt,
-    DateTime? createdAt,
+    @JsonKey(name: 'org_id') required String orgId, // PRD: required for multi-tenancy
+    @JsonKey(name: 'invoice_id') required String invoiceId,
+    required double amount, // Must be > 0, cannot exceed remaining invoice balance
+    required PaymentMethod method, // cash, bank_transfer, card, stripe_link
+    String? reference, // Optional reference number
+    @JsonKey(name: 'received_by') required String receivedBy, // User who recorded the payment
+    @JsonKey(name: 'received_at') required DateTime receivedAt, // When payment was received
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt, // PRD: required
   }) = _PaymentModel;
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) =>

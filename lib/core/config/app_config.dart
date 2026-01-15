@@ -13,19 +13,32 @@ class AppConfig {
   
   /// Use mock data instead of API calls
   /// Set via environment variable: USE_MOCK_DATA=true
-  /// Auto-enables in development mode if not explicitly set
+  /// Auto-enables if Supabase is not configured or in development mode
   /// 
-  /// Always returns true in development to ensure mock data is available
+  /// Priority:
+  /// 1. If USE_MOCK_DATA env var is explicitly set, use that value
+  /// 2. If Supabase is not configured, use mock data (fallback)
+  /// 3. If in development mode, use mock data (default)
+  /// 4. Otherwise, use real API (production with Supabase configured)
   static bool get useMockData {
-    const envValue = bool.fromEnvironment('USE_MOCK_DATA');
-    // If explicitly set to false, respect it
-    if (envValue == false) return false;
-    // If explicitly set to true, use it
-    if (envValue == true) return true;
-    // Auto-enable in development if not explicitly set
-    // Also enable if Supabase is not configured (no valid URL/key)
-    // Default to true for development to ensure mock data works
-    return true; // Always use mock data in development
+    // Always use mock data if Supabase is not properly configured
+    if (!SupabaseConfig.isValid) {
+      return true;
+    }
+    
+    // Check for explicit environment variable override
+    const envValue = bool.fromEnvironment('USE_MOCK_DATA', defaultValue: false);
+    if (envValue) {
+      return true;
+    }
+    
+    // In development mode, default to mock data
+    if (SupabaseConfig.isDevelopment) {
+      return true;
+    }
+    
+    // In production/staging with valid Supabase config, use real API
+    return false;
   }
   
   /// Enable offline queue for mutations
@@ -46,11 +59,8 @@ class AppConfig {
   static bool get isDevelopment => SupabaseConfig.isDevelopment || useMockData;
   
   /// Check if we should use mock data
-  /// Directly returns true in development to avoid const evaluation issues
-  static bool get shouldUseMockData {
-    // Force return true in development to ensure mock data works
-    return true;
-  }
+  /// Delegates to useMockData getter for consistency
+  static bool get shouldUseMockData => useMockData;
   
   /// Check if we're in production mode
   static bool get isProduction => SupabaseConfig.isProduction && !useMockData;

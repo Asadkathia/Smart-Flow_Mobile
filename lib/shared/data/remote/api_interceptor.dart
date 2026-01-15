@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/storage_keys.dart';
 import '../../../core/config/supabase_config.dart';
 import '../../../core/services/auth_storage.dart';
@@ -28,9 +29,23 @@ class ApiInterceptor extends Interceptor {
     // Add Supabase apikey header (required for all requests)
     options.headers['apikey'] = SupabaseConfig.supabaseAnonKey;
 
-    // Add auth token if available (Supabase JWT) - using secure storage
-    final authStorage = AuthStorage.instance;
-    final token = await authStorage.getAccessToken();
+    // Add auth token if available (Supabase JWT)
+    // Priority: Supabase session > Secure storage
+    String? token;
+    
+    if (SupabaseConfig.isValid) {
+      // Try to get token from Supabase session first
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session != null) {
+        token = session.accessToken;
+      }
+    }
+    
+    // Fallback to secure storage if Supabase token not available
+    if (token == null || token.isEmpty) {
+      final authStorage = AuthStorage.instance;
+      token = await authStorage.getAccessToken();
+    }
     
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -39,8 +54,12 @@ class ApiInterceptor extends Interceptor {
     // Add common headers
     options.headers['Accept'] = 'application/json';
     options.headers['Content-Type'] = 'application/json';
+    
+    // Add channel header for mobile_technician (PRD Section 4.1)
+    // This ensures backend can validate channel-based access control
+    options.headers['X-Channel'] = 'mobile_technician';
 
-    Logger.network(options.method, options.uri.toString(), options.headers);
+    Logger.network(options.method, options.uri.toString());
     return handler.next(options);
   }
 
@@ -60,13 +79,33 @@ class ApiInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    Logger.error(
-      'API Error: ${err.requestOptions.method} ${err.requestOptions.uri}',
-      err.error,
-      err.stackTrace,
-    );
+    final statusCode = err.response?.statusCode;
+    final errorBody = err.response?.data;
     
-    if (err.response?.statusCode == 401) {
+    // Concise error logging without stack traces (reduces log clutter)
+    Logger.error('API Error: ${err.requestOptions.method} ${err.requestOptions.uri} -> $statusCode');
+    
+    // Log error response body for debugging
+    if (errorBody != null) {
+      // Handle both gateway errors {code, message} and our format {error: {code, message}}
+      if (errorBody is Map) {
+        final gatewayMessage = errorBody['message'];
+        final gatewayCode = errorBody['code'];
+        final errorObj = errorBody['error'];
+        
+        if (gatewayMessage != null && gatewayCode != null) {
+          // Gateway-level error (like "Invalid JWT")
+          Logger.error('Gateway Error: [$gatewayCode] $gatewayMessage');
+        } else if (errorObj is Map) {
+          // Our Edge Function error format
+          Logger.error('Edge Function Error: [${errorObj['code']}] ${errorObj['message']}');
+        } else {
+          Logger.debug('Error Body: $errorBody');
+        }
+      }
+    }
+    
+    if (statusCode == 401) {
       Logger.warning('401 Unauthorized - Attempting token refresh');
       // Try to refresh token
       final refreshed = await _tryRefreshToken();
@@ -108,10 +147,33 @@ class ApiInterceptor extends Interceptor {
 
   /// Attempt to refresh the auth token using Supabase Auth
   /// 
-  /// Supabase Auth provides token refresh via POST /auth/v1/token?grant_type=refresh_token
-  /// Uses the same Dio instance to avoid creating new connections
+  /// Uses Supabase Flutter SDK if available, otherwise falls back to API call
   Future<bool> _tryRefreshToken() async {
     try {
+      // Try Supabase SDK refresh first
+      if (SupabaseConfig.isValid) {
+        try {
+          final session = await Supabase.instance.client.auth.refreshSession();
+          if (session.session != null) {
+            // Save tokens to secure storage for consistency
+            final authStorage = AuthStorage.instance;
+            await authStorage.saveAccessToken(session.session!.accessToken);
+            await authStorage.saveRefreshToken(session.session!.refreshToken ?? '');
+            
+            if (session.session!.expiresAt != null) {
+              final expiry = DateTime.fromMillisecondsSinceEpoch(session.session!.expiresAt! * 1000);
+              await authStorage.saveTokenExpiry(expiry);
+            }
+            
+            Logger.info('Token refresh successful via Supabase SDK');
+            return true;
+          }
+        } catch (e) {
+          Logger.warning('Supabase SDK refresh failed, trying API fallback', e);
+        }
+      }
+      
+      // Fallback to API refresh
       final authStorage = AuthStorage.instance;
       final refreshToken = await authStorage.getRefreshToken();
       
@@ -120,11 +182,8 @@ class ApiInterceptor extends Interceptor {
         return false;
       }
 
-      Logger.debug('Attempting token refresh');
+      Logger.debug('Attempting token refresh via API');
 
-      // Use the same Dio instance but with different base URL for auth endpoint
-      // Create a temporary Dio instance only for auth (different base URL)
-      // This is acceptable as it's a one-time auth operation
       final authDio = Dio(BaseOptions(
         baseUrl: SupabaseConfig.supabaseUrl,
         headers: {
@@ -148,7 +207,7 @@ class ApiInterceptor extends Interceptor {
           if (newRefreshToken != null) {
             await authStorage.saveRefreshToken(newRefreshToken);
           }
-          Logger.info('Token refresh successful');
+          Logger.info('Token refresh successful via API');
           return true;
         }
       }

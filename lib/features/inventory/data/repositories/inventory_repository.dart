@@ -7,8 +7,13 @@ import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
 import 'package:smartflowpro/shared/data/local/hive_service.dart';
 import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
 import 'package:smartflowpro/shared/data/services/media_upload_service.dart';
+import 'package:smartflowpro/shared/data/services/inventory_upload_service.dart';
 import 'package:smartflowpro/core/constants/storage_keys.dart';
+import 'package:smartflowpro/core/constants/api_endpoints.dart';
+import 'package:smartflowpro/core/config/app_config.dart';
+import 'package:smartflowpro/core/config/supabase_config.dart';
 import 'package:smartflowpro/core/errors/error_handler.dart';
+import 'package:smartflowpro/core/services/logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Inventory Repository
@@ -18,6 +23,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// API → Cache → Mock (dev only)
 class InventoryRepository extends BaseRepository {
   final MediaUploadService? _mediaUploadService;
+  final InventoryUploadService? _inventoryUploadService;
 
   InventoryRepository(
     ApiClient apiClient,
@@ -25,7 +31,9 @@ class InventoryRepository extends BaseRepository {
     OfflineQueueService offlineQueue, {
     bool? useMockData,
     MediaUploadService? mediaUploadService,
+    InventoryUploadService? inventoryUploadService,
   }) : _mediaUploadService = mediaUploadService,
+       _inventoryUploadService = inventoryUploadService,
        super(apiClient, cache, offlineQueue, useMockData: useMockData);
 
   /// Get all inventory items - unified pattern
@@ -40,18 +48,35 @@ class InventoryRepository extends BaseRepository {
     return await fetchList<InventoryItemModel>(
       cacheKey: cacheKey,
       apiCall: () async {
+        // Use REST API directly for better performance (RLS handles security)
+        final url = '${ApiEndpoints.restApiBaseFull}/inventory_items';
+        
+        final queryParams = <String, dynamic>{
+          'select': '*',
+          'active': 'eq.true',
+          'order': 'name.asc',
+        };
+        
+        if (category != null) queryParams['category'] = 'eq.$category';
+        if (isActive != null) queryParams['active'] = 'eq.$isActive';
+        if (page != null && pageSize != null) {
+          final offset = (page - 1) * pageSize;
+          queryParams['limit'] = pageSize;
+          queryParams['offset'] = offset;
+        }
+        
         final response = await apiClient.get(
-          '/v1/tech/inventory/items',
-          queryParameters: {
-            if (category != null) 'category': category,
-            if (isActive != null) 'is_active': isActive,
-            if (page != null) 'page': page,
-            if (pageSize != null) 'page_size': pageSize,
-          },
+          url,
+          queryParameters: queryParams,
         );
         
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => InventoryItemModel.fromJson(json)).toList();
+        // REST API returns array directly
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => InventoryItemModel.fromJson(json)).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => InventoryItemModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -75,8 +100,14 @@ class InventoryRepository extends BaseRepository {
     return await fetch<InventoryItemModel>(
       cacheKey: 'inventory_item_$id',
       apiCall: () async {
-        final response = await apiClient.get('/v1/tech/inventory/items/$id');
-        return InventoryItemModel.fromJson(response.data);
+        // Use REST API for single item (no single-item Edge Function)
+        final url = '${ApiEndpoints.restApiBaseFull}/inventory_items?id=eq.$id&select=*';
+        final response = await apiClient.get(url);
+        
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return InventoryItemModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Inventory item not found');
       },
       fromJson: (data) => InventoryItemModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -98,24 +129,27 @@ class InventoryRepository extends BaseRepository {
     String? category,
     String? description,
     File? image,
+    String? createdBy,
   }) async {
     // Upload image first if provided
     String? imageUrl;
     String? tempItemId;
     
-    if (image != null && _mediaUploadService != null) {
+    if (image != null && _inventoryUploadService != null) {
       try {
-        // Generate temporary ID for upload path
+        // Generate temp ID for storage path
         tempItemId = generateId();
-        imageUrl = await _mediaUploadService!.uploadImage(
-          image,
-          'inventory/$tempItemId',
-          entityId: tempItemId,
-          entityType: 'inventory',
+        
+        // Upload image to Supabase Storage
+        imageUrl = await _inventoryUploadService.uploadInventoryImage(
+          orgId: orgId,
+          itemId: tempItemId,
+          file: image,
         );
       } catch (e) {
-        // If upload fails, set pending flag for offline retry
-        imageUrl = 'pending_upload';
+        // If upload fails, continue without image
+        // The offline queue will handle retry when online
+        imageUrl = null;
       }
     }
 
@@ -138,11 +172,34 @@ class InventoryRepository extends BaseRepository {
     return await mutate<InventoryItemModel>(
       cacheKey: StorageKeys.inventoryListCache,
       apiCall: () async {
+        // Use REST API directly for better performance (RLS handles security)
+        final url = '${ApiEndpoints.restApiBaseFull}/inventory_items';
+        
+        Logger.debug('Creating inventory item with org_id: $orgId, created_by: $createdBy');
+        
         final response = await apiClient.post(
-          '/v1/tech/inventory/items',
-          data: newItem.toJson(),
+          url,
+          data: {
+            'org_id': orgId, // Required for RLS policy validation
+            if (createdBy != null) 'created_by': createdBy,
+            'name': name,
+            'unit': unit,
+            'sale_price': price,
+            'taxable_default': true,
+            'active': true,
+            if (sku != null) 'sku': sku,
+            if (category != null) 'category': category,
+            if (description != null) 'description': description,
+            if (imageUrl != null && imageUrl != 'pending_upload') 'image_path': imageUrl,
+          },
         );
-        return InventoryItemModel.fromJson(response.data);
+        
+        
+        // REST API returns the created item directly (array with single item)
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return InventoryItemModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        return InventoryItemModel.fromJson(response.data as Map<String, dynamic>);
       },
       actionType: PendingActionType.addInventory,
       actionData: {
@@ -169,18 +226,21 @@ class InventoryRepository extends BaseRepository {
     String? imageUrl;
     String? tempItemId;
     
-    if (_mediaUploadService != null) {
+    if (image != null && _inventoryUploadService != null) {
       try {
+        // Generate temp ID for storage path
         tempItemId = generateId();
-        imageUrl = await _mediaUploadService!.uploadImage(
-          image,
-          'inventory/$tempItemId',
-          entityId: tempItemId,
-          entityType: 'inventory',
+        
+        // Upload image to Supabase Storage
+        imageUrl = await _inventoryUploadService.uploadInventoryImage(
+          orgId: orgId,
+          itemId: tempItemId,
+          file: image,
         );
       } catch (e) {
-        // If upload fails, set pending flag for offline retry
-        imageUrl = 'pending_upload';
+        // If upload fails, continue without image
+        // The offline queue will handle retry when online
+        imageUrl = null;
       }
     }
 
@@ -205,18 +265,58 @@ class InventoryRepository extends BaseRepository {
     return await mutate<InventoryItemModel>(
       cacheKey: StorageKeys.inventoryListCache,
       apiCall: () async {
-        // TODO (Phase 2): Replace with actual API call when backend is ready
-        // POST /v1/tech/inventory/items/ai-detect
-        // The API should accept imageUrl or image file
-        // final response = await apiClient.post('/v1/tech/inventory/items/ai-detect', data: {
-        //   'image_url': imageUrl,
-        //   'org_id': orgId,
-        // });
-        // return InventoryItemModel.fromJson(response.data);
+        // Use mock data if configured, otherwise call real API
+        if (AppConfig.useMockData && !SupabaseConfig.isValid) {
+          await Future.delayed(const Duration(seconds: 1));
+          return newItem;
+        }
         
-        // Mock for now
-        await Future.delayed(const Duration(seconds: 1));
-        return newItem;
+        // Call actual Edge Function: tech-inventory-ai-detect
+        final endpoint = '${ApiEndpoints.baseUrl}/${ApiEndpoints.inventoryAiDetectFunction}';
+        
+        // Convert image to base64 if we have a local file
+        String? imageBase64;
+        if (imageUrl == null || imageUrl == 'pending_upload') {
+          try {
+            final imageBytes = await image.readAsBytes();
+            imageBase64 = base64Encode(imageBytes);
+          } catch (e) {
+            throw Exception('Failed to encode image: $e');
+          }
+        }
+        
+        final response = await apiClient.post(
+          endpoint,
+          data: {
+            if (imageUrl != null && imageUrl != 'pending_upload') 'image_url': imageUrl,
+            if (imageBase64 != null) 'image_base64': imageBase64,
+            // hint_text is optional - can be used to provide context about the item
+          },
+        );
+        
+        // Parse Edge Function response format: { data: { name, category, unit, suggested_price, ... } }
+        final responseData = response.data['data'] as Map<String, dynamic>?;
+        if (responseData == null) {
+          throw Exception('Invalid response format from AI detection');
+        }
+        
+        // Create inventory item from AI detection result
+        return InventoryItemModel(
+          id: generateId(),
+          orgId: orgId,
+          name: responseData['name'] as String? ?? 'Unknown Item',
+          unit: responseData['unit'] as String? ?? 'each',
+          price: (responseData['suggested_price'] as num?)?.toDouble() ?? 0.0,
+          sku: responseData['sku'] as String?,
+          category: responseData['category'] as String?,
+          description: responseData['notes'] as String?,
+          imageUrl: imageUrl ?? 'pending_upload',
+          isActive: true,
+          isAiDetected: true,
+          aiSuggestedPrice: (responseData['suggested_price'] as num?)?.toDouble(),
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
       },
       actionType: PendingActionType.addInventory,
       actionData: {
@@ -233,16 +333,63 @@ class InventoryRepository extends BaseRepository {
   Future<AiPriceSuggestion> getAiPriceSuggestion({
     required File image,
     String? itemName,
+    String? itemId,
   }) async {
     try {
-      // TODO (Phase 2): Replace with actual API call when backend is ready
-      // POST /v1/tech/inventory/items/:id/ai-price
-      // final response = await _apiClient.post('/v1/tech/inventory/items/:id/ai-price', data: formData);
-      // return AiPriceSuggestion.fromJson(response.data);
-
-      // Mock data for now
-      await Future.delayed(const Duration(seconds: 1));
-      return InventoryMockData.getMockPriceSuggestion();
+      // Use mock data if configured, otherwise call real API
+      if (AppConfig.useMockData && !SupabaseConfig.isValid) {
+        await Future.delayed(const Duration(seconds: 1));
+        return InventoryMockData.getMockPriceSuggestion();
+      }
+      
+      // Call actual Edge Function: tech-inventory-ai-price
+      final endpoint = '${ApiEndpoints.baseUrl}/${ApiEndpoints.inventoryAiPriceFunction}';
+      
+      // Convert image to base64
+      String? imageBase64;
+      try {
+        final imageBytes = await image.readAsBytes();
+        imageBase64 = base64Encode(imageBytes);
+      } catch (e) {
+        throw Exception('Failed to encode image: $e');
+      }
+      
+      final response = await apiClient.post(
+        endpoint,
+        data: {
+          'image_base64': imageBase64,
+          if (itemId != null) 'item_id': itemId,
+          if (itemName != null) 'item_name': itemName, // Edge Function expects 'item_name', not 'hint_text'
+        },
+      );
+      
+      // Parse Edge Function response format: { data: { suggested_price, confidence, reasoning, ... } }
+      final responseData = response.data['data'] as Map<String, dynamic>?;
+      if (responseData == null) {
+        throw Exception('Invalid response format from AI price suggestion');
+      }
+      
+      // Map Edge Function response to AiPriceSuggestion model
+      final priceRange = responseData['price_range'] as Map<String, dynamic>?;
+      final confidenceValue = (responseData['confidence'] as num?)?.toDouble() ?? 0.5;
+      final confidenceLevel = confidenceValue > 0.7 
+          ? 'high' 
+          : confidenceValue > 0.4 
+              ? 'medium' 
+              : 'low';
+      
+      return AiPriceSuggestion(
+        suggestedPrice: (responseData['suggested_price'] as num?)?.toDouble() ?? 0.0,
+        currency: 'USD',
+        confidence: confidenceLevel,
+        reasoning: responseData['reasoning'] as String?,
+        similarItems: priceRange != null 
+            ? [
+                'Min: \$${priceRange['min']?.toStringAsFixed(2)}',
+                'Max: \$${priceRange['max']?.toStringAsFixed(2)}',
+              ]
+            : null,
+      );
     } catch (e) {
       throw Exception('Failed to get AI price suggestion: $e');
     }
@@ -266,19 +413,26 @@ class InventoryRepository extends BaseRepository {
     return await mutate<InventoryItemModel>(
       cacheKey: 'inventory_item_$id',
       apiCall: () async {
+        // Use REST API for update (no update Edge Function yet)
+        final url = '${ApiEndpoints.restApiBaseFull}/inventory_items?id=eq.$id';
         final response = await apiClient.patch(
-          '/v1/tech/inventory/items/$id',
+          url,
           data: {
             if (name != null) 'name': name,
             if (unit != null) 'unit': unit,
-            if (price != null) 'price': price,
+            if (price != null) 'sale_price': price,
             if (sku != null) 'sku': sku,
             if (category != null) 'category': category,
             if (description != null) 'description': description,
-            if (isActive != null) 'is_active': isActive,
+            if (isActive != null) 'active': isActive,
           },
         );
-        return InventoryItemModel.fromJson(response.data);
+        
+        // REST API returns array, get first item
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return InventoryItemModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        return InventoryItemModel.fromJson(response.data as Map<String, dynamic>);
       },
       actionType: PendingActionType.updateInventory,
       actionData: {
@@ -337,12 +491,27 @@ class InventoryRepository extends BaseRepository {
     return await fetchList<InventoryItemModel>(
       cacheKey: cacheKey,
       apiCall: () async {
+        // Use Edge Function: tech-inventory-items with search
+        final functionName = 'tech-inventory-items';
+        final url = '${ApiEndpoints.baseUrl}/$functionName';
+        
         final response = await apiClient.get(
-          '/v1/tech/inventory/items',
+          url,
           queryParameters: {'search': query},
         );
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => InventoryItemModel.fromJson(json)).toList();
+        
+        // Handle Edge Function response format
+        if (response.data is Map && response.data['data'] != null) {
+          final List<dynamic> data = response.data['data'] as List;
+          return data.map((json) => InventoryItemModel.fromJson(json)).toList();
+        }
+        
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => InventoryItemModel.fromJson(json)).toList();
+        }
+        
+        return [];
       },
       fromJson: (data) => InventoryItemModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -367,6 +536,7 @@ final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {
   final cache = ref.watch(inventoryCacheProvider);
   final offlineQueue = ref.watch(offlineQueueServiceProvider);
   final mediaUploadService = ref.watch(mediaUploadServiceProvider);
+  final inventoryUploadService = ref.watch(inventoryUploadServiceProvider);
   
   return InventoryRepository(
     apiClient,
@@ -374,6 +544,7 @@ final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) {
     offlineQueue,
     useMockData: null, // Will use AppConfig default
     mediaUploadService: mediaUploadService,
+    inventoryUploadService: inventoryUploadService,
   );
 });
 

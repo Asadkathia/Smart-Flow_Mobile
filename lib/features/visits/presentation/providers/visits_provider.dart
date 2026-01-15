@@ -244,12 +244,44 @@ class VisitActions extends _$VisitActions {
     return !state.hasError;
   }
 
+  /// Save signature for a visit (without completing)
+  /// 
+  /// Uploads signature and saves it to the visit for later use.
+  Future<bool> saveSignature(String visitId, String signaturePath) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(visitRepositoryProvider);
+      
+      // Upload signature first
+      String signatureUrl = signaturePath;
+      try {
+        final signatureFile = File(signaturePath);
+        if (await signatureFile.exists()) {
+          final signatureService = ref.read(signatureUploadServiceProvider);
+          signatureUrl = await signatureService.uploadSignature(
+            signatureFile,
+            visitId,
+          );
+        }
+      } catch (e) {
+        // If upload fails, still proceed with local path for offline support
+        // The repository will handle offline sync later
+        signatureUrl = signaturePath;
+      }
+      
+      await repository.saveSignature(visitId, signatureUrl);
+      
+      ref.invalidate(visitDetailsProvider(visitId));
+    });
+    
+    return !state.hasError;
+  }
+
   /// Complete a visit
   /// 
   /// Uploads signature first if provided, then completes the visit.
   Future<bool> completeVisit(String visitId, {String? signaturePath}) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
+    return await AsyncValue.guard(() async {
       final repository = ref.read(visitRepositoryProvider);
       
       // Upload signature first if provided
@@ -275,9 +307,12 @@ class VisitActions extends _$VisitActions {
       
       ref.invalidate(todayVisitsProvider);
       ref.invalidate(visitDetailsProvider(visitId));
+      
+      return true;
+    }).then((result) {
+      state = result;
+      return !result.hasError;
     });
-    
-    return !state.hasError;
   }
 }
 

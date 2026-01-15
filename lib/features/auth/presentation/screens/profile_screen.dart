@@ -36,7 +36,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     // Update controllers with current user data
     final user = ref.read(currentUserProvider);
     if (user != null) {
-      nameController.text = '${user.firstName} ${user.lastName}';
+      nameController.text = user.fullName;
       emailController.text = user.email;
       phoneController.text = user.phone ?? '+1 234 567 8901';
     }

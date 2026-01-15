@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import 'package:smartflowpro/router/app_router.dart';
@@ -71,6 +72,15 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
         ),
         backgroundColor: AppColors.primaryTextColor,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.whiteColor,
+            size: 22.sp,
+          ),
+          iconSize: 22.sp,
+          onPressed: () => context.pop(),
+        ),
         actions: [
           PopupMenuButton<String>(
             icon: Icon(Icons.filter_list, color: AppColors.whiteColor),
@@ -247,13 +257,7 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
                       // AI Detection Button (top)
                       FloatingActionButton.extended(
                         onPressed: () {
-                          // TODO: Navigate to AI detection screen (Phase 2)
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('AI Detection coming soon!'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                          context.goToAiDetectInventory();
                         },
                         icon: Icon(Icons.camera_alt),
                         label: Text('AI Detect'),
@@ -264,13 +268,7 @@ class _InventoryListScreenState extends ConsumerState<InventoryListScreen> {
                       // Manual Entry Button (bottom)
                       FloatingActionButton.extended(
                         onPressed: () {
-                          // TODO: Navigate to manual entry screen (Phase 2)
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Manual Entry coming soon!'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                          context.goToAddInventoryItem();
                         },
                         icon: Icon(Icons.add),
                         label: Text('Add Item'),

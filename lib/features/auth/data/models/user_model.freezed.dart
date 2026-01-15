@@ -19,21 +19,21 @@ mixin _$UserModel {
   String get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'org_id')
   String get orgId => throw _privateConstructorUsedError;
-  String get email => throw _privateConstructorUsedError;
-  @JsonKey(name: 'first_name')
-  String get firstName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_name')
-  String get lastName => throw _privateConstructorUsedError;
-  String? get phone => throw _privateConstructorUsedError;
-  String? get avatar => throw _privateConstructorUsedError;
-  UserRole get role => throw _privateConstructorUsedError;
+  String get email =>
+      throw _privateConstructorUsedError; // Must be valid email format, unique per org
+  @JsonKey(name: 'full_name')
+  String get fullName =>
+      throw _privateConstructorUsedError; // PRD: full_name (not first_name/last_name)
+  String? get phone =>
+      throw _privateConstructorUsedError; // E.164 format recommended
+  UserRole get role =>
+      throw _privateConstructorUsedError; // admin, dispatcher, accountant, technician
   @JsonKey(
       name: 'status',
       fromJson: UserModel.statusFromJson,
       toJson: UserModel.statusToJson)
-  UserStatus get status => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_active')
-  bool get isActive => throw _privateConstructorUsedError;
+  UserStatus get status =>
+      throw _privateConstructorUsedError; // active, suspended, deactivated
   @JsonKey(name: 'last_login_at')
   DateTime? get lastLoginAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
@@ -57,17 +57,14 @@ abstract class $UserModelCopyWith<$Res> {
       {String id,
       @JsonKey(name: 'org_id') String orgId,
       String email,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
+      @JsonKey(name: 'full_name') String fullName,
       String? phone,
-      String? avatar,
       UserRole role,
       @JsonKey(
           name: 'status',
           fromJson: UserModel.statusFromJson,
           toJson: UserModel.statusToJson)
       UserStatus status,
-      @JsonKey(name: 'is_active') bool isActive,
       @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
@@ -91,13 +88,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? id = null,
     Object? orgId = null,
     Object? email = null,
-    Object? firstName = null,
-    Object? lastName = null,
+    Object? fullName = null,
     Object? phone = freezed,
-    Object? avatar = freezed,
     Object? role = null,
     Object? status = null,
-    Object? isActive = null,
     Object? lastLoginAt = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -115,21 +109,13 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      firstName: null == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String,
-      lastName: null == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
+      fullName: null == fullName
+          ? _value.fullName
+          : fullName // ignore: cast_nullable_to_non_nullable
               as String,
       phone: freezed == phone
           ? _value.phone
           : phone // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatar: freezed == avatar
-          ? _value.avatar
-          : avatar // ignore: cast_nullable_to_non_nullable
               as String?,
       role: null == role
           ? _value.role
@@ -139,10 +125,6 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as UserStatus,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
       lastLoginAt: freezed == lastLoginAt
           ? _value.lastLoginAt
           : lastLoginAt // ignore: cast_nullable_to_non_nullable
@@ -171,17 +153,14 @@ abstract class _$$UserModelImplCopyWith<$Res>
       {String id,
       @JsonKey(name: 'org_id') String orgId,
       String email,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
+      @JsonKey(name: 'full_name') String fullName,
       String? phone,
-      String? avatar,
       UserRole role,
       @JsonKey(
           name: 'status',
           fromJson: UserModel.statusFromJson,
           toJson: UserModel.statusToJson)
       UserStatus status,
-      @JsonKey(name: 'is_active') bool isActive,
       @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
@@ -203,13 +182,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? orgId = null,
     Object? email = null,
-    Object? firstName = null,
-    Object? lastName = null,
+    Object? fullName = null,
     Object? phone = freezed,
-    Object? avatar = freezed,
     Object? role = null,
     Object? status = null,
-    Object? isActive = null,
     Object? lastLoginAt = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -227,21 +203,13 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.email
           : email // ignore: cast_nullable_to_non_nullable
               as String,
-      firstName: null == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
-              as String,
-      lastName: null == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
+      fullName: null == fullName
+          ? _value.fullName
+          : fullName // ignore: cast_nullable_to_non_nullable
               as String,
       phone: freezed == phone
           ? _value.phone
           : phone // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatar: freezed == avatar
-          ? _value.avatar
-          : avatar // ignore: cast_nullable_to_non_nullable
               as String?,
       role: null == role
           ? _value.role
@@ -251,10 +219,6 @@ class __$$UserModelImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as UserStatus,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
       lastLoginAt: freezed == lastLoginAt
           ? _value.lastLoginAt
           : lastLoginAt // ignore: cast_nullable_to_non_nullable
@@ -278,17 +242,14 @@ class _$UserModelImpl implements _UserModel {
       {required this.id,
       @JsonKey(name: 'org_id') required this.orgId,
       required this.email,
-      @JsonKey(name: 'first_name') required this.firstName,
-      @JsonKey(name: 'last_name') required this.lastName,
+      @JsonKey(name: 'full_name') required this.fullName,
       this.phone,
-      this.avatar,
       required this.role,
       @JsonKey(
           name: 'status',
           fromJson: UserModel.statusFromJson,
           toJson: UserModel.statusToJson)
       this.status = UserStatus.active,
-      @JsonKey(name: 'is_active') this.isActive = true,
       @JsonKey(name: 'last_login_at') this.lastLoginAt,
       @JsonKey(name: 'created_at') required this.createdAt,
       @JsonKey(name: 'updated_at') required this.updatedAt});
@@ -300,27 +261,24 @@ class _$UserModelImpl implements _UserModel {
   final String orgId;
   @override
   final String email;
+// Must be valid email format, unique per org
   @override
-  @JsonKey(name: 'first_name')
-  final String firstName;
-  @override
-  @JsonKey(name: 'last_name')
-  final String lastName;
+  @JsonKey(name: 'full_name')
+  final String fullName;
+// PRD: full_name (not first_name/last_name)
   @override
   final String? phone;
-  @override
-  final String? avatar;
+// E.164 format recommended
   @override
   final UserRole role;
+// admin, dispatcher, accountant, technician
   @override
   @JsonKey(
       name: 'status',
       fromJson: UserModel.statusFromJson,
       toJson: UserModel.statusToJson)
   final UserStatus status;
-  @override
-  @JsonKey(name: 'is_active')
-  final bool isActive;
+// active, suspended, deactivated
   @override
   @JsonKey(name: 'last_login_at')
   final DateTime? lastLoginAt;
@@ -333,7 +291,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, orgId: $orgId, email: $email, firstName: $firstName, lastName: $lastName, phone: $phone, avatar: $avatar, role: $role, status: $status, isActive: $isActive, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'UserModel(id: $id, orgId: $orgId, email: $email, fullName: $fullName, phone: $phone, role: $role, status: $status, lastLoginAt: $lastLoginAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -344,16 +302,11 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.orgId, orgId) || other.orgId == orgId) &&
             (identical(other.email, email) || other.email == email) &&
-            (identical(other.firstName, firstName) ||
-                other.firstName == firstName) &&
-            (identical(other.lastName, lastName) ||
-                other.lastName == lastName) &&
+            (identical(other.fullName, fullName) ||
+                other.fullName == fullName) &&
             (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.avatar, avatar) || other.avatar == avatar) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.status, status) || other.status == status) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
             (identical(other.lastLoginAt, lastLoginAt) ||
                 other.lastLoginAt == lastLoginAt) &&
             (identical(other.createdAt, createdAt) ||
@@ -363,21 +316,8 @@ class _$UserModelImpl implements _UserModel {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      orgId,
-      email,
-      firstName,
-      lastName,
-      phone,
-      avatar,
-      role,
-      status,
-      isActive,
-      lastLoginAt,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, email, fullName,
+      phone, role, status, lastLoginAt, createdAt, updatedAt);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -393,17 +333,14 @@ abstract class _UserModel implements UserModel {
           {required final String id,
           @JsonKey(name: 'org_id') required final String orgId,
           required final String email,
-          @JsonKey(name: 'first_name') required final String firstName,
-          @JsonKey(name: 'last_name') required final String lastName,
+          @JsonKey(name: 'full_name') required final String fullName,
           final String? phone,
-          final String? avatar,
           required final UserRole role,
           @JsonKey(
               name: 'status',
               fromJson: UserModel.statusFromJson,
               toJson: UserModel.statusToJson)
           final UserStatus status,
-          @JsonKey(name: 'is_active') final bool isActive,
           @JsonKey(name: 'last_login_at') final DateTime? lastLoginAt,
           @JsonKey(name: 'created_at') required final DateTime createdAt,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
@@ -415,28 +352,20 @@ abstract class _UserModel implements UserModel {
   @JsonKey(name: 'org_id')
   String get orgId;
   @override
-  String get email;
+  String get email; // Must be valid email format, unique per org
   @override
-  @JsonKey(name: 'first_name')
-  String get firstName;
+  @JsonKey(name: 'full_name')
+  String get fullName; // PRD: full_name (not first_name/last_name)
   @override
-  @JsonKey(name: 'last_name')
-  String get lastName;
+  String? get phone; // E.164 format recommended
   @override
-  String? get phone;
-  @override
-  String? get avatar;
-  @override
-  UserRole get role;
+  UserRole get role; // admin, dispatcher, accountant, technician
   @override
   @JsonKey(
       name: 'status',
       fromJson: UserModel.statusFromJson,
       toJson: UserModel.statusToJson)
-  UserStatus get status;
-  @override
-  @JsonKey(name: 'is_active')
-  bool get isActive;
+  UserStatus get status; // active, suspended, deactivated
   @override
   @JsonKey(name: 'last_login_at')
   DateTime? get lastLoginAt;

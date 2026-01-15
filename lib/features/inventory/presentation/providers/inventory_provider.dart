@@ -60,12 +60,14 @@ class InventoryActionsNotifier extends StateNotifier<AsyncValue<void>> {
       // Get orgId from auth provider
       final authState = _ref.read(authProvider);
       final orgId = authState.user?.orgId;
+      final userId = authState.user?.id;
       if (orgId == null) {
         throw Exception('Organization ID not found');
       }
 
       final item = await _repository.createInventoryItem(
         orgId: orgId,
+        createdBy: userId,
         name: name,
         unit: unit,
         price: price,
@@ -193,7 +195,7 @@ class InventoryActionsNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final inventoryActionsProvider = StateNotifierProvider<InventoryActionsNotifier, AsyncValue<void>>((ref) {
+final inventoryNotifierProvider = StateNotifierProvider<InventoryActionsNotifier, AsyncValue<void>>((ref) {
   final repository = ref.watch(inventoryRepositoryProvider);
   return InventoryActionsNotifier(repository, ref);
 });

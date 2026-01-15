@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../../data/models/chat_models.dart';
@@ -62,6 +63,15 @@ class _ChatThreadScreenState extends ConsumerState<ChatThreadScreen> {
         ),
         backgroundColor: AppColors.primaryTextColor,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.whiteColor,
+            size: 22.sp,
+          ),
+          iconSize: 22.sp,
+          onPressed: () => context.pop(),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.info_outline, color: AppColors.whiteColor),

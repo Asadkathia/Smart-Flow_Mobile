@@ -21,16 +21,24 @@ ChatThreadModel _$ChatThreadModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ChatThreadModel {
   String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'org_id')
+  String get orgId =>
+      throw _privateConstructorUsedError; // PRD: required for multi-tenancy
   ChatType get type => throw _privateConstructorUsedError;
   String? get title =>
       throw _privateConstructorUsedError; // Only for group chats
+  @JsonKey(name: 'created_by')
   String get createdBy => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
+  DateTime get updatedAt =>
+      throw _privateConstructorUsedError; // Updated when participants are added/removed (group chats only)
+// Keep for UI: participants, lastMessage, unreadCount (not in PRD but needed for frontend)
   List<ChatParticipantModel> get participants =>
       throw _privateConstructorUsedError;
   ChatMessageModel? get lastMessage => throw _privateConstructorUsedError;
   int get unreadCount => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
-  DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this ChatThreadModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -50,14 +58,15 @@ abstract class $ChatThreadModelCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
+      @JsonKey(name: 'org_id') String orgId,
       ChatType type,
       String? title,
-      String createdBy,
+      @JsonKey(name: 'created_by') String createdBy,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt,
       List<ChatParticipantModel> participants,
       ChatMessageModel? lastMessage,
-      int unreadCount,
-      DateTime? createdAt,
-      DateTime? updatedAt});
+      int unreadCount});
 
   $ChatMessageModelCopyWith<$Res>? get lastMessage;
 }
@@ -78,19 +87,24 @@ class _$ChatThreadModelCopyWithImpl<$Res, $Val extends ChatThreadModel>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? type = null,
     Object? title = freezed,
     Object? createdBy = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
     Object? participants = null,
     Object? lastMessage = freezed,
     Object? unreadCount = null,
-    Object? createdAt = freezed,
-    Object? updatedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       type: null == type
           ? _value.type
@@ -104,6 +118,14 @@ class _$ChatThreadModelCopyWithImpl<$Res, $Val extends ChatThreadModel>
           ? _value.createdBy
           : createdBy // ignore: cast_nullable_to_non_nullable
               as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       participants: null == participants
           ? _value.participants
           : participants // ignore: cast_nullable_to_non_nullable
@@ -116,14 +138,6 @@ class _$ChatThreadModelCopyWithImpl<$Res, $Val extends ChatThreadModel>
           ? _value.unreadCount
           : unreadCount // ignore: cast_nullable_to_non_nullable
               as int,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
     ) as $Val);
   }
 
@@ -152,14 +166,15 @@ abstract class _$$ChatThreadModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {String id,
+      @JsonKey(name: 'org_id') String orgId,
       ChatType type,
       String? title,
-      String createdBy,
+      @JsonKey(name: 'created_by') String createdBy,
+      @JsonKey(name: 'created_at') DateTime createdAt,
+      @JsonKey(name: 'updated_at') DateTime updatedAt,
       List<ChatParticipantModel> participants,
       ChatMessageModel? lastMessage,
-      int unreadCount,
-      DateTime? createdAt,
-      DateTime? updatedAt});
+      int unreadCount});
 
   @override
   $ChatMessageModelCopyWith<$Res>? get lastMessage;
@@ -179,19 +194,24 @@ class __$$ChatThreadModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? type = null,
     Object? title = freezed,
     Object? createdBy = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
     Object? participants = null,
     Object? lastMessage = freezed,
     Object? unreadCount = null,
-    Object? createdAt = freezed,
-    Object? updatedAt = freezed,
   }) {
     return _then(_$ChatThreadModelImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       type: null == type
           ? _value.type
@@ -205,6 +225,14 @@ class __$$ChatThreadModelImplCopyWithImpl<$Res>
           ? _value.createdBy
           : createdBy // ignore: cast_nullable_to_non_nullable
               as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      updatedAt: null == updatedAt
+          ? _value.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       participants: null == participants
           ? _value._participants
           : participants // ignore: cast_nullable_to_non_nullable
@@ -217,14 +245,6 @@ class __$$ChatThreadModelImplCopyWithImpl<$Res>
           ? _value.unreadCount
           : unreadCount // ignore: cast_nullable_to_non_nullable
               as int,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      updatedAt: freezed == updatedAt
-          ? _value.updatedAt
-          : updatedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
     ));
   }
 }
@@ -234,14 +254,15 @@ class __$$ChatThreadModelImplCopyWithImpl<$Res>
 class _$ChatThreadModelImpl implements _ChatThreadModel {
   const _$ChatThreadModelImpl(
       {required this.id,
+      @JsonKey(name: 'org_id') required this.orgId,
       required this.type,
       this.title,
-      required this.createdBy,
-      required final List<ChatParticipantModel> participants,
+      @JsonKey(name: 'created_by') required this.createdBy,
+      @JsonKey(name: 'created_at') required this.createdAt,
+      @JsonKey(name: 'updated_at') required this.updatedAt,
+      final List<ChatParticipantModel> participants = const [],
       this.lastMessage,
-      this.unreadCount = 0,
-      this.createdAt,
-      this.updatedAt})
+      this.unreadCount = 0})
       : _participants = participants;
 
   factory _$ChatThreadModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -250,14 +271,30 @@ class _$ChatThreadModelImpl implements _ChatThreadModel {
   @override
   final String id;
   @override
+  @JsonKey(name: 'org_id')
+  final String orgId;
+// PRD: required for multi-tenancy
+  @override
   final ChatType type;
   @override
   final String? title;
 // Only for group chats
   @override
+  @JsonKey(name: 'created_by')
   final String createdBy;
-  final List<ChatParticipantModel> _participants;
   @override
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+  @override
+  @JsonKey(name: 'updated_at')
+  final DateTime updatedAt;
+// Updated when participants are added/removed (group chats only)
+// Keep for UI: participants, lastMessage, unreadCount (not in PRD but needed for frontend)
+  final List<ChatParticipantModel> _participants;
+// Updated when participants are added/removed (group chats only)
+// Keep for UI: participants, lastMessage, unreadCount (not in PRD but needed for frontend)
+  @override
+  @JsonKey()
   List<ChatParticipantModel> get participants {
     if (_participants is EqualUnmodifiableListView) return _participants;
     // ignore: implicit_dynamic_type
@@ -269,14 +306,10 @@ class _$ChatThreadModelImpl implements _ChatThreadModel {
   @override
   @JsonKey()
   final int unreadCount;
-  @override
-  final DateTime? createdAt;
-  @override
-  final DateTime? updatedAt;
 
   @override
   String toString() {
-    return 'ChatThreadModel(id: $id, type: $type, title: $title, createdBy: $createdBy, participants: $participants, lastMessage: $lastMessage, unreadCount: $unreadCount, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'ChatThreadModel(id: $id, orgId: $orgId, type: $type, title: $title, createdBy: $createdBy, createdAt: $createdAt, updatedAt: $updatedAt, participants: $participants, lastMessage: $lastMessage, unreadCount: $unreadCount)';
   }
 
   @override
@@ -285,20 +318,21 @@ class _$ChatThreadModelImpl implements _ChatThreadModel {
         (other.runtimeType == runtimeType &&
             other is _$ChatThreadModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.orgId, orgId) || other.orgId == orgId) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.createdBy, createdBy) ||
                 other.createdBy == createdBy) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
             const DeepCollectionEquality()
                 .equals(other._participants, _participants) &&
             (identical(other.lastMessage, lastMessage) ||
                 other.lastMessage == lastMessage) &&
             (identical(other.unreadCount, unreadCount) ||
-                other.unreadCount == unreadCount) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.unreadCount == unreadCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -306,14 +340,15 @@ class _$ChatThreadModelImpl implements _ChatThreadModel {
   int get hashCode => Object.hash(
       runtimeType,
       id,
+      orgId,
       type,
       title,
       createdBy,
+      createdAt,
+      updatedAt,
       const DeepCollectionEquality().hash(_participants),
       lastMessage,
-      unreadCount,
-      createdAt,
-      updatedAt);
+      unreadCount);
 
   /// Create a copy of ChatThreadModel
   /// with the given fields replaced by the non-null parameter values.
@@ -335,14 +370,15 @@ class _$ChatThreadModelImpl implements _ChatThreadModel {
 abstract class _ChatThreadModel implements ChatThreadModel {
   const factory _ChatThreadModel(
       {required final String id,
+      @JsonKey(name: 'org_id') required final String orgId,
       required final ChatType type,
       final String? title,
-      required final String createdBy,
-      required final List<ChatParticipantModel> participants,
+      @JsonKey(name: 'created_by') required final String createdBy,
+      @JsonKey(name: 'created_at') required final DateTime createdAt,
+      @JsonKey(name: 'updated_at') required final DateTime updatedAt,
+      final List<ChatParticipantModel> participants,
       final ChatMessageModel? lastMessage,
-      final int unreadCount,
-      final DateTime? createdAt,
-      final DateTime? updatedAt}) = _$ChatThreadModelImpl;
+      final int unreadCount}) = _$ChatThreadModelImpl;
 
   factory _ChatThreadModel.fromJson(Map<String, dynamic> json) =
       _$ChatThreadModelImpl.fromJson;
@@ -350,21 +386,29 @@ abstract class _ChatThreadModel implements ChatThreadModel {
   @override
   String get id;
   @override
+  @JsonKey(name: 'org_id')
+  String get orgId; // PRD: required for multi-tenancy
+  @override
   ChatType get type;
   @override
   String? get title; // Only for group chats
   @override
+  @JsonKey(name: 'created_by')
   String get createdBy;
+  @override
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt;
+  @override
+  @JsonKey(name: 'updated_at')
+  DateTime
+      get updatedAt; // Updated when participants are added/removed (group chats only)
+// Keep for UI: participants, lastMessage, unreadCount (not in PRD but needed for frontend)
   @override
   List<ChatParticipantModel> get participants;
   @override
   ChatMessageModel? get lastMessage;
   @override
   int get unreadCount;
-  @override
-  DateTime? get createdAt;
-  @override
-  DateTime? get updatedAt;
 
   /// Create a copy of ChatThreadModel
   /// with the given fields replaced by the non-null parameter values.
@@ -381,13 +425,23 @@ ChatParticipantModel _$ChatParticipantModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ChatParticipantModel {
   String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'org_id')
+  String get orgId =>
+      throw _privateConstructorUsedError; // PRD: required for multi-tenancy
+  @JsonKey(name: 'chat_id')
   String get chatId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_id')
   String get userId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'role_in_chat')
+  ChatParticipantRole get roleInChat =>
+      throw _privateConstructorUsedError; // member, admin
+  @JsonKey(name: 'joined_at')
+  DateTime get joinedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt => throw _privateConstructorUsedError; // PRD: required
+// Keep for UI: userName, userAvatar (not in PRD but needed for frontend)
   String? get userName => throw _privateConstructorUsedError;
   String? get userAvatar => throw _privateConstructorUsedError;
-  String get roleInChat =>
-      throw _privateConstructorUsedError; // 'admin' or 'member'
-  DateTime? get joinedAt => throw _privateConstructorUsedError;
 
   /// Serializes this ChatParticipantModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -407,12 +461,14 @@ abstract class $ChatParticipantModelCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      String chatId,
-      String userId,
+      @JsonKey(name: 'org_id') String orgId,
+      @JsonKey(name: 'chat_id') String chatId,
+      @JsonKey(name: 'user_id') String userId,
+      @JsonKey(name: 'role_in_chat') ChatParticipantRole roleInChat,
+      @JsonKey(name: 'joined_at') DateTime joinedAt,
+      @JsonKey(name: 'created_at') DateTime createdAt,
       String? userName,
-      String? userAvatar,
-      String roleInChat,
-      DateTime? joinedAt});
+      String? userAvatar});
 }
 
 /// @nodoc
@@ -432,17 +488,23 @@ class _$ChatParticipantModelCopyWithImpl<$Res,
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? chatId = null,
     Object? userId = null,
+    Object? roleInChat = null,
+    Object? joinedAt = null,
+    Object? createdAt = null,
     Object? userName = freezed,
     Object? userAvatar = freezed,
-    Object? roleInChat = null,
-    Object? joinedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       chatId: null == chatId
           ? _value.chatId
@@ -452,6 +514,18 @@ class _$ChatParticipantModelCopyWithImpl<$Res,
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
               as String,
+      roleInChat: null == roleInChat
+          ? _value.roleInChat
+          : roleInChat // ignore: cast_nullable_to_non_nullable
+              as ChatParticipantRole,
+      joinedAt: null == joinedAt
+          ? _value.joinedAt
+          : joinedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       userName: freezed == userName
           ? _value.userName
           : userName // ignore: cast_nullable_to_non_nullable
@@ -460,14 +534,6 @@ class _$ChatParticipantModelCopyWithImpl<$Res,
           ? _value.userAvatar
           : userAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
-      roleInChat: null == roleInChat
-          ? _value.roleInChat
-          : roleInChat // ignore: cast_nullable_to_non_nullable
-              as String,
-      joinedAt: freezed == joinedAt
-          ? _value.joinedAt
-          : joinedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
     ) as $Val);
   }
 }
@@ -482,12 +548,14 @@ abstract class _$$ChatParticipantModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {String id,
-      String chatId,
-      String userId,
+      @JsonKey(name: 'org_id') String orgId,
+      @JsonKey(name: 'chat_id') String chatId,
+      @JsonKey(name: 'user_id') String userId,
+      @JsonKey(name: 'role_in_chat') ChatParticipantRole roleInChat,
+      @JsonKey(name: 'joined_at') DateTime joinedAt,
+      @JsonKey(name: 'created_at') DateTime createdAt,
       String? userName,
-      String? userAvatar,
-      String roleInChat,
-      DateTime? joinedAt});
+      String? userAvatar});
 }
 
 /// @nodoc
@@ -504,17 +572,23 @@ class __$$ChatParticipantModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? chatId = null,
     Object? userId = null,
+    Object? roleInChat = null,
+    Object? joinedAt = null,
+    Object? createdAt = null,
     Object? userName = freezed,
     Object? userAvatar = freezed,
-    Object? roleInChat = null,
-    Object? joinedAt = freezed,
   }) {
     return _then(_$ChatParticipantModelImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       chatId: null == chatId
           ? _value.chatId
@@ -524,6 +598,18 @@ class __$$ChatParticipantModelImplCopyWithImpl<$Res>
           ? _value.userId
           : userId // ignore: cast_nullable_to_non_nullable
               as String,
+      roleInChat: null == roleInChat
+          ? _value.roleInChat
+          : roleInChat // ignore: cast_nullable_to_non_nullable
+              as ChatParticipantRole,
+      joinedAt: null == joinedAt
+          ? _value.joinedAt
+          : joinedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       userName: freezed == userName
           ? _value.userName
           : userName // ignore: cast_nullable_to_non_nullable
@@ -532,14 +618,6 @@ class __$$ChatParticipantModelImplCopyWithImpl<$Res>
           ? _value.userAvatar
           : userAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
-      roleInChat: null == roleInChat
-          ? _value.roleInChat
-          : roleInChat // ignore: cast_nullable_to_non_nullable
-              as String,
-      joinedAt: freezed == joinedAt
-          ? _value.joinedAt
-          : joinedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
     ));
   }
 }
@@ -549,12 +627,15 @@ class __$$ChatParticipantModelImplCopyWithImpl<$Res>
 class _$ChatParticipantModelImpl implements _ChatParticipantModel {
   const _$ChatParticipantModelImpl(
       {required this.id,
-      required this.chatId,
-      required this.userId,
+      @JsonKey(name: 'org_id') required this.orgId,
+      @JsonKey(name: 'chat_id') required this.chatId,
+      @JsonKey(name: 'user_id') required this.userId,
+      @JsonKey(name: 'role_in_chat')
+      this.roleInChat = ChatParticipantRole.member,
+      @JsonKey(name: 'joined_at') required this.joinedAt,
+      @JsonKey(name: 'created_at') required this.createdAt,
       this.userName,
-      this.userAvatar,
-      this.roleInChat = 'member',
-      this.joinedAt});
+      this.userAvatar});
 
   factory _$ChatParticipantModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$ChatParticipantModelImplFromJson(json);
@@ -562,23 +643,35 @@ class _$ChatParticipantModelImpl implements _ChatParticipantModel {
   @override
   final String id;
   @override
+  @JsonKey(name: 'org_id')
+  final String orgId;
+// PRD: required for multi-tenancy
+  @override
+  @JsonKey(name: 'chat_id')
   final String chatId;
   @override
+  @JsonKey(name: 'user_id')
   final String userId;
+  @override
+  @JsonKey(name: 'role_in_chat')
+  final ChatParticipantRole roleInChat;
+// member, admin
+  @override
+  @JsonKey(name: 'joined_at')
+  final DateTime joinedAt;
+  @override
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+// PRD: required
+// Keep for UI: userName, userAvatar (not in PRD but needed for frontend)
   @override
   final String? userName;
   @override
   final String? userAvatar;
-  @override
-  @JsonKey()
-  final String roleInChat;
-// 'admin' or 'member'
-  @override
-  final DateTime? joinedAt;
 
   @override
   String toString() {
-    return 'ChatParticipantModel(id: $id, chatId: $chatId, userId: $userId, userName: $userName, userAvatar: $userAvatar, roleInChat: $roleInChat, joinedAt: $joinedAt)';
+    return 'ChatParticipantModel(id: $id, orgId: $orgId, chatId: $chatId, userId: $userId, roleInChat: $roleInChat, joinedAt: $joinedAt, createdAt: $createdAt, userName: $userName, userAvatar: $userAvatar)';
   }
 
   @override
@@ -587,22 +680,25 @@ class _$ChatParticipantModelImpl implements _ChatParticipantModel {
         (other.runtimeType == runtimeType &&
             other is _$ChatParticipantModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.orgId, orgId) || other.orgId == orgId) &&
             (identical(other.chatId, chatId) || other.chatId == chatId) &&
             (identical(other.userId, userId) || other.userId == userId) &&
-            (identical(other.userName, userName) ||
-                other.userName == userName) &&
-            (identical(other.userAvatar, userAvatar) ||
-                other.userAvatar == userAvatar) &&
             (identical(other.roleInChat, roleInChat) ||
                 other.roleInChat == roleInChat) &&
             (identical(other.joinedAt, joinedAt) ||
-                other.joinedAt == joinedAt));
+                other.joinedAt == joinedAt) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.userName, userName) ||
+                other.userName == userName) &&
+            (identical(other.userAvatar, userAvatar) ||
+                other.userAvatar == userAvatar));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, chatId, userId, userName,
-      userAvatar, roleInChat, joinedAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, chatId, userId,
+      roleInChat, joinedAt, createdAt, userName, userAvatar);
 
   /// Create a copy of ChatParticipantModel
   /// with the given fields replaced by the non-null parameter values.
@@ -625,12 +721,14 @@ class _$ChatParticipantModelImpl implements _ChatParticipantModel {
 abstract class _ChatParticipantModel implements ChatParticipantModel {
   const factory _ChatParticipantModel(
       {required final String id,
-      required final String chatId,
-      required final String userId,
+      @JsonKey(name: 'org_id') required final String orgId,
+      @JsonKey(name: 'chat_id') required final String chatId,
+      @JsonKey(name: 'user_id') required final String userId,
+      @JsonKey(name: 'role_in_chat') final ChatParticipantRole roleInChat,
+      @JsonKey(name: 'joined_at') required final DateTime joinedAt,
+      @JsonKey(name: 'created_at') required final DateTime createdAt,
       final String? userName,
-      final String? userAvatar,
-      final String roleInChat,
-      final DateTime? joinedAt}) = _$ChatParticipantModelImpl;
+      final String? userAvatar}) = _$ChatParticipantModelImpl;
 
   factory _ChatParticipantModel.fromJson(Map<String, dynamic> json) =
       _$ChatParticipantModelImpl.fromJson;
@@ -638,17 +736,28 @@ abstract class _ChatParticipantModel implements ChatParticipantModel {
   @override
   String get id;
   @override
+  @JsonKey(name: 'org_id')
+  String get orgId; // PRD: required for multi-tenancy
+  @override
+  @JsonKey(name: 'chat_id')
   String get chatId;
   @override
+  @JsonKey(name: 'user_id')
   String get userId;
+  @override
+  @JsonKey(name: 'role_in_chat')
+  ChatParticipantRole get roleInChat; // member, admin
+  @override
+  @JsonKey(name: 'joined_at')
+  DateTime get joinedAt;
+  @override
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt; // PRD: required
+// Keep for UI: userName, userAvatar (not in PRD but needed for frontend)
   @override
   String? get userName;
   @override
   String? get userAvatar;
-  @override
-  String get roleInChat; // 'admin' or 'member'
-  @override
-  DateTime? get joinedAt;
 
   /// Create a copy of ChatParticipantModel
   /// with the given fields replaced by the non-null parameter values.
@@ -665,14 +774,23 @@ ChatMessageModel _$ChatMessageModelFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$ChatMessageModel {
   String get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'org_id')
+  String get orgId =>
+      throw _privateConstructorUsedError; // PRD: required for multi-tenancy
+  @JsonKey(name: 'chat_id')
   String get chatId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'sender_id')
   String get senderId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'message_body')
+  String get messageBody =>
+      throw _privateConstructorUsedError; // Max length: 5000 characters
+  @JsonKey(name: 'created_at')
+  DateTime get createdAt =>
+      throw _privateConstructorUsedError; // Keep for UI: senderName, senderAvatar, isRead, status (not in PRD but needed for frontend)
   String? get senderName => throw _privateConstructorUsedError;
   String? get senderAvatar => throw _privateConstructorUsedError;
-  String get messageBody => throw _privateConstructorUsedError;
   bool get isRead => throw _privateConstructorUsedError;
   MessageStatus get status => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this ChatMessageModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -692,14 +810,15 @@ abstract class $ChatMessageModelCopyWith<$Res> {
   @useResult
   $Res call(
       {String id,
-      String chatId,
-      String senderId,
+      @JsonKey(name: 'org_id') String orgId,
+      @JsonKey(name: 'chat_id') String chatId,
+      @JsonKey(name: 'sender_id') String senderId,
+      @JsonKey(name: 'message_body') String messageBody,
+      @JsonKey(name: 'created_at') DateTime createdAt,
       String? senderName,
       String? senderAvatar,
-      String messageBody,
       bool isRead,
-      MessageStatus status,
-      DateTime? createdAt});
+      MessageStatus status});
 }
 
 /// @nodoc
@@ -718,19 +837,24 @@ class _$ChatMessageModelCopyWithImpl<$Res, $Val extends ChatMessageModel>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? chatId = null,
     Object? senderId = null,
+    Object? messageBody = null,
+    Object? createdAt = null,
     Object? senderName = freezed,
     Object? senderAvatar = freezed,
-    Object? messageBody = null,
     Object? isRead = null,
     Object? status = null,
-    Object? createdAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       chatId: null == chatId
           ? _value.chatId
@@ -740,6 +864,14 @@ class _$ChatMessageModelCopyWithImpl<$Res, $Val extends ChatMessageModel>
           ? _value.senderId
           : senderId // ignore: cast_nullable_to_non_nullable
               as String,
+      messageBody: null == messageBody
+          ? _value.messageBody
+          : messageBody // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       senderName: freezed == senderName
           ? _value.senderName
           : senderName // ignore: cast_nullable_to_non_nullable
@@ -748,10 +880,6 @@ class _$ChatMessageModelCopyWithImpl<$Res, $Val extends ChatMessageModel>
           ? _value.senderAvatar
           : senderAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
-      messageBody: null == messageBody
-          ? _value.messageBody
-          : messageBody // ignore: cast_nullable_to_non_nullable
-              as String,
       isRead: null == isRead
           ? _value.isRead
           : isRead // ignore: cast_nullable_to_non_nullable
@@ -760,10 +888,6 @@ class _$ChatMessageModelCopyWithImpl<$Res, $Val extends ChatMessageModel>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as MessageStatus,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
     ) as $Val);
   }
 }
@@ -778,14 +902,15 @@ abstract class _$$ChatMessageModelImplCopyWith<$Res>
   @useResult
   $Res call(
       {String id,
-      String chatId,
-      String senderId,
+      @JsonKey(name: 'org_id') String orgId,
+      @JsonKey(name: 'chat_id') String chatId,
+      @JsonKey(name: 'sender_id') String senderId,
+      @JsonKey(name: 'message_body') String messageBody,
+      @JsonKey(name: 'created_at') DateTime createdAt,
       String? senderName,
       String? senderAvatar,
-      String messageBody,
       bool isRead,
-      MessageStatus status,
-      DateTime? createdAt});
+      MessageStatus status});
 }
 
 /// @nodoc
@@ -802,19 +927,24 @@ class __$$ChatMessageModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? orgId = null,
     Object? chatId = null,
     Object? senderId = null,
+    Object? messageBody = null,
+    Object? createdAt = null,
     Object? senderName = freezed,
     Object? senderAvatar = freezed,
-    Object? messageBody = null,
     Object? isRead = null,
     Object? status = null,
-    Object? createdAt = freezed,
   }) {
     return _then(_$ChatMessageModelImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
+              as String,
+      orgId: null == orgId
+          ? _value.orgId
+          : orgId // ignore: cast_nullable_to_non_nullable
               as String,
       chatId: null == chatId
           ? _value.chatId
@@ -824,6 +954,14 @@ class __$$ChatMessageModelImplCopyWithImpl<$Res>
           ? _value.senderId
           : senderId // ignore: cast_nullable_to_non_nullable
               as String,
+      messageBody: null == messageBody
+          ? _value.messageBody
+          : messageBody // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       senderName: freezed == senderName
           ? _value.senderName
           : senderName // ignore: cast_nullable_to_non_nullable
@@ -832,10 +970,6 @@ class __$$ChatMessageModelImplCopyWithImpl<$Res>
           ? _value.senderAvatar
           : senderAvatar // ignore: cast_nullable_to_non_nullable
               as String?,
-      messageBody: null == messageBody
-          ? _value.messageBody
-          : messageBody // ignore: cast_nullable_to_non_nullable
-              as String,
       isRead: null == isRead
           ? _value.isRead
           : isRead // ignore: cast_nullable_to_non_nullable
@@ -844,10 +978,6 @@ class __$$ChatMessageModelImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as MessageStatus,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
     ));
   }
 }
@@ -857,14 +987,15 @@ class __$$ChatMessageModelImplCopyWithImpl<$Res>
 class _$ChatMessageModelImpl implements _ChatMessageModel {
   const _$ChatMessageModelImpl(
       {required this.id,
-      required this.chatId,
-      required this.senderId,
+      @JsonKey(name: 'org_id') required this.orgId,
+      @JsonKey(name: 'chat_id') required this.chatId,
+      @JsonKey(name: 'sender_id') required this.senderId,
+      @JsonKey(name: 'message_body') required this.messageBody,
+      @JsonKey(name: 'created_at') required this.createdAt,
       this.senderName,
       this.senderAvatar,
-      required this.messageBody,
       this.isRead = false,
-      this.status = MessageStatus.sent,
-      this.createdAt});
+      this.status = MessageStatus.sent});
 
   factory _$ChatMessageModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$ChatMessageModelImplFromJson(json);
@@ -872,27 +1003,37 @@ class _$ChatMessageModelImpl implements _ChatMessageModel {
   @override
   final String id;
   @override
+  @JsonKey(name: 'org_id')
+  final String orgId;
+// PRD: required for multi-tenancy
+  @override
+  @JsonKey(name: 'chat_id')
   final String chatId;
   @override
+  @JsonKey(name: 'sender_id')
   final String senderId;
+  @override
+  @JsonKey(name: 'message_body')
+  final String messageBody;
+// Max length: 5000 characters
+  @override
+  @JsonKey(name: 'created_at')
+  final DateTime createdAt;
+// Keep for UI: senderName, senderAvatar, isRead, status (not in PRD but needed for frontend)
   @override
   final String? senderName;
   @override
   final String? senderAvatar;
-  @override
-  final String messageBody;
   @override
   @JsonKey()
   final bool isRead;
   @override
   @JsonKey()
   final MessageStatus status;
-  @override
-  final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'ChatMessageModel(id: $id, chatId: $chatId, senderId: $senderId, senderName: $senderName, senderAvatar: $senderAvatar, messageBody: $messageBody, isRead: $isRead, status: $status, createdAt: $createdAt)';
+    return 'ChatMessageModel(id: $id, orgId: $orgId, chatId: $chatId, senderId: $senderId, messageBody: $messageBody, createdAt: $createdAt, senderName: $senderName, senderAvatar: $senderAvatar, isRead: $isRead, status: $status)';
   }
 
   @override
@@ -901,25 +1042,26 @@ class _$ChatMessageModelImpl implements _ChatMessageModel {
         (other.runtimeType == runtimeType &&
             other is _$ChatMessageModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.orgId, orgId) || other.orgId == orgId) &&
             (identical(other.chatId, chatId) || other.chatId == chatId) &&
             (identical(other.senderId, senderId) ||
                 other.senderId == senderId) &&
+            (identical(other.messageBody, messageBody) ||
+                other.messageBody == messageBody) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
             (identical(other.senderName, senderName) ||
                 other.senderName == senderName) &&
             (identical(other.senderAvatar, senderAvatar) ||
                 other.senderAvatar == senderAvatar) &&
-            (identical(other.messageBody, messageBody) ||
-                other.messageBody == messageBody) &&
             (identical(other.isRead, isRead) || other.isRead == isRead) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+            (identical(other.status, status) || other.status == status));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, chatId, senderId, senderName,
-      senderAvatar, messageBody, isRead, status, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, chatId, senderId,
+      messageBody, createdAt, senderName, senderAvatar, isRead, status);
 
   /// Create a copy of ChatMessageModel
   /// with the given fields replaced by the non-null parameter values.
@@ -941,14 +1083,15 @@ class _$ChatMessageModelImpl implements _ChatMessageModel {
 abstract class _ChatMessageModel implements ChatMessageModel {
   const factory _ChatMessageModel(
       {required final String id,
-      required final String chatId,
-      required final String senderId,
+      @JsonKey(name: 'org_id') required final String orgId,
+      @JsonKey(name: 'chat_id') required final String chatId,
+      @JsonKey(name: 'sender_id') required final String senderId,
+      @JsonKey(name: 'message_body') required final String messageBody,
+      @JsonKey(name: 'created_at') required final DateTime createdAt,
       final String? senderName,
       final String? senderAvatar,
-      required final String messageBody,
       final bool isRead,
-      final MessageStatus status,
-      final DateTime? createdAt}) = _$ChatMessageModelImpl;
+      final MessageStatus status}) = _$ChatMessageModelImpl;
 
   factory _ChatMessageModel.fromJson(Map<String, dynamic> json) =
       _$ChatMessageModelImpl.fromJson;
@@ -956,21 +1099,29 @@ abstract class _ChatMessageModel implements ChatMessageModel {
   @override
   String get id;
   @override
+  @JsonKey(name: 'org_id')
+  String get orgId; // PRD: required for multi-tenancy
+  @override
+  @JsonKey(name: 'chat_id')
   String get chatId;
   @override
+  @JsonKey(name: 'sender_id')
   String get senderId;
+  @override
+  @JsonKey(name: 'message_body')
+  String get messageBody; // Max length: 5000 characters
+  @override
+  @JsonKey(name: 'created_at')
+  DateTime
+      get createdAt; // Keep for UI: senderName, senderAvatar, isRead, status (not in PRD but needed for frontend)
   @override
   String? get senderName;
   @override
   String? get senderAvatar;
   @override
-  String get messageBody;
-  @override
   bool get isRead;
   @override
   MessageStatus get status;
-  @override
-  DateTime? get createdAt;
 
   /// Create a copy of ChatMessageModel
   /// with the given fields replaced by the non-null parameter values.

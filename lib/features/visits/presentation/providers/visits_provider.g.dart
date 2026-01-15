@@ -202,7 +202,7 @@ final activeVisitProvider = AutoDisposeProvider<VisitModel?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ActiveVisitRef = AutoDisposeProviderRef<VisitModel?>;
-String _$todayVisitsHash() => r'aa6a851684244b7226df8eb906f6ddc6ea39c580';
+String _$todayVisitsHash() => r'ec36d64ceb2f62f3f3e1788a884b67cc3a5b7f44';
 
 /// Today's Visits Provider
 ///
@@ -222,7 +222,7 @@ final todayVisitsProvider =
 );
 
 typedef _$TodayVisits = AutoDisposeAsyncNotifier<List<VisitModel>>;
-String _$visitDetailsHash() => r'76e28706e8b53878072957f3ec9566839bb4724f';
+String _$visitDetailsHash() => r'a0280f58332ee1d088d4789bba2eb2e7fd084d9a';
 
 abstract class _$VisitDetails
     extends BuildlessAutoDisposeAsyncNotifier<VisitModel> {
@@ -562,7 +562,7 @@ class _VisitNotesProviderElement
   String get visitId => (origin as VisitNotesProvider).visitId;
 }
 
-String _$visitActionsHash() => r'9a107cce3a1bbf20717f07ad8504ca2b7421a00f';
+String _$visitActionsHash() => r'f5ecca8360a1d933fad02b8f3ce45325bd3f4f89';
 
 /// Visit Actions Provider
 ///

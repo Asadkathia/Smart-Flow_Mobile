@@ -73,7 +73,7 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await ref.read(inventoryActionsProvider.notifier).updateItem(
+    final success = await ref.read(inventoryNotifierProvider.notifier).updateItem(
       id: widget.itemId,
       name: _nameController.text.trim(),
       unit: _unitController.text.trim(),
@@ -116,7 +116,7 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
     );
 
     if (confirmed == true) {
-      final success = await ref.read(inventoryActionsProvider.notifier).deleteItem(widget.itemId);
+      final success = await ref.read(inventoryNotifierProvider.notifier).deleteItem(widget.itemId);
       if (success && mounted) {
         context.showSuccessSnackBar('Item deleted successfully');
         context.pop();
@@ -126,10 +126,55 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
     }
   }
 
+  /// Convert storage path to full Supabase Storage URL
+  String _getFullImageUrl(String imagePath) {
+    // If already a full URL, return as-is
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    
+    // Fix for existing data: strip duplicate /inventory/ from old paths
+    // Old format: orgId/inventory/itemId/filename
+    // New format: orgId/itemId/filename  
+    String cleanPath = imagePath;
+    
+    // Handle cases where path starts with inventory/ (e.g. migration artifact)
+    if (cleanPath.startsWith('inventory/')) {
+      cleanPath = cleanPath.substring('inventory/'.length);
+    }
+    
+    final regex = RegExp(r'^([^/]+)/inventory/(.+)$');
+    final match = regex.firstMatch(imagePath);
+    if (match != null) {
+      // Convert old format to new: strip the /inventory/ part
+      cleanPath = '${match.group(1)}/${match.group(2)}';
+    }
+    
+    const supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: 'https://pbqbsdmwbjpsvxuuwjiv.supabase.co');
+    return '$supabaseUrl/storage/v1/object/public/inventory/$cleanPath';
+  }
+
+  /// Validate that the image URL/path is valid before loading
+  bool _isValidImageUrl(String imagePath) {
+    // Don't load if path is empty or whitespace only
+    if (imagePath.trim().isEmpty) return false;
+    
+    // Don't load if path is the string "null" (database artifact)
+    if (imagePath.trim().toLowerCase() == 'null') return false;
+    
+    // Don't load if path looks like a placeholder or invalid UUID
+    if (imagePath.contains('00000000-0000-0000-0000-000000000000')) return false;
+    
+    // Basic validation - must have at least one slash (path structure)
+    if (!imagePath.contains('/')) return false;
+    
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final itemAsync = ref.watch(inventoryItemProvider(widget.itemId));
-    final actionsState = ref.watch(inventoryActionsProvider);
+    final actionsState = ref.watch(inventoryNotifierProvider);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -140,6 +185,15 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
         ),
         backgroundColor: AppColors.primaryTextColor,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppColors.whiteColor,
+            size: 22.sp,
+          ),
+          iconSize: 22.sp,
+          onPressed: () => context.pop(),
+        ),
         actions: [
           if (!_isEditing)
             IconButton(
@@ -184,7 +238,7 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Item Image
-                  if (item.imageUrl != null)
+                  if (item.imageUrl != null && _isValidImageUrl(item.imageUrl!))
                     Container(
                       width: double.infinity,
                       height: 200.h,
@@ -196,7 +250,7 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12.r),
                         child: CachedNetworkImage(
-                          imageUrl: item.imageUrl!,
+                          imageUrl: _getFullImageUrl(item.imageUrl!),
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Center(
                             child: CircularProgressIndicator(),
@@ -205,6 +259,7 @@ class _InventoryDetailsScreenState extends ConsumerState<InventoryDetailsScreen>
                             Icons.inventory_2_outlined,
                             size: 60.sp,
                             color: AppColors.greyColor,
+                            textDirection: TextDirection.ltr,
                           ),
                         ),
                       ),

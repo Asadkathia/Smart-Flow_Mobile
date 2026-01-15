@@ -19,14 +19,16 @@ enum ChatType {
 class ChatThreadModel with _$ChatThreadModel {
   const factory ChatThreadModel({
     required String id,
+    @JsonKey(name: 'org_id') required String orgId, // PRD: required for multi-tenancy
     required ChatType type,
     String? title, // Only for group chats
-    required String createdBy,
-    required List<ChatParticipantModel> participants,
+    @JsonKey(name: 'created_by') required String createdBy,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt, // Updated when participants are added/removed (group chats only)
+    // Keep for UI: participants, lastMessage, unreadCount (not in PRD but needed for frontend)
+    @Default([]) List<ChatParticipantModel> participants,
     ChatMessageModel? lastMessage,
     @Default(0) int unreadCount,
-    DateTime? createdAt,
-    DateTime? updatedAt,
   }) = _ChatThreadModel;
 
   factory ChatThreadModel.fromJson(Map<String, dynamic> json) =>
@@ -55,8 +57,16 @@ extension ChatThreadModelX on ChatThreadModel {
       (p) => p.userId == currentUserId,
       orElse: () => participants.first,
     );
-    return participant.roleInChat == 'admin';
+    return participant.roleInChat == ChatParticipantRole.admin;
   }
+}
+
+/// Chat Participant Role Enum (PRD Section 3.15)
+enum ChatParticipantRole {
+  @JsonValue('member')
+  member,
+  @JsonValue('admin')
+  admin, // Allows adding/removing members in group chats
 }
 
 /// Chat Participant Model (PRD Section 3.15)
@@ -66,12 +76,17 @@ extension ChatThreadModelX on ChatThreadModel {
 class ChatParticipantModel with _$ChatParticipantModel {
   const factory ChatParticipantModel({
     required String id,
-    required String chatId,
-    required String userId,
+    @JsonKey(name: 'org_id') required String orgId, // PRD: required for multi-tenancy
+    @JsonKey(name: 'chat_id') required String chatId,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'role_in_chat')
+    @Default(ChatParticipantRole.member)
+    ChatParticipantRole roleInChat, // member, admin
+    @JsonKey(name: 'joined_at') required DateTime joinedAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt, // PRD: required
+    // Keep for UI: userName, userAvatar (not in PRD but needed for frontend)
     String? userName,
     String? userAvatar,
-    @Default('member') String roleInChat, // 'admin' or 'member'
-    DateTime? joinedAt,
   }) = _ChatParticipantModel;
 
   factory ChatParticipantModel.fromJson(Map<String, dynamic> json) =>
@@ -101,14 +116,16 @@ enum MessageStatus {
 class ChatMessageModel with _$ChatMessageModel {
   const factory ChatMessageModel({
     required String id,
-    required String chatId,
-    required String senderId,
+    @JsonKey(name: 'org_id') required String orgId, // PRD: required for multi-tenancy
+    @JsonKey(name: 'chat_id') required String chatId,
+    @JsonKey(name: 'sender_id') required String senderId,
+    @JsonKey(name: 'message_body') required String messageBody, // Max length: 5000 characters
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    // Keep for UI: senderName, senderAvatar, isRead, status (not in PRD but needed for frontend)
     String? senderName,
     String? senderAvatar,
-    required String messageBody,
     @Default(false) bool isRead,
     @Default(MessageStatus.sent) MessageStatus status,
-    DateTime? createdAt,
   }) = _ChatMessageModel;
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) =>

@@ -302,14 +302,22 @@ class JobDetailsScheduleWidget extends ConsumerWidget {
         }
       } else if (context.mounted) {
         // Just save signature for later
-        context.showSuccessSnackBar('Signature saved');
-        // TODO: Store signature path in visit for later use
+        final success = await ref
+            .read(visitActionsProvider.notifier)
+            .saveSignature(visitId, signaturePath);
+        if (success && context.mounted) {
+          context.showSuccessSnackBar('Signature saved');
+        }
       }
     } else {
       // Just save signature
       if (context.mounted) {
-        context.showSuccessSnackBar('Signature saved');
-        // TODO: Store signature path in visit for later use
+        final success = await ref
+            .read(visitActionsProvider.notifier)
+            .saveSignature(visitId, signaturePath);
+        if (success && context.mounted) {
+          context.showSuccessSnackBar('Signature saved');
+        }
       }
     }
   }

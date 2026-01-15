@@ -51,14 +51,13 @@ class SignatureUploadService {
 
       // Use media upload service with visit-specific path
       // Supabase Storage path: visits/{visitId}/signatures/{filename}
-      final signatureUrl = await _mediaUploadService.uploadImage(
-        signatureFile,
-        'signatures',
-        entityId: visitId,
-        entityType: 'visits',
+      final signaturePath = await _mediaUploadService.uploadVisitMedia(
+        visitId: visitId,
+        file: signatureFile,
+        fileType: 'image',
       );
 
-      return signatureUrl;
+      return signaturePath;
     } catch (e) {
       throw ErrorHandler.handle(e);
     }
@@ -67,32 +66,23 @@ class SignatureUploadService {
   /// Upload signature with progress tracking
   /// 
   /// Returns a stream of progress values (0.0 to 1.0)
-  Stream<double> uploadSignatureWithProgress(
+  /// Note: Progress tracking not yet implemented in MediaUploadService
+  Future<String> uploadSignatureWithProgress(
     File signatureFile,
     String visitId,
-  ) {
-    return _mediaUploadService.uploadWithProgress(
-      signatureFile,
-      'visits/$visitId/signatures',
-      entityId: visitId,
-      entityType: 'visit',
-    );
+  ) async {
+    // For now, use regular upload (progress tracking can be added later)
+    return uploadSignature(signatureFile, visitId);
   }
 
   /// Delete signature
+  /// Note: Delete functionality not yet implemented in MediaUploadService
   Future<void> deleteSignature(
     String signatureUrl,
     String visitId,
   ) async {
-    try {
-      await _mediaUploadService.deleteMedia(
-        signatureUrl,
-        entityId: visitId,
-        entityType: 'visit',
-      );
-    } catch (e) {
-      throw ErrorHandler.handle(e);
-    }
+    // TODO: Implement signature deletion when MediaUploadService supports it
+    throw UnimplementedError('Signature deletion not yet implemented');
   }
 }
 

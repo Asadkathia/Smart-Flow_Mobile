@@ -1,0 +1,30 @@
+# Supabase Configuration for SmartFlowPro
+# Project Ref: pbqbsdmwbjpsvxuuwjiv
+# Region: Northeast Asia (Tokyo)
+
+project_id = "pbqbsdmwbjpsvxuuwjiv"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "https://smartflowpro.app"
+additional_redirect_urls = ["exp://localhost:19000", "smartflowpro://"]
+jwt_expiry = 3600
+enable_signup = false  # Signup via admin invitation only
+
+[storage]
+file_size_limit = "100MB"

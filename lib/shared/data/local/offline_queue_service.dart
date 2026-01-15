@@ -16,6 +16,7 @@ enum PendingActionType {
   addSignature,
   createQuote,
   updateQuote,
+  deleteQuote,
   addInventory,
   updateInventory,
   deleteInventory,
@@ -51,6 +52,7 @@ extension PendingActionTypePriority on PendingActionType {
       case PendingActionType.uploadMedia:
       case PendingActionType.createQuote:
       case PendingActionType.updateQuote:
+      case PendingActionType.deleteQuote:
         return ActionPriority.normal;
       default:
         return ActionPriority.low;

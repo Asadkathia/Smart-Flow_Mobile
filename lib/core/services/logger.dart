@@ -72,9 +72,13 @@ class Logger {
   /// Log network responses
   static void networkResponse(String method, String url, int statusCode, [dynamic data]) {
     if (kDebugMode) {
-      debugPrint('$_tag [NETWORK] $method $url -> $statusCode');
-      if (data != null) {
-        debugPrint('$_tag [NETWORK] Response: $data');
+      if (statusCode >= 200 && statusCode < 300) {
+        debugPrint('$_tag [NETWORK] $method $url -> $statusCode OK');
+      } else {
+        debugPrint('$_tag [NETWORK] $method $url -> $statusCode ERROR');
+        if (data != null) {
+          debugPrint('$_tag [NETWORK] Response: $data');
+        }
       }
     }
   }

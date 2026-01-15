@@ -46,7 +46,7 @@ class CreateQuotesScreen extends ConsumerWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           child: Text(
             'Cancel',
             style: AppTextStyles.buttonMedium.copyWith(color: AppColors.skyAqua),
@@ -198,6 +198,14 @@ class CreateQuotesScreen extends ConsumerWidget {
       return;
     }
     
+    // Validate visitId is provided
+    if (visitId.isEmpty) {
+      if (context.mounted) {
+        context.showErrorSnackBar('Visit ID is required. Please navigate from a visit.');
+      }
+      return;
+    }
+    
     // Get orgId from auth provider, with fallback for development mode
     final authState = ref.read(authProvider);
     final orgId = authState.user?.orgId ?? 'org_1'; // Default orgId for development
@@ -206,7 +214,7 @@ class CreateQuotesScreen extends ConsumerWidget {
     // In production, this should be required
     
     await quoteNotifier.saveQuote(
-      visitId: visitId.isNotEmpty ? visitId : 'visit-1', // TODO: Get from route params
+      visitId: visitId,
       orgId: orgId,
     );
     if (context.mounted) {
@@ -240,7 +248,7 @@ class CreateQuotesScreen extends ConsumerWidget {
       // TODO: Pass quote data to invoice creation screen
       context.push(AppRoutePaths.invoiceList);
     } else {
-      Navigator.pop(context);
+      context.pop();
     }
   }
 

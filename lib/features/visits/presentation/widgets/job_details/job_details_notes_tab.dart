@@ -193,23 +193,6 @@ class JobDetailsNotesTab extends ConsumerWidget {
           // Note metadata
           Row(
             children: [
-              if (note.authorName != null) ...[
-                Text(
-                  note.authorName!,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.greyColor,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  '•',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.greyColor,
-                  ),
-                ),
-                SizedBox(width: 8.w),
-              ],
               Text(
                 note.formattedDate,
                 style: AppTextStyles.bodySmall.copyWith(
@@ -218,54 +201,8 @@ class JobDetailsNotesTab extends ConsumerWidget {
               ),
             ],
           ),
-          // Display images if available
-          if (note.imageUrls.isNotEmpty) ...[
-            SizedBox(height: 10.h),
-            SizedBox(
-              height: 80.h,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: note.imageUrls.length,
-                separatorBuilder: (_, __) => SizedBox(width: 10.w),
-                itemBuilder: (context, imgIdx) {
-                  final imgUrl = note.imageUrls[imgIdx];
-                  return GestureDetector(
-                    onTap: () => _showImageFullScreen(context, imgUrl),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.r),
-                      child: imgUrl.startsWith('http')
-                          ? CachedNetworkImage(
-                              imageUrl: imgUrl,
-                              width: 80.w,
-                              height: 80.h,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                width: 80.w,
-                                height: 80.h,
-                                color: AppColors.greyColor.withOpacity(0.2),
-                                child: Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                width: 80.w,
-                                height: 80.h,
-                                color: AppColors.greyColor.withOpacity(0.2),
-                                child: Icon(Icons.error, color: AppColors.errorRed),
-                              ),
-                            )
-                          : Image.file(
-                              File(imgUrl),
-                              width: 80.w,
-                              height: 80.h,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+          // Note: Image URLs removed per PRD - images are stored separately in visit_media
+          // Image display functionality to be implemented via visit_media table
         ],
       ),
     );

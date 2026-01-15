@@ -251,30 +251,36 @@ class InvoiceMockData {
   static List<PaymentModel> getMockPayments(String invoiceId) {
     if (invoiceId == '3') {
       // Partially paid invoice
+      final now = DateTime.now().subtract(const Duration(days: 1));
       return [
         PaymentModel(
           id: 'pay-1',
+          orgId: 'org-1', // PRD: required for multi-tenancy
           invoiceId: invoiceId,
           amount: 425.00, // 50% of 850
           method: PaymentMethod.cash,
           reference: null,
           receivedBy: 'tech-1',
-          receivedAt: DateTime.now().subtract(const Duration(days: 1)),
-          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+          receivedAt: now,
+          createdAt: now,
+          updatedAt: now, // PRD: required
         ),
       ];
     } else if (invoiceId == '4') {
       // Fully paid invoice
+      final now = DateTime.now().subtract(const Duration(hours: 6));
       return [
         PaymentModel(
           id: 'pay-2',
+          orgId: 'org-1', // PRD: required for multi-tenancy
           invoiceId: invoiceId,
           amount: 550.00,
           method: PaymentMethod.card,
           reference: 'CH_1234567890',
           receivedBy: 'tech-1',
-          receivedAt: DateTime.now().subtract(const Duration(hours: 6)),
-          createdAt: DateTime.now().subtract(const Duration(hours: 6)),
+          receivedAt: now,
+          createdAt: now,
+          updatedAt: now, // PRD: required
         ),
       ];
     }

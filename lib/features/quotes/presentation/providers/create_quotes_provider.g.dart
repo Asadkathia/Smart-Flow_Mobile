@@ -6,7 +6,7 @@ part of 'create_quotes_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$createQuotesHash() => r'6642c6e08daf33458877c4111992ec3058225d16';
+String _$createQuotesHash() => r'7a4a0ede71288377423e32860783a77b34388546';
 
 /// Create Quotes Provider
 ///

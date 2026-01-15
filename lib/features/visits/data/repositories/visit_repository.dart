@@ -8,6 +8,7 @@ import 'package:smartflowpro/shared/data/services/media_upload_service.dart';
 import 'package:smartflowpro/core/constants/api_endpoints.dart';
 import 'package:smartflowpro/core/constants/storage_keys.dart';
 import 'package:smartflowpro/core/errors/error_handler.dart';
+import 'package:smartflowpro/core/services/logger.dart';
 import 'package:smartflowpro/core/validation/visit_validator.dart';
 import '../models/visit_model.dart';
 import '../models/note_model.dart';
@@ -37,6 +38,10 @@ class VisitRepository extends BaseRepository {
 
   /// Get today's visits for the technician - unified pattern
   /// 
+  /// Uses REST API instead of Edge Functions to avoid ES256 JWT issues.
+  /// Filters by: technician_id (from JWT), status (scheduled/in_progress)
+  /// Shows visits from yesterday onwards to include recent/ongoing visits
+  /// 
   /// [page] and [pageSize] are optional for backward compatibility.
   /// When provided, enables pagination support.
   Future<List<VisitModel>> getTodayVisits({
@@ -46,25 +51,32 @@ class VisitRepository extends BaseRepository {
     return await fetchList<VisitModel>(
       cacheKey: StorageKeys.todayVisitsCache,
       apiCall: () async {
-        final queryParams = <String, dynamic>{};
-        if (page != null) queryParams['page'] = page;
-        if (pageSize != null) queryParams['page_size'] = pageSize;
+        // Use REST API directly (works with ES256 JWT)
+        // RLS policies will filter by technician_id automatically
         
-        final response = await apiClient.get(
-          ApiEndpoints.todayVisits,
-          queryParameters: queryParams.isEmpty ? null : queryParams,
-        );
+        // Get yesterday's date to include recent visits
+        // This helps show visits that may have started yesterday but are still in progress
+        final now = DateTime.now();
+        final yesterdayStart = DateTime(now.year, now.month, now.day - 1).toIso8601String();
         
-        // Handle paginated response if page/pageSize provided
-        if (page != null || pageSize != null) {
-          if (response.data is Map && response.data['data'] != null) {
-            final List<dynamic> data = response.data['data'] as List;
-            return data.map((json) => VisitModel.fromJson(json)).toList();
-          }
+        // Build REST API query
+        // Filter: scheduled_start >= yesterday AND status IN (scheduled, in_progress)
+        // Order by scheduled_start ascending to show earliest visits first
+        final url = '${ApiEndpoints.restApiBaseFull}/visits'
+            '?scheduled_start=gte.$yesterdayStart'
+            '&status=in.(scheduled,in_progress)'
+            '&select=*'
+            '&order=scheduled_start.asc';
+        
+        final response = await apiClient.get(url);
+        
+        // REST API returns array directly
+        if (response.data is List) {
+          final List<dynamic> data = response.data as List;
+          return data.map((json) => VisitModel.fromJson(json)).toList();
         }
         
-        final List<dynamic> data = response.data as List;
-        return data.map((json) => VisitModel.fromJson(json)).toList();
+        return [];
       },
       fromJson: (data) => VisitModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData ? () => VisitMockData.getMockVisits() : null,
@@ -76,8 +88,15 @@ class VisitRepository extends BaseRepository {
     return await fetch<VisitModel>(
       cacheKey: 'visit_$visitId',
       apiCall: () async {
-        final response = await apiClient.get(ApiEndpoints.visitDetails(visitId));
-        return VisitModel.fromJson(response.data);
+        // TODO: Create visit-details Edge Function or use REST API
+        // For now, use REST API directly
+        final url = '${ApiEndpoints.restApiBaseFull}/visits?id=eq.$visitId&select=*';
+        final response = await apiClient.get(url);
+        
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return VisitModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Visit not found');
       },
       fromJson: (data) => VisitModel.fromJson(data as Map<String, dynamic>),
       mockData: useMockData
@@ -87,6 +106,7 @@ class VisitRepository extends BaseRepository {
   }
 
   /// Start a visit - with offline support
+  /// Uses REST API directly to avoid ES256 JWT issues
   Future<VisitModel> startVisit(String visitId) async {
     // Get current visit first for optimistic update
     final current = await getVisitDetails(visitId);
@@ -94,19 +114,34 @@ class VisitRepository extends BaseRepository {
     // Validate state transition (PRD Section 17.1)
     VisitValidator.validateCanStart(current);
     
+    final now = DateTime.now();
+    
     return await mutate<VisitModel>(
       cacheKey: 'visit_$visitId',
       apiCall: () async {
-        final response = await apiClient.post(ApiEndpoints.startVisit(visitId));
-        return VisitModel.fromJson(response.data);
+        // Use REST API PATCH to update visits table directly
+        final url = '${ApiEndpoints.restApiBaseFull}/visits?id=eq.$visitId';
+        final response = await apiClient.patch(
+          url,
+          data: {
+            'status': 'in_progress',
+            'actual_start': now.toIso8601String(),
+          },
+        );
+        
+        // REST API returns array on update
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return VisitModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Failed to start visit');
       },
       actionType: PendingActionType.startVisit,
       actionData: {'visit_id': visitId},
       fromJson: (data) => VisitModel.fromJson(data as Map<String, dynamic>),
       optimisticUpdate: () => current.copyWith(
         status: VisitStatus.inProgress,
-        actualStart: DateTime.now(),
-        updatedAt: DateTime.now(),
+        actualStart: now,
+        updatedAt: now,
       ),
       localEntity: current,
       entityType: 'visit',
@@ -115,6 +150,7 @@ class VisitRepository extends BaseRepository {
   }
 
   /// Pause a visit - with offline support
+  /// Uses REST API directly to avoid ES256 JWT issues
   Future<VisitModel> pauseVisit(String visitId, {String? reason}) async {
     // Get current visit first for optimistic update
     final current = await getVisitDetails(visitId);
@@ -125,11 +161,21 @@ class VisitRepository extends BaseRepository {
     return await mutate<VisitModel>(
       cacheKey: 'visit_$visitId',
       apiCall: () async {
-        final response = await apiClient.post(
-          ApiEndpoints.pauseVisit(visitId),
-          data: reason != null ? {'reason': reason} : null,
+        // Use REST API PATCH to update visits table directly
+        final url = '${ApiEndpoints.restApiBaseFull}/visits?id=eq.$visitId';
+        final response = await apiClient.patch(
+          url,
+          data: {
+            'status': 'paused',
+            if (reason != null) 'status_reason': reason,
+          },
         );
-        return VisitModel.fromJson(response.data);
+        
+        // REST API returns array on update
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return VisitModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Failed to pause visit');
       },
       actionType: PendingActionType.pauseVisit,
       actionData: {'visit_id': visitId, 'reason': reason},
@@ -145,10 +191,52 @@ class VisitRepository extends BaseRepository {
     );
   }
 
+  /// Save signature for a visit (without completing)
+  /// 
+  /// This allows saving signature separately before completing the visit.
+  /// The signaturePath should already be a URL from SignatureUploadService.
+  /// Uses REST API directly to avoid ES256 JWT issues.
+  Future<VisitModel> saveSignature(String visitId, String signaturePath) async {
+    // Get current visit first for optimistic update
+    final current = await getVisitDetails(visitId);
+    
+    return await mutate<VisitModel>(
+      cacheKey: 'visit_$visitId',
+      apiCall: () async {
+        // Use REST API PATCH to update visits table directly
+        final url = '${ApiEndpoints.restApiBaseFull}/visits?id=eq.$visitId';
+        final response = await apiClient.patch(
+          url,
+          data: {'signature_url': signaturePath},
+        );
+        
+        // REST API returns array on update
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return VisitModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Failed to save signature');
+      },
+      actionType: PendingActionType.addSignature,
+      actionData: {
+        'visit_id': visitId,
+        'signature_path': signaturePath,
+      },
+      fromJson: (data) => VisitModel.fromJson(data as Map<String, dynamic>),
+      optimisticUpdate: () => current.copyWith(
+        signatureUrl: signaturePath,
+        updatedAt: DateTime.now(),
+      ),
+      localEntity: current,
+      entityType: 'visit',
+      checkConflict: false, // Signature save doesn't conflict with other operations
+    );
+  }
+
   /// Complete a visit - with offline support
   /// 
   /// Note: Signature upload is handled by SignatureUploadService before calling this method.
   /// The signaturePath should already be a URL from the upload service.
+  /// Uses REST API directly to avoid ES256 JWT issues.
   /// 
   /// Per PRD Section 18: Signature is required for visit completion.
   Future<VisitModel> completeVisit(String visitId, {String? signaturePath}) async {
@@ -165,11 +253,22 @@ class VisitRepository extends BaseRepository {
     return await mutate<VisitModel>(
       cacheKey: 'visit_$visitId',
       apiCall: () async {
-        final response = await apiClient.post(
-          ApiEndpoints.completeVisit(visitId),
-          data: signatureUrl != null ? {'signature_url': signatureUrl} : null,
+        // Use REST API PATCH to update visits table directly
+        final url = '${ApiEndpoints.restApiBaseFull}/visits?id=eq.$visitId';
+        final response = await apiClient.patch(
+          url,
+          data: {
+            'status': 'completed',
+            'actual_end': now.toIso8601String(),
+            if (signatureUrl != null) 'signature_url': signatureUrl,
+          },
         );
-        return VisitModel.fromJson(response.data);
+        
+        // REST API returns array on update
+        if (response.data is List && (response.data as List).isNotEmpty) {
+          return VisitModel.fromJson(response.data[0] as Map<String, dynamic>);
+        }
+        throw Exception('Failed to complete visit');
       },
       actionType: PendingActionType.completeVisit,
       actionData: {
@@ -218,12 +317,20 @@ class VisitRepository extends BaseRepository {
     List<String> imageUrls = [];
     if (imageFiles != null && imageFiles.isNotEmpty && _mediaUploadService != null) {
       try {
-        imageUrls = await _mediaUploadService!.uploadMultipleImages(
-          imageFiles,
-          'visits/$visitId/media',
-          entityId: visitId,
-          entityType: 'visit',
-        );
+        // Upload each image individually
+        for (final file in imageFiles) {
+          try {
+            final path = await _mediaUploadService!.uploadVisitMedia(
+              visitId: visitId,
+              file: file,
+              fileType: 'image',
+            );
+            imageUrls.add(path);
+          } catch (e) {
+            // Continue with other files if one fails
+            Logger.error('Failed to upload image: ${file.path}', e);
+          }
+        }
       } catch (e) {
         // If upload fails, fall back to local paths for offline support
         // The offline queue will handle retry when online
@@ -262,10 +369,7 @@ class VisitRepository extends BaseRepository {
           orgId: 'org_1',
           visitId: visitId,
           authorId: 'tech_1',
-          authorName: 'Tony Stark',
-          content: content,
-          isInternal: isInternal,
-          imageUrls: imageUrls,
+          body: content, // PRD: body (not content)
           createdAt: now,
           updatedAt: now,
         );

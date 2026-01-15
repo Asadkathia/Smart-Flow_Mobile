@@ -5,159 +5,199 @@ import '../models/chat_models.dart';
 /// Provides sample chat threads and messages for development and testing.
 class ChatMockData {
   static const String currentUserId = 'user-1'; // Mock current user
+  static const String mockOrgId = 'org-1'; // Mock organization ID
 
   /// Get mock chat threads
   static List<ChatThreadModel> getChatThreads() {
+    final now = DateTime.now();
     return [
       // Direct Chat 1
       ChatThreadModel(
         id: 'chat-1',
+        orgId: mockOrgId, // PRD: required for multi-tenancy
         type: ChatType.direct,
         createdBy: 'user-1',
+        createdAt: now.subtract(const Duration(days: 3)),
+        updatedAt: now.subtract(const Duration(minutes: 15)),
         participants: [
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-1',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-1',
             userId: 'user-1',
             userName: 'Tony Stark',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 3)),
+            createdAt: now.subtract(const Duration(days: 3)),
           ),
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-2',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-1',
             userId: 'user-2',
             userName: 'Sarah Johnson',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 3)),
+            createdAt: now.subtract(const Duration(days: 3)),
           ),
         ],
-        lastMessage: const ChatMessageModel(
+        lastMessage: ChatMessageModel(
           id: 'msg-1',
+          orgId: mockOrgId, // PRD: required for multi-tenancy
           chatId: 'chat-1',
           senderId: 'user-2',
           senderName: 'Sarah Johnson',
           messageBody: 'Thanks for the update on the HVAC job!',
-          createdAt: null,
+          createdAt: now.subtract(const Duration(minutes: 15)),
         ),
         unreadCount: 2,
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        updatedAt: DateTime.now().subtract(const Duration(minutes: 15)),
       ),
 
       // Direct Chat 2
       ChatThreadModel(
         id: 'chat-2',
+        orgId: mockOrgId, // PRD: required for multi-tenancy
         type: ChatType.direct,
         createdBy: 'user-1',
+        createdAt: now.subtract(const Duration(days: 5)),
+        updatedAt: now.subtract(const Duration(hours: 2)),
         participants: [
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-3',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-2',
             userId: 'user-1',
             userName: 'Tony Stark',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 5)),
+            createdAt: now.subtract(const Duration(days: 5)),
           ),
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-4',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-2',
             userId: 'user-3',
             userName: 'Mike Chen',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 5)),
+            createdAt: now.subtract(const Duration(days: 5)),
           ),
         ],
-        lastMessage: const ChatMessageModel(
+        lastMessage: ChatMessageModel(
           id: 'msg-2',
+          orgId: mockOrgId, // PRD: required for multi-tenancy
           chatId: 'chat-2',
           senderId: 'user-1',
           senderName: 'Tony Stark',
           messageBody: 'I\'ll be at the site in 20 minutes',
-          createdAt: null,
+          createdAt: now.subtract(const Duration(hours: 2)),
         ),
         unreadCount: 0,
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
       ),
 
       // Group Chat
       ChatThreadModel(
         id: 'chat-3',
+        orgId: mockOrgId, // PRD: required for multi-tenancy
         type: ChatType.group,
         title: 'Phoenix Team',
         createdBy: 'admin-1',
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now.subtract(const Duration(hours: 4)),
         participants: [
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-5',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-3',
             userId: 'admin-1',
             userName: 'Admin User',
-            roleInChat: 'admin',
+            roleInChat: ChatParticipantRole.admin,
+            joinedAt: now.subtract(const Duration(days: 30)),
+            createdAt: now.subtract(const Duration(days: 30)),
           ),
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-6',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-3',
             userId: 'user-1',
             userName: 'Tony Stark',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 30)),
+            createdAt: now.subtract(const Duration(days: 30)),
           ),
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-7',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-3',
             userId: 'user-2',
             userName: 'Sarah Johnson',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 30)),
+            createdAt: now.subtract(const Duration(days: 30)),
           ),
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-8',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-3',
             userId: 'user-3',
             userName: 'Mike Chen',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 30)),
+            createdAt: now.subtract(const Duration(days: 30)),
           ),
         ],
-        lastMessage: const ChatMessageModel(
+        lastMessage: ChatMessageModel(
           id: 'msg-3',
+          orgId: mockOrgId, // PRD: required for multi-tenancy
           chatId: 'chat-3',
           senderId: 'admin-1',
           senderName: 'Admin User',
           messageBody: 'Team meeting at 3 PM today',
-          createdAt: null,
+          createdAt: now.subtract(const Duration(hours: 4)),
         ),
         unreadCount: 1,
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 4)),
       ),
 
       // Direct Chat 3
       ChatThreadModel(
         id: 'chat-4',
+        orgId: mockOrgId, // PRD: required for multi-tenancy
         type: ChatType.direct,
         createdBy: 'user-4',
+        createdAt: now.subtract(const Duration(days: 7)),
+        updatedAt: now.subtract(const Duration(days: 1)),
         participants: [
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-9',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-4',
             userId: 'user-1',
             userName: 'Tony Stark',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 7)),
+            createdAt: now.subtract(const Duration(days: 7)),
           ),
-          const ChatParticipantModel(
+          ChatParticipantModel(
             id: 'p-10',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: 'chat-4',
             userId: 'user-4',
             userName: 'Emily Davis',
-            roleInChat: 'member',
+            roleInChat: ChatParticipantRole.member,
+            joinedAt: now.subtract(const Duration(days: 7)),
+            createdAt: now.subtract(const Duration(days: 7)),
           ),
         ],
-        lastMessage: const ChatMessageModel(
+        lastMessage: ChatMessageModel(
           id: 'msg-4',
+          orgId: mockOrgId, // PRD: required for multi-tenancy
           chatId: 'chat-4',
           senderId: 'user-4',
           senderName: 'Emily Davis',
           messageBody: 'Can you check the inventory for thermostats?',
-          createdAt: null,
+          createdAt: now.subtract(const Duration(days: 1)),
         ),
         unreadCount: 0,
-        createdAt: DateTime.now().subtract(const Duration(days: 7)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 1)),
       ),
     ];
   }
@@ -169,6 +209,7 @@ class ChatMockData {
         return [
           ChatMessageModel(
             id: 'msg-1-1',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-1',
             senderName: 'Tony Stark',
@@ -177,6 +218,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-1-2',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-2',
             senderName: 'Sarah Johnson',
@@ -185,6 +227,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-1-3',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-1',
             senderName: 'Tony Stark',
@@ -193,6 +236,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-1-4',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-2',
             senderName: 'Sarah Johnson',
@@ -201,6 +245,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-1-5',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-2',
             senderName: 'Sarah Johnson',
@@ -213,6 +258,7 @@ class ChatMockData {
         return [
           ChatMessageModel(
             id: 'msg-2-1',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-3',
             senderName: 'Mike Chen',
@@ -221,6 +267,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-2-2',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-1',
             senderName: 'Tony Stark',
@@ -229,6 +276,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-2-3',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-1',
             senderName: 'Tony Stark',
@@ -241,6 +289,7 @@ class ChatMockData {
         return [
           ChatMessageModel(
             id: 'msg-3-1',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'admin-1',
             senderName: 'Admin User',
@@ -249,6 +298,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-3-2',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-2',
             senderName: 'Sarah Johnson',
@@ -257,6 +307,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-3-3',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-3',
             senderName: 'Mike Chen',
@@ -265,6 +316,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-3-4',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'admin-1',
             senderName: 'Admin User',
@@ -277,6 +329,7 @@ class ChatMockData {
         return [
           ChatMessageModel(
             id: 'msg-4-1',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-4',
             senderName: 'Emily Davis',
@@ -285,6 +338,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-4-2',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-1',
             senderName: 'Tony Stark',
@@ -293,6 +347,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-4-3',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-1',
             senderName: 'Tony Stark',
@@ -301,6 +356,7 @@ class ChatMockData {
           ),
           ChatMessageModel(
             id: 'msg-4-4',
+            orgId: mockOrgId, // PRD: required for multi-tenancy
             chatId: chatId,
             senderId: 'user-4',
             senderName: 'Emily Davis',

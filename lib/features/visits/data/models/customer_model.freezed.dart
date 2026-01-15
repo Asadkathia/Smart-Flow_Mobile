@@ -23,18 +23,15 @@ mixin _$CustomerModel {
   String get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'org_id')
   String get orgId => throw _privateConstructorUsedError;
-  @JsonKey(name: 'first_name')
-  String get firstName => throw _privateConstructorUsedError;
-  @JsonKey(name: 'last_name')
-  String get lastName => throw _privateConstructorUsedError;
-  String? get email => throw _privateConstructorUsedError;
-  String? get phone => throw _privateConstructorUsedError;
-  @JsonKey(name: 'alt_phone')
-  String? get altPhone => throw _privateConstructorUsedError;
-  String? get company => throw _privateConstructorUsedError;
-  String? get notes => throw _privateConstructorUsedError;
-  @JsonKey(name: 'is_active')
-  bool get isActive => throw _privateConstructorUsedError;
+  String get name =>
+      throw _privateConstructorUsedError; // PRD: single name field (not first_name/last_name)
+  String? get phone =>
+      throw _privateConstructorUsedError; // E.164 format recommended
+  String? get email =>
+      throw _privateConstructorUsedError; // Must be valid email format if provided
+  @JsonKey(name: 'preferred_contact_method')
+  PreferredContactMethod get preferredContactMethod =>
+      throw _privateConstructorUsedError; // PRD: required field
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
@@ -59,14 +56,11 @@ abstract class $CustomerModelCopyWith<$Res> {
   $Res call(
       {String id,
       @JsonKey(name: 'org_id') String orgId,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
-      String? email,
+      String name,
       String? phone,
-      @JsonKey(name: 'alt_phone') String? altPhone,
-      String? company,
-      String? notes,
-      @JsonKey(name: 'is_active') bool isActive,
+      String? email,
+      @JsonKey(name: 'preferred_contact_method')
+      PreferredContactMethod preferredContactMethod,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
@@ -88,14 +82,10 @@ class _$CustomerModelCopyWithImpl<$Res, $Val extends CustomerModel>
   $Res call({
     Object? id = null,
     Object? orgId = null,
-    Object? firstName = null,
-    Object? lastName = null,
-    Object? email = freezed,
+    Object? name = null,
     Object? phone = freezed,
-    Object? altPhone = freezed,
-    Object? company = freezed,
-    Object? notes = freezed,
-    Object? isActive = null,
+    Object? email = freezed,
+    Object? preferredContactMethod = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -108,38 +98,22 @@ class _$CustomerModelCopyWithImpl<$Res, $Val extends CustomerModel>
           ? _value.orgId
           : orgId // ignore: cast_nullable_to_non_nullable
               as String,
-      firstName: null == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
               as String,
-      lastName: null == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
       phone: freezed == phone
           ? _value.phone
           : phone // ignore: cast_nullable_to_non_nullable
               as String?,
-      altPhone: freezed == altPhone
-          ? _value.altPhone
-          : altPhone // ignore: cast_nullable_to_non_nullable
+      email: freezed == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String?,
-      company: freezed == company
-          ? _value.company
-          : company // ignore: cast_nullable_to_non_nullable
-              as String?,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
+      preferredContactMethod: null == preferredContactMethod
+          ? _value.preferredContactMethod
+          : preferredContactMethod // ignore: cast_nullable_to_non_nullable
+              as PreferredContactMethod,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -163,14 +137,11 @@ abstract class _$$CustomerModelImplCopyWith<$Res>
   $Res call(
       {String id,
       @JsonKey(name: 'org_id') String orgId,
-      @JsonKey(name: 'first_name') String firstName,
-      @JsonKey(name: 'last_name') String lastName,
-      String? email,
+      String name,
       String? phone,
-      @JsonKey(name: 'alt_phone') String? altPhone,
-      String? company,
-      String? notes,
-      @JsonKey(name: 'is_active') bool isActive,
+      String? email,
+      @JsonKey(name: 'preferred_contact_method')
+      PreferredContactMethod preferredContactMethod,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt});
 }
@@ -190,14 +161,10 @@ class __$$CustomerModelImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? orgId = null,
-    Object? firstName = null,
-    Object? lastName = null,
-    Object? email = freezed,
+    Object? name = null,
     Object? phone = freezed,
-    Object? altPhone = freezed,
-    Object? company = freezed,
-    Object? notes = freezed,
-    Object? isActive = null,
+    Object? email = freezed,
+    Object? preferredContactMethod = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -210,38 +177,22 @@ class __$$CustomerModelImplCopyWithImpl<$Res>
           ? _value.orgId
           : orgId // ignore: cast_nullable_to_non_nullable
               as String,
-      firstName: null == firstName
-          ? _value.firstName
-          : firstName // ignore: cast_nullable_to_non_nullable
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
               as String,
-      lastName: null == lastName
-          ? _value.lastName
-          : lastName // ignore: cast_nullable_to_non_nullable
-              as String,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
       phone: freezed == phone
           ? _value.phone
           : phone // ignore: cast_nullable_to_non_nullable
               as String?,
-      altPhone: freezed == altPhone
-          ? _value.altPhone
-          : altPhone // ignore: cast_nullable_to_non_nullable
+      email: freezed == email
+          ? _value.email
+          : email // ignore: cast_nullable_to_non_nullable
               as String?,
-      company: freezed == company
-          ? _value.company
-          : company // ignore: cast_nullable_to_non_nullable
-              as String?,
-      notes: freezed == notes
-          ? _value.notes
-          : notes // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isActive: null == isActive
-          ? _value.isActive
-          : isActive // ignore: cast_nullable_to_non_nullable
-              as bool,
+      preferredContactMethod: null == preferredContactMethod
+          ? _value.preferredContactMethod
+          : preferredContactMethod // ignore: cast_nullable_to_non_nullable
+              as PreferredContactMethod,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -260,14 +211,11 @@ class _$CustomerModelImpl implements _CustomerModel {
   const _$CustomerModelImpl(
       {required this.id,
       @JsonKey(name: 'org_id') required this.orgId,
-      @JsonKey(name: 'first_name') required this.firstName,
-      @JsonKey(name: 'last_name') required this.lastName,
-      this.email,
+      required this.name,
       this.phone,
-      @JsonKey(name: 'alt_phone') this.altPhone,
-      this.company,
-      this.notes,
-      @JsonKey(name: 'is_active') this.isActive = true,
+      this.email,
+      @JsonKey(name: 'preferred_contact_method')
+      this.preferredContactMethod = PreferredContactMethod.call,
       @JsonKey(name: 'created_at') required this.createdAt,
       @JsonKey(name: 'updated_at') required this.updatedAt});
 
@@ -280,25 +228,18 @@ class _$CustomerModelImpl implements _CustomerModel {
   @JsonKey(name: 'org_id')
   final String orgId;
   @override
-  @JsonKey(name: 'first_name')
-  final String firstName;
-  @override
-  @JsonKey(name: 'last_name')
-  final String lastName;
-  @override
-  final String? email;
+  final String name;
+// PRD: single name field (not first_name/last_name)
   @override
   final String? phone;
+// E.164 format recommended
   @override
-  @JsonKey(name: 'alt_phone')
-  final String? altPhone;
+  final String? email;
+// Must be valid email format if provided
   @override
-  final String? company;
-  @override
-  final String? notes;
-  @override
-  @JsonKey(name: 'is_active')
-  final bool isActive;
+  @JsonKey(name: 'preferred_contact_method')
+  final PreferredContactMethod preferredContactMethod;
+// PRD: required field
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
@@ -308,7 +249,7 @@ class _$CustomerModelImpl implements _CustomerModel {
 
   @override
   String toString() {
-    return 'CustomerModel(id: $id, orgId: $orgId, firstName: $firstName, lastName: $lastName, email: $email, phone: $phone, altPhone: $altPhone, company: $company, notes: $notes, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'CustomerModel(id: $id, orgId: $orgId, name: $name, phone: $phone, email: $email, preferredContactMethod: $preferredContactMethod, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -318,18 +259,11 @@ class _$CustomerModelImpl implements _CustomerModel {
             other is _$CustomerModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.orgId, orgId) || other.orgId == orgId) &&
-            (identical(other.firstName, firstName) ||
-                other.firstName == firstName) &&
-            (identical(other.lastName, lastName) ||
-                other.lastName == lastName) &&
-            (identical(other.email, email) || other.email == email) &&
+            (identical(other.name, name) || other.name == name) &&
             (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.altPhone, altPhone) ||
-                other.altPhone == altPhone) &&
-            (identical(other.company, company) || other.company == company) &&
-            (identical(other.notes, notes) || other.notes == notes) &&
-            (identical(other.isActive, isActive) ||
-                other.isActive == isActive) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.preferredContactMethod, preferredContactMethod) ||
+                other.preferredContactMethod == preferredContactMethod) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -338,8 +272,8 @@ class _$CustomerModelImpl implements _CustomerModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, orgId, firstName, lastName,
-      email, phone, altPhone, company, notes, isActive, createdAt, updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, orgId, name, phone, email,
+      preferredContactMethod, createdAt, updatedAt);
 
   /// Create a copy of CustomerModel
   /// with the given fields replaced by the non-null parameter values.
@@ -361,14 +295,11 @@ abstract class _CustomerModel implements CustomerModel {
   const factory _CustomerModel(
           {required final String id,
           @JsonKey(name: 'org_id') required final String orgId,
-          @JsonKey(name: 'first_name') required final String firstName,
-          @JsonKey(name: 'last_name') required final String lastName,
-          final String? email,
+          required final String name,
           final String? phone,
-          @JsonKey(name: 'alt_phone') final String? altPhone,
-          final String? company,
-          final String? notes,
-          @JsonKey(name: 'is_active') final bool isActive,
+          final String? email,
+          @JsonKey(name: 'preferred_contact_method')
+          final PreferredContactMethod preferredContactMethod,
           @JsonKey(name: 'created_at') required final DateTime createdAt,
           @JsonKey(name: 'updated_at') required final DateTime updatedAt}) =
       _$CustomerModelImpl;
@@ -382,25 +313,14 @@ abstract class _CustomerModel implements CustomerModel {
   @JsonKey(name: 'org_id')
   String get orgId;
   @override
-  @JsonKey(name: 'first_name')
-  String get firstName;
+  String get name; // PRD: single name field (not first_name/last_name)
   @override
-  @JsonKey(name: 'last_name')
-  String get lastName;
+  String? get phone; // E.164 format recommended
   @override
-  String? get email;
+  String? get email; // Must be valid email format if provided
   @override
-  String? get phone;
-  @override
-  @JsonKey(name: 'alt_phone')
-  String? get altPhone;
-  @override
-  String? get company;
-  @override
-  String? get notes;
-  @override
-  @JsonKey(name: 'is_active')
-  bool get isActive;
+  @JsonKey(name: 'preferred_contact_method')
+  PreferredContactMethod get preferredContactMethod; // PRD: required field
   @override
   @JsonKey(name: 'created_at')
   DateTime get createdAt;

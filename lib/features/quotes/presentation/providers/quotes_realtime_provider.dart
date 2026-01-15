@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/quote_model.dart';
+import '../../../../core/services/supabase_realtime_service.dart';
+import '../../../../core/services/logger.dart';
 
 /// Quote Real-time Provider
 /// 
@@ -7,26 +9,94 @@ import '../../data/models/quote_model.dart';
 /// 
 /// Per PRD Section 29.3: Real-time updates via Supabase Realtime channels.
 /// Channel structure: `quotes:{visit_id}` for visit-specific quote updates.
-/// 
-/// Phase 2: Will integrate with Supabase Realtime when backend is ready.
 class QuotesRealtimeNotifier extends StateNotifier<List<QuoteModel>> {
-  QuotesRealtimeNotifier() : super([]);
+  final SupabaseRealtimeService _realtimeService;
+  String? _currentVisitId;
+  String? _subscriptionId;
+  bool _isConnected = false;
+
+  QuotesRealtimeNotifier(this._realtimeService) : super([]);
 
   /// Connect to real-time channel for a visit
   /// 
-  /// Phase 2: Implement Supabase Realtime subscription
-  /// Example: supabase.channel('quotes:${visitId}').on('postgres_changes', ...)
+  /// Subscribes to quote updates for a specific visit.
+  /// Channel: quotes:{visit_id}
+  /// Events: INSERT, UPDATE
+  /// Filter: visit_id = {visitId}
   Future<void> connect(String visitId) async {
-    // TODO (Phase 2): Connect to Supabase Realtime channel
-    // Channel: quotes:{visit_id}
-    // Events: INSERT, UPDATE
-    // Filter: visit_id = {visitId}
+    if (_isConnected && _currentVisitId == visitId) {
+      Logger.debug('Quotes Realtime: Already connected to visit $visitId');
+      return;
+    }
+
+    // Disconnect from previous channel if different visit
+    if (_isConnected && _currentVisitId != visitId) {
+      await disconnect();
+    }
+
+    try {
+      final channelName = 'quotes:$visitId';
+      
+      _subscriptionId = await _realtimeService.subscribe(
+        channelName: channelName,
+        onInsert: (data) {
+          try {
+            final quote = QuoteModel.fromJson(data);
+            _handleQuoteStatusChange(quote);
+            Logger.debug('Quotes Realtime: Quote inserted - ${quote.id}');
+          } catch (e, stackTrace) {
+            Logger.error('Quotes Realtime: Error handling INSERT', e, stackTrace);
+          }
+        },
+        onUpdate: (data) {
+          try {
+            final quote = QuoteModel.fromJson(data);
+            _handleQuoteStatusChange(quote);
+            Logger.debug('Quotes Realtime: Quote updated - ${quote.id}');
+          } catch (e, stackTrace) {
+            Logger.error('Quotes Realtime: Error handling UPDATE', e, stackTrace);
+          }
+        },
+        filter: {
+          'table': 'quotes',
+          'column': 'visit_id',
+          'value': visitId,
+        },
+      );
+
+      _currentVisitId = visitId;
+      _isConnected = true;
+      Logger.info('Quotes Realtime: Connected to $channelName');
+    } catch (e, stackTrace) {
+      Logger.error('Quotes Realtime: Connection failed', e, stackTrace);
+      _isConnected = false;
+    }
   }
 
   /// Disconnect from real-time channel
   Future<void> disconnect() async {
-    // TODO (Phase 2): Disconnect from Supabase Realtime channel
+    if (!_isConnected || _currentVisitId == null) {
+      return;
+    }
+
+    try {
+      final channelName = 'quotes:$_currentVisitId';
+      await _realtimeService.unsubscribe(channelName);
+      
+      _subscriptionId = null;
+      _currentVisitId = null;
+      _isConnected = false;
+      Logger.info('Quotes Realtime: Disconnected from $channelName');
+    } catch (e, stackTrace) {
+      Logger.error('Quotes Realtime: Disconnection failed', e, stackTrace);
+    }
   }
+
+  /// Get connection status
+  bool get isConnected => _isConnected;
+
+  /// Get current visit ID
+  String? get currentVisitId => _currentVisitId;
 
   /// Handle quote status change
   void _handleQuoteStatusChange(QuoteModel quote) {
@@ -41,13 +111,14 @@ class QuotesRealtimeNotifier extends StateNotifier<List<QuoteModel>> {
 
 /// Quotes Real-time Provider
 final quotesRealtimeProvider = StateNotifierProvider<QuotesRealtimeNotifier, List<QuoteModel>>((ref) {
-  return QuotesRealtimeNotifier();
+  final realtimeService = ref.watch(supabaseRealtimeServiceProvider);
+  return QuotesRealtimeNotifier(realtimeService);
 });
 
 /// Connection Status Provider
 final quotesRealtimeConnectionStatusProvider = Provider<bool>((ref) {
-  // TODO (Phase 2): Track actual connection status
-  return false;
+  final notifier = ref.watch(quotesRealtimeProvider.notifier);
+  return notifier.isConnected;
 });
 
 

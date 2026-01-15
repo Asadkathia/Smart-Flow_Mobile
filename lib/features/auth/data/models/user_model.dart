@@ -3,16 +3,17 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
-/// User Role Enum
+/// User Role Enum (PRD Section 3.2)
 enum UserRole {
   @JsonValue('admin')
   admin,
-  @JsonValue('manager')
-  manager,
-  @JsonValue('technician')
-  technician,
   @JsonValue('dispatcher')
   dispatcher,
+  @JsonValue('accountant')
+  accountant,
+  @JsonValue('technician')
+  technician,
+  // Remove 'manager' - not in PRD
 }
 
 /// User Status Enum (PRD Section 3.2)
@@ -33,28 +34,32 @@ class UserModel with _$UserModel {
   const factory UserModel({
     required String id,
     @JsonKey(name: 'org_id') required String orgId,
-    required String email,
-    @JsonKey(name: 'first_name') required String firstName,
-    @JsonKey(name: 'last_name') required String lastName,
-    String? phone,
-    String? avatar,
-    required UserRole role,
+    required String email, // Must be valid email format, unique per org
+    @JsonKey(name: 'full_name') required String fullName, // PRD: full_name (not first_name/last_name)
+    String? phone, // E.164 format recommended
+    required UserRole role, // admin, dispatcher, accountant, technician
     @Default(UserStatus.active)
     @JsonKey(
       name: 'status',
       fromJson: UserModel.statusFromJson,
       toJson: UserModel.statusToJson,
     )
-    UserStatus status,
-    @Default(true) @JsonKey(name: 'is_active') bool isActive,
+    UserStatus status, // active, suspended, deactivated
     @JsonKey(name: 'last_login_at') DateTime? lastLoginAt,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    // Remove: avatar, is_active (not in PRD)
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // Handle backward compatibility: if status is not present but is_active is, derive status
+    // Handle backward compatibility: if full_name not present, construct from first_name/last_name
     final jsonCopy = Map<String, dynamic>.from(json);
+    if (!jsonCopy.containsKey('full_name')) {
+      final firstName = jsonCopy['first_name'] as String? ?? '';
+      final lastName = jsonCopy['last_name'] as String? ?? '';
+      jsonCopy['full_name'] = '$firstName $lastName'.trim();
+    }
+    // Handle backward compatibility: if status is not present but is_active is, derive status
     if (!jsonCopy.containsKey('status') && jsonCopy.containsKey('is_active')) {
       final isActive = jsonCopy['is_active'] as bool? ?? true;
       jsonCopy['status'] = isActive ? 'active' : 'deactivated';
@@ -64,10 +69,8 @@ class UserModel with _$UserModel {
       id: jsonCopy['id'] as String,
       orgId: jsonCopy['org_id'] as String,
       email: jsonCopy['email'] as String,
-      firstName: jsonCopy['first_name'] as String,
-      lastName: jsonCopy['last_name'] as String,
+      fullName: jsonCopy['full_name'] as String,
       phone: jsonCopy['phone'] as String?,
-      avatar: jsonCopy['avatar'] as String?,
       role: UserRole.values.firstWhere(
         (e) => e.name == jsonCopy['role'] || 
                (jsonCopy['role'] is String && 
@@ -75,7 +78,6 @@ class UserModel with _$UserModel {
         orElse: () => UserRole.technician,
       ),
       status: UserModel.statusFromJson(jsonCopy['status']),
-      isActive: jsonCopy['is_active'] as bool? ?? true,
       lastLoginAt: jsonCopy['last_login_at'] != null
           ? DateTime.parse(jsonCopy['last_login_at'] as String)
           : null,
@@ -119,13 +121,10 @@ Map<String, dynamic> _userModelToJson(UserModel user) => <String, dynamic>{
       'id': user.id,
       'org_id': user.orgId,
       'email': user.email,
-      'first_name': user.firstName,
-      'last_name': user.lastName,
+      'full_name': user.fullName,
       'phone': user.phone,
-      'avatar': user.avatar,
       'role': user.role.name,
       'status': UserModel.statusToJson(user.status),
-      'is_active': user.isActive,
       'last_login_at': user.lastLoginAt?.toIso8601String(),
       'created_at': user.createdAt.toIso8601String(),
       'updated_at': user.updatedAt.toIso8601String(),
@@ -133,13 +132,26 @@ Map<String, dynamic> _userModelToJson(UserModel user) => <String, dynamic>{
 
 /// Extension methods for UserModel
 extension UserModelX on UserModel {
-  /// Get full name
-  String get fullName => '$firstName $lastName';
+  /// Get first name (derived from full_name for backward compatibility)
+  String get firstName {
+    final parts = fullName.split(' ');
+    return parts.isNotEmpty ? parts.first : '';
+  }
+
+  /// Get last name (derived from full_name for backward compatibility)
+  String get lastName {
+    final parts = fullName.split(' ');
+    return parts.length > 1 ? parts.sublist(1).join(' ') : '';
+  }
 
   /// Get initials
   String get initials {
-    final first = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
-    final last = lastName.isNotEmpty ? lastName[0].toUpperCase() : '';
+    final parts = fullName.split(' ');
+    if (parts.isEmpty) return '';
+    final first = parts.first.isNotEmpty ? parts.first[0].toUpperCase() : '';
+    final last = parts.length > 1 && parts.last.isNotEmpty 
+        ? parts.last[0].toUpperCase() 
+        : '';
     return '$first$last';
   }
 
@@ -148,12 +160,12 @@ extension UserModelX on UserModel {
     switch (role) {
       case UserRole.admin:
         return 'Administrator';
-      case UserRole.manager:
-        return 'Manager';
-      case UserRole.technician:
-        return 'Technician';
       case UserRole.dispatcher:
         return 'Dispatcher';
+      case UserRole.accountant:
+        return 'Accountant';
+      case UserRole.technician:
+        return 'Technician';
     }
   }
 
@@ -164,7 +176,7 @@ extension UserModelX on UserModel {
   bool get isTechnician => role == UserRole.technician;
 
   /// Check if user can manage users
-  bool get canManageUsers => role == UserRole.admin || role == UserRole.manager;
+  bool get canManageUsers => role == UserRole.admin;
 
   /// Check if user is active (status-based check)
   bool get isActiveFromStatus => status == UserStatus.active;

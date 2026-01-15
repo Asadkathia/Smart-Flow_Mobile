@@ -159,8 +159,7 @@ class VisitMockData {
         orgId: 'org_1',
         visitId: visitId,
         authorId: 'tech_1',
-        authorName: 'Tony Stark',
-        content: 'Customer requested a follow-up on compressor noise. Checked the unit and found loose mounting bolts.',
+        body: 'Customer requested a follow-up on compressor noise. Checked the unit and found loose mounting bolts.', // PRD: body (not content)
         createdAt: now.subtract(const Duration(days: 1)),
         updatedAt: now.subtract(const Duration(days: 1)),
       ),
@@ -169,8 +168,7 @@ class VisitMockData {
         orgId: 'org_1',
         visitId: visitId,
         authorId: 'tech_1',
-        authorName: 'Tony Stark',
-        content: 'Replaced faulty capacitor. System now running smoothly. Customer informed about maintenance schedule.',
+        body: 'Replaced faulty capacitor. System now running smoothly. Customer informed about maintenance schedule.', // PRD: body (not content)
         createdAt: now.subtract(const Duration(hours: 2)),
         updatedAt: now.subtract(const Duration(hours: 2)),
       ),
@@ -179,8 +177,7 @@ class VisitMockData {
         orgId: 'org_1',
         visitId: visitId,
         authorId: 'tech_1',
-        authorName: 'Tony Stark',
-        content: 'Initial inspection completed. Found issue with the main control board. Parts ordered.',
+        body: 'Initial inspection completed. Found issue with the main control board. Parts ordered.', // PRD: body (not content)
         createdAt: now.subtract(const Duration(minutes: 30)),
         updatedAt: now.subtract(const Duration(minutes: 30)),
       ),

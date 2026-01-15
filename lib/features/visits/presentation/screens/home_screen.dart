@@ -38,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Greeting Section
-                _buildGreetingSection(currentUser?.firstName ?? 'there'),
+                _buildGreetingSection(currentUser?.fullName.split(' ').first ?? 'there'),
                 
                 // Map View
                 SizedBox(

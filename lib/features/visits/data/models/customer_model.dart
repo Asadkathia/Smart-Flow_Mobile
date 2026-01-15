@@ -3,6 +3,14 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'customer_model.freezed.dart';
 part 'customer_model.g.dart';
 
+/// Preferred Contact Method Enum (PRD Section 3.3)
+enum PreferredContactMethod {
+  @JsonValue('call')
+  call,
+  @JsonValue('sms')
+  sms,
+}
+
 /// Customer Model (PRD Section 3.3)
 /// 
 /// Represents a customer in the system.
@@ -11,16 +19,15 @@ class CustomerModel with _$CustomerModel {
   const factory CustomerModel({
     required String id,
     @JsonKey(name: 'org_id') required String orgId,
-    @JsonKey(name: 'first_name') required String firstName,
-    @JsonKey(name: 'last_name') required String lastName,
-    String? email,
-    String? phone,
-    @JsonKey(name: 'alt_phone') String? altPhone,
-    String? company,
-    String? notes,
-    @Default(true) @JsonKey(name: 'is_active') bool isActive,
+    required String name, // PRD: single name field (not first_name/last_name)
+    String? phone, // E.164 format recommended
+    String? email, // Must be valid email format if provided
+    @JsonKey(name: 'preferred_contact_method')
+    @Default(PreferredContactMethod.call)
+    PreferredContactMethod preferredContactMethod, // PRD: required field
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    // Remove: first_name, last_name, alt_phone, company, notes, is_active (not in PRD)
   }) = _CustomerModel;
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) =>
@@ -29,16 +36,32 @@ class CustomerModel with _$CustomerModel {
 
 /// Extension methods for CustomerModel
 extension CustomerModelX on CustomerModel {
-  /// Get full name
-  String get fullName => '$firstName $lastName';
+  /// Get first name (derived from name for backward compatibility)
+  String get firstName {
+    final parts = name.split(' ');
+    return parts.isNotEmpty ? parts.first : '';
+  }
 
-  /// Get display name (company or full name)
-  String get displayName => company?.isNotEmpty == true ? company! : fullName;
+  /// Get last name (derived from name for backward compatibility)
+  String get lastName {
+    final parts = name.split(' ');
+    return parts.length > 1 ? parts.sublist(1).join(' ') : '';
+  }
+
+  /// Get full name (alias for name for backward compatibility)
+  String get fullName => name;
+
+  /// Get display name
+  String get displayName => name;
 
   /// Get initials
   String get initials {
-    final first = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
-    final last = lastName.isNotEmpty ? lastName[0].toUpperCase() : '';
+    final parts = name.split(' ');
+    if (parts.isEmpty) return '';
+    final first = parts.first.isNotEmpty ? parts.first[0].toUpperCase() : '';
+    final last = parts.length > 1 && parts.last.isNotEmpty 
+        ? parts.last[0].toUpperCase() 
+        : '';
     return '$first$last';
   }
 

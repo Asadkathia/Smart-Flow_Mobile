@@ -16,8 +16,8 @@ class ApiEndpoints {
   /// Edge Function routing mode
   /// Set to true to use router style: /functions/v1/api/<path>
   /// Set to false to use direct style: /functions/v1/<function_name>
-  /// TODO(backend): Update this based on actual backend implementation
-  static const bool useRouterStyle = true;
+  /// Currently using direct style with individual Edge Functions
+  static const bool useRouterStyle = false;
   
   /// Router path prefix (only used when useRouterStyle is true)
   static const String routerPrefix = '/api';
@@ -66,7 +66,8 @@ class ApiEndpoints {
   // ============ Auth Endpoints ============
   static const String auth = '/auth';
   static const String login = '$auth/login';
-  static const String signup = '$auth/signup';
+  // Direct Edge Function name for signup (matches function name: auth-signup)
+  static const String signup = '/auth-signup';
   static const String logout = '$auth/logout';
   static const String refreshToken = '$auth/refresh';
   static const String forgotPassword = '$auth/forgot-password';
@@ -97,7 +98,8 @@ class ApiEndpoints {
   
   // Media
   static String visitMedia(String visitId) => '$visits/$visitId/media';
-  static String uploadMedia(String visitId) => '$visits/$visitId/media';
+  static String uploadMediaUrl(String visitId) => '$visits/$visitId/media/upload-url';
+  static String confirmMediaUpload(String visitId) => '$visits/$visitId/media/confirm';
   static String deleteMedia(String visitId, String mediaId) => '$visits/$visitId/media/$mediaId';
   
   // Signature
@@ -108,18 +110,25 @@ class ApiEndpoints {
   static String quoteDetails(String id) => '$quotes/$id';
   static String createQuote(String visitId) => '$visits/$visitId/quotes';
   static String finalizeQuote(String id) => '$quotes/$id/finalize';
+  static String deleteQuote(String id) => '$quotes/$id';
 
   // ============ Inventory Endpoints ============
   static const String inventory = '$tech/inventory';
   static String inventoryItem(String id) => '$inventory/$id';
   static const String addInventory = inventory;
   static const String aiDetectInventory = '$inventory/ai-detect';
+  static const String aiPriceInventory = '$inventory/ai-price';
+  
+  // Direct Edge Function names for inventory AI
+  static const String inventoryAiDetectFunction = 'tech-inventory-ai-detect';
+  static const String inventoryAiPriceFunction = 'tech-inventory-ai-price';
 
   // ============ Invoice Endpoints ============
   static const String invoices = '$tech/invoices';
   static String invoiceDetails(String id) => '$invoices/$id';
   static String invoicePreview(String id) => '$invoices/$id/preview';
   static String invoiceFinalize(String id) => '$invoices/$id/finalize';
+  static String createInvoiceDraft(String quoteId) => '$quotes/$quoteId/create-invoice-draft';
 
   // ============ Chat Endpoints ============
   static const String chat = '$tech/chat';
@@ -131,6 +140,11 @@ class ApiEndpoints {
   static const String ai = '$tech/ai';
   static const String aiChat = '$ai/chat';
   static const String aiAnalyzeImage = '$ai/analyze-image';
+  static const String aiWebSearch = '$ai/web-search';
+  
+  // Direct Edge Function names for AI
+  static const String aiAssistFunction = 'tech-ai-assist';
+  static const String aiWebSearchFunction = 'tech-ai-web-search';
 
   // ============ Schedule Endpoints ============
   static const String schedule = '$tech/schedule';

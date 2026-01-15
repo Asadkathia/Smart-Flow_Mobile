@@ -13,13 +13,11 @@ class NoteModel with _$NoteModel {
     @JsonKey(name: 'org_id') required String orgId,
     @JsonKey(name: 'visit_id') required String visitId,
     @JsonKey(name: 'author_id') required String authorId,
-    @JsonKey(name: 'author_name') String? authorName,
-    @JsonKey(name: 'body') required String content,
-    @Default(false) @JsonKey(name: 'is_internal') bool isInternal,
-    @Default([]) @JsonKey(name: 'image_urls') List<String> imageUrls,
+    @JsonKey(name: 'body') required String body, // PRD: body (not content)
     @Default(1) int version,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    // Remove if not in PRD: author_name, is_internal, image_urls
   }) = _NoteModel;
 
   factory NoteModel.fromJson(Map<String, dynamic> json) =>
@@ -28,6 +26,9 @@ class NoteModel with _$NoteModel {
 
 /// Extension methods for NoteModel
 extension NoteModelX on NoteModel {
+  /// Get content (alias for body for backward compatibility)
+  String get content => body;
+
   /// Get formatted date
   String get formattedDate {
     final now = DateTime.now();
@@ -52,8 +53,8 @@ extension NoteModelX on NoteModel {
 
   /// Get preview text (first 100 chars)
   String get preview {
-    if (content.length <= 100) return content;
-    return '${content.substring(0, 100)}...';
+    if (body.length <= 100) return body;
+    return '${body.substring(0, 100)}...';
   }
 }
 

@@ -10,14 +10,13 @@ _$CustomerModelImpl _$$CustomerModelImplFromJson(Map<String, dynamic> json) =>
     _$CustomerModelImpl(
       id: json['id'] as String,
       orgId: json['org_id'] as String,
-      firstName: json['first_name'] as String,
-      lastName: json['last_name'] as String,
-      email: json['email'] as String?,
+      name: json['name'] as String,
       phone: json['phone'] as String?,
-      altPhone: json['alt_phone'] as String?,
-      company: json['company'] as String?,
-      notes: json['notes'] as String?,
-      isActive: json['is_active'] as bool? ?? true,
+      email: json['email'] as String?,
+      preferredContactMethod: $enumDecodeNullable(
+              _$PreferredContactMethodEnumMap,
+              json['preferred_contact_method']) ??
+          PreferredContactMethod.call,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -26,14 +25,16 @@ Map<String, dynamic> _$$CustomerModelImplToJson(_$CustomerModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'org_id': instance.orgId,
-      'first_name': instance.firstName,
-      'last_name': instance.lastName,
-      'email': instance.email,
+      'name': instance.name,
       'phone': instance.phone,
-      'alt_phone': instance.altPhone,
-      'company': instance.company,
-      'notes': instance.notes,
-      'is_active': instance.isActive,
+      'email': instance.email,
+      'preferred_contact_method':
+          _$PreferredContactMethodEnumMap[instance.preferredContactMethod]!,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
     };
+
+const _$PreferredContactMethodEnumMap = {
+  PreferredContactMethod.call: 'call',
+  PreferredContactMethod.sms: 'sms',
+};

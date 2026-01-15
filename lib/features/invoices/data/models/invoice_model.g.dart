@@ -78,29 +78,29 @@ const _$InvoiceStatusEnumMap = {
 _$PaymentModelImpl _$$PaymentModelImplFromJson(Map<String, dynamic> json) =>
     _$PaymentModelImpl(
       id: json['id'] as String,
-      invoiceId: json['invoiceId'] as String,
+      orgId: json['org_id'] as String,
+      invoiceId: json['invoice_id'] as String,
       amount: (json['amount'] as num).toDouble(),
       method: $enumDecode(_$PaymentMethodEnumMap, json['method']),
       reference: json['reference'] as String?,
-      receivedBy: json['receivedBy'] as String?,
-      receivedAt: json['receivedAt'] == null
-          ? null
-          : DateTime.parse(json['receivedAt'] as String),
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
+      receivedBy: json['received_by'] as String,
+      receivedAt: DateTime.parse(json['received_at'] as String),
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$$PaymentModelImplToJson(_$PaymentModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'invoiceId': instance.invoiceId,
+      'org_id': instance.orgId,
+      'invoice_id': instance.invoiceId,
       'amount': instance.amount,
       'method': _$PaymentMethodEnumMap[instance.method]!,
       'reference': instance.reference,
-      'receivedBy': instance.receivedBy,
-      'receivedAt': instance.receivedAt?.toIso8601String(),
-      'createdAt': instance.createdAt?.toIso8601String(),
+      'received_by': instance.receivedBy,
+      'received_at': instance.receivedAt.toIso8601String(),
+      'created_at': instance.createdAt.toIso8601String(),
+      'updated_at': instance.updatedAt.toIso8601String(),
     };
 
 const _$PaymentMethodEnumMap = {

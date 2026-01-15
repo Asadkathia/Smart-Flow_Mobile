@@ -6,6 +6,7 @@ import 'package:smartflowpro/shared/presentation/widgets/auth_base_layout.dart';
 import 'package:smartflowpro/shared/presentation/widgets/build_form_field.dart';
 import 'package:smartflowpro/shared/presentation/widgets/build_basic_button.dart';
 import '../providers/forget_password_provider.dart';
+import '../providers/auth_provider.dart';
 import 'package:smartflowpro/router/app_router.dart';
 
 /// Forgot Password Screen - Riverpod Version
@@ -37,15 +38,19 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (formKey.currentState!.validate()) {
       ref.read(forgotPasswordLoadingProvider.notifier).state = true;
       
-      // TODO: Implement actual OTP sending with authProvider
-      // For now, just navigate to verify OTP
-      await Future.delayed(const Duration(seconds: 1));
+      final email = emailController.text.trim();
+      final success = await ref.read(authProvider.notifier).forgotPassword(email);
       
       ref.read(forgotPasswordLoadingProvider.notifier).state = false;
       
       if (mounted) {
-        context.showSuccessSnackBar("A verification code has been sent to your email.");
-        context.push(AppRoutePaths.verifyOtp, extra: {'email': emailController.text.trim()});
+        if (success) {
+          context.showSuccessSnackBar("A verification code has been sent to your email.");
+          context.push(AppRoutePaths.verifyOtp, extra: {'email': email});
+        } else {
+          final error = ref.read(authProvider).error;
+          context.showErrorSnackBar(error ?? 'Failed to send OTP. Please try again.');
+        }
       }
     }
   }

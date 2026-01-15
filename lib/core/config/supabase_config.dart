@@ -28,6 +28,17 @@ class SupabaseConfig {
     return 'your-anon-key';
   }
   
+  /// OpenAI API Key
+  /// Set via environment variable: OPENAI_API_KEY
+  /// Required for AI Assistant feature
+  static String get openaiApiKey {
+    const envKey = String.fromEnvironment('OPENAI_API_KEY');
+    if (envKey.isNotEmpty) return envKey;
+    
+    // Return empty string if not set (will be validated when used)
+    return '';
+  }
+  
   // SECURITY: Service Role Key removed from mobile client
   // The service role key should NEVER be included in mobile applications.
   // It bypasses Row Level Security (RLS) and grants full database access.
@@ -75,7 +86,7 @@ class SupabaseConfig {
   
   /// Check if we're in production mode
   static bool get isProduction {
-    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
+    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
     return env == 'production' || env == 'prod';
   }
   
@@ -96,6 +107,11 @@ class SupabaseConfig {
            supabaseAnonKey != 'your-anon-key';
   }
   
+  /// Check if OpenAI API key is configured
+  static bool get isOpenAiConfigured {
+    return openaiApiKey.isNotEmpty;
+  }
+  
   /// Get validation errors
   static List<String> get validationErrors {
     final errors = <String>[];
@@ -111,5 +127,3 @@ class SupabaseConfig {
     return errors;
   }
 }
-
-
