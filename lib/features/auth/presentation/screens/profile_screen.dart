@@ -1,6 +1,7 @@
 import 'package:smartflowpro/app/export/exports.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:smartflowpro/features/auth/data/models/user_model.dart';
 import '../providers/profile_provider.dart';
 import '../providers/auth_provider.dart';
 
@@ -127,7 +128,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 24.h),
+            SizedBox(height: 16.h),
+            // Display user role (read-only)
+            Text(
+              ref.watch(currentUserProvider)?.roleText ?? 'Technician',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.greyColor,
+                fontWeight: FontWeight.w500,
+                fontSize: 16.sp,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 32.h),
             CustomUnderlineTextFiled(
               label: 'Full Name',
               controller: nameController,

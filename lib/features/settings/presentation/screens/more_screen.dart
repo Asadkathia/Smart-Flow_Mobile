@@ -16,8 +16,9 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get user information from auth provider
-    final userName = 'Prime Appliance Service'; // TODO: Get from actual user data
+    // Get organization name from current user
+    final currentUser = ref.watch(currentUserProvider);
+    final orgName = currentUser?.orgId ?? 'SmartFlowPro'; // TODO: Fetch actual org name from organizations table
     
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -37,7 +38,7 @@ class MoreScreen extends ConsumerWidget {
             ),
             SizedBox(height: 8.h),
             Text(
-              userName,
+              orgName,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.greyColor,
                 fontWeight: FontWeight.w500,
@@ -46,18 +47,19 @@ class MoreScreen extends ConsumerWidget {
             SizedBox(height: 18.h),
             // Options list
             _MoreOption(
-              icon: Icons.support_agent,
-              label: 'Support',
-              onTap: () {},
-            ),
-            _MoreOption(
               icon: Icons.inventory_2_outlined,
               label: 'Inventory',
               onTap: () {
                 context.push(AppRoutePaths.inventoryList);
               },
             ),
-            _MoreOption(icon: Icons.info_outline, label: 'About', onTap: () {}),
+            _MoreOption(
+              icon: Icons.receipt_long_outlined,
+              label: 'Invoices',
+              onTap: () {
+                context.push(AppRoutePaths.invoiceList);
+              },
+            ),
             Divider(height: 32.h, color: AppColors.darkGrey.withAlpha(40)),
             _MoreOption(
               icon: Icons.person_outline,
@@ -68,8 +70,10 @@ class MoreScreen extends ConsumerWidget {
             ),
             _MoreOption(
               icon: Icons.settings_outlined,
-              label: 'Preferences',
-              onTap: () {},
+              label: 'Settings',
+              onTap: () {
+                context.push(AppRoutePaths.settings);
+              },
             ),
             SizedBox(height: 8.h),
             Divider(height: 24.h, color: AppColors.darkGrey.withAlpha(40)),

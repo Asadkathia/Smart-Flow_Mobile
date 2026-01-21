@@ -15,9 +15,35 @@ import '../remote/api_client.dart';
 /// using the Supabase Storage API directly (works with ES256 JWT).
 class MediaUploadService {
   final ApiClient _apiClient;
-  final SupabaseClient _supabase = Supabase.instance.client;
+  SupabaseClient get _supabase => Supabase.instance.client;
 
   MediaUploadService(this._apiClient);
+
+  /// Generic media upload to any bucket
+  Future<String> uploadMedia({
+    required File file,
+    required String bucket,
+    required String path,
+    String? contentType,
+  }) async {
+    try {
+      final fileBytes = await file.readAsBytes();
+      
+      await _supabase.storage.from(bucket).uploadBinary(
+            path,
+            fileBytes,
+            fileOptions: FileOptions(
+              contentType: contentType ?? 'image/jpeg',
+              upsert: false,
+            ),
+          );
+      
+      return path;
+    } catch (e, stackTrace) {
+      Logger.error('Media upload failed to $bucket/$path', e, stackTrace);
+      rethrow;
+    }
+  }
 
   /// Upload visit media (image, video, or PDF)
   /// 
@@ -132,6 +158,42 @@ class MediaUploadService {
         return 'application/pdf';
       default:
         return 'application/octet-stream';
+    }
+  }
+
+  /// Delete media from a bucket
+  /// 
+  /// [bucket] - Storage bucket name
+  /// [path] - File path within the bucket
+  Future<void> deleteMedia({
+    required String bucket,
+    required String path,
+  }) async {
+    try {
+      Logger.info('Deleting media from $bucket/$path');
+      
+      await _supabase.storage.from(bucket).remove([path]);
+      
+      Logger.info('Media deleted successfully: $bucket/$path');
+    } catch (e, stackTrace) {
+      Logger.error('Media deletion failed: $bucket/$path', e, stackTrace);
+      rethrow;
+    }
+  }
+
+  /// Delete visit media (image, video, PDF, or signature)
+  /// 
+  /// [storagePath] - Full path in storage (e.g., 'visits/{visitId}/media/{filename}')
+  Future<void> deleteVisitMedia({required String storagePath}) async {
+    try {
+      Logger.info('Deleting visit media: $storagePath');
+      
+      await _supabase.storage.from('visit-media').remove([storagePath]);
+      
+      Logger.info('Visit media deleted successfully: $storagePath');
+    } catch (e, stackTrace) {
+      Logger.error('Visit media deletion failed: $storagePath', e, stackTrace);
+      rethrow;
     }
   }
 }

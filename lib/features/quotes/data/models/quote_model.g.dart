@@ -25,6 +25,11 @@ _$QuoteModelImpl _$$QuoteModelImplFromJson(Map<String, dynamic> json) =>
       version: (json['version'] as num?)?.toInt() ?? 1,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      notes: json['notes'] as String?,
+      terms: json['terms'] as String?,
+      expirationDate: json['expiration_date'] == null
+          ? null
+          : DateTime.parse(json['expiration_date'] as String),
       lineItems: (json['lineItems'] as List<dynamic>?)
               ?.map((e) => LineItemModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -48,6 +53,9 @@ Map<String, dynamic> _$$QuoteModelImplToJson(_$QuoteModelImpl instance) =>
       'version': instance.version,
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
+      'notes': instance.notes,
+      'terms': instance.terms,
+      'expiration_date': instance.expirationDate?.toIso8601String(),
       'lineItems': instance.lineItems,
     };
 

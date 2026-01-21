@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smartflowpro/router/app_router.dart';
 import 'package:smartflowpro/core/validation/validation_rules.dart';
 import '../../data/models/invoice_model.dart';
@@ -63,9 +64,13 @@ class _InvoiceListScreenState extends ConsumerState<InvoiceListScreen> with Sing
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
         title: Text(
           'Invoices',
-          style: AppTextStyles.heading3.copyWith(color: AppColors.whiteColor),
+          style: AppTextStyles.heading3.copyWith(color: Colors.white),
         ),
         backgroundColor: AppColors.primaryTextColor,
         elevation: 0,

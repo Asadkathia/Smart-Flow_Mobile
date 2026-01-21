@@ -12,7 +12,7 @@ import '../services/logger.dart';
 /// - Chat messages (chat:{chat_id})
 /// - Quote updates (quotes:{visit_id})
 class SupabaseRealtimeService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  SupabaseClient get _supabase => Supabase.instance.client;
   final Map<String, RealtimeChannel> _channels = {};
 
   /// Subscribe to visit updates for an organization

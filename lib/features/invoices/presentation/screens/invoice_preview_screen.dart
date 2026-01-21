@@ -11,6 +11,7 @@ import '../../../quotes/data/models/line_item_model.dart';
 import '../providers/invoice_provider.dart';
 import 'package:smartflowpro/core/validation/validation_rules.dart';
 import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
+import '../widgets/record_payment_dialog.dart';
 
 /// Invoice Preview Screen
 /// 
@@ -102,7 +103,7 @@ class InvoicePreviewScreen extends ConsumerWidget {
       ),
       body: invoiceAsync.when(
         data: (invoice) => SingleChildScrollView(
-          child: _buildInvoiceContent(context, invoice),
+          child: _buildInvoiceContent(context, ref, invoice),
         ),
         loading: () => StandardLoadingState(message: 'Loading invoice...'),
         error: (error, stack) => StandardErrorState(
@@ -114,7 +115,7 @@ class InvoicePreviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInvoiceContent(BuildContext context, InvoiceModel invoice) {
+  Widget _buildInvoiceContent(BuildContext context, WidgetRef ref, InvoiceModel invoice) {
     return Container(
       color: AppColors.whiteColor,
       padding: EdgeInsets.all(24.w),
@@ -153,6 +154,32 @@ class InvoicePreviewScreen extends ConsumerWidget {
           // Notes Section
           if (invoice.notes != null && invoice.notes!.isNotEmpty)
             _buildNotesSection(invoice.notes!),
+
+          // Record Payment Button
+          if (invoice.status != InvoiceStatus.paid && 
+              invoice.status != InvoiceStatus.void_ && 
+              invoice.status != InvoiceStatus.draft)
+            Padding(
+              padding: EdgeInsets.only(top: 32.h),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _showRecordPaymentDialog(context, ref, invoice),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Record Payment',
+                    style: AppTextStyles.buttonLarge.copyWith(color: AppColors.whiteColor),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -537,6 +564,48 @@ class InvoicePreviewScreen extends ConsumerWidget {
         context.showErrorSnackBar('Failed to finalize invoice');
       }
     }
+  }
+
+  Future<void> _showRecordPaymentDialog(
+    BuildContext context,
+    WidgetRef ref,
+    InvoiceModel invoice,
+  ) async {
+    showDialog(
+      context: context,
+      builder: (context) => RecordPaymentDialog(
+        remainingBalance: invoice.remainingBalance,
+        onRecord: (amount, method, reference) async {
+          // Show loading
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => Center(child: CircularProgressIndicator()),
+          );
+
+          try {
+            await ref.read(invoiceActionsProvider.notifier).recordPayment(
+              invoiceId: invoice.id,
+              amount: amount,
+              method: method,
+              reference: reference,
+            );
+            
+            if (context.mounted) {
+              Navigator.pop(context); // Dismiss loading
+              context.showSuccessSnackBar('Payment recorded successfully');
+              // Refresh invoice details
+              ref.invalidate(invoiceDetailProvider(invoiceId));
+            }
+          } catch (e) {
+            if (context.mounted) {
+              Navigator.pop(context); // Dismiss loading
+              context.showErrorSnackBar('Failed to record payment: $e');
+            }
+          }
+        },
+      ),
+    );
   }
 }
 

@@ -12,6 +12,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Supabase (only if configured)
+  const useMockData = bool.fromEnvironment('USE_MOCK_DATA', defaultValue: false);
+  
   if (SupabaseConfig.isValid) {
     try {
       await Supabase.initialize(
@@ -25,20 +27,17 @@ void main() async {
     }
   } else {
     final errors = SupabaseConfig.validationErrors;
-    debugPrint('⚠️ Supabase Configuration Missing:');
+    debugPrint('⚠️ Supabase Configuration Missing/Invalid:');
     for (final error in errors) {
       debugPrint('   - $error');
     }
-    debugPrint('');
-    debugPrint('App will use mock data mode.');
-    debugPrint('To enable Supabase, set environment variables:');
-    debugPrint('   - SUPABASE_URL');
-    debugPrint('   - SUPABASE_ANON_KEY');
-    debugPrint('');
     
-    // In production, throw error if Supabase is required
-    if (SupabaseConfig.isProduction) {
-      throw Exception('Supabase configuration is required in production. Please check your environment variables.');
+    // Check if we should crash or fall back to mock data
+    if (SupabaseConfig.isProduction && !useMockData) {
+      debugPrint('❌ CRITICAL: Supabase configuration is required in production.');
+      throw Exception('Supabase configuration is required in production. Please check your environment variables or set USE_MOCK_DATA=true for testing.');
+    } else {
+      debugPrint('ℹ️ App will use mock data mode (Environment: ${SupabaseConfig.environment})');
     }
   }
   

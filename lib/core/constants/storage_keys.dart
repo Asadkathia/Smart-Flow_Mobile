@@ -38,9 +38,11 @@ class StorageKeys {
   static const String inventoryBox = 'inventory_cache';
   static const String notesBox = 'notes_cache';
   static const String chatBox = 'chat_cache';
+  static const String billingBox = 'billing_cache';
 
   // ============ Cache Keys ============
   static const String todayVisitsCache = 'today_visits';
+  static const String completedVisitsCache = 'completed_visits';
   static const String scheduleCache = 'schedule_cache';
   static const String inventoryListCache = 'inventory_list';
   static const String invoicesListCache = 'invoices_list';

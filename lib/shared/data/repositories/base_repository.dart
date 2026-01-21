@@ -239,22 +239,22 @@ abstract class BaseRepository {
           data: actionData,
           timestamp: DateTime.now(),
         ));
-      }
-      
-      // Return optimistic update if available
-      if (optimisticUpdate != null) {
-        final optimistic = optimisticUpdate();
-        if (optimistic != null) {
-          // When using mock data, cache the optimistic update so it persists
-          // This ensures UI updates are reflected when providers refresh
-          if (_useMockData && updateCache && AppConfig.enableCache) {
-            await _cacheData(cacheKey, optimistic);
+        
+        // Return optimistic update if available (only for network/offline errors)
+        if (optimisticUpdate != null) {
+          final optimistic = optimisticUpdate();
+          if (optimistic != null) {
+            // When using mock data, cache the optimistic update so it persists
+            // This ensures UI updates are reflected when providers refresh
+            if (_useMockData && updateCache && AppConfig.enableCache) {
+              await _cacheData(cacheKey, optimistic);
+            }
+            return optimistic;
           }
-          return optimistic;
         }
       }
       
-      // Re-throw error if no optimistic update available
+      // Re-throw error if not handled by offline queue
       throw ErrorHandler.handle(e);
     }
   }

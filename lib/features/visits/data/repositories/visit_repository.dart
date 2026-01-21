@@ -105,6 +105,38 @@ class VisitRepository extends BaseRepository {
     );
   }
 
+  /// Get completed visits with optional date filtering
+  Future<List<VisitModel>> getCompletedVisits({
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    return await fetchList<VisitModel>(
+      cacheKey: StorageKeys.completedVisitsCache,
+      apiCall: () async {
+        final url = '${ApiEndpoints.restApiBaseFull}/visits';
+        final queryParams = {
+          'status': 'eq.completed',
+          'select': '*',
+          'order': 'actual_end.desc',
+        };
+        
+        if (startDate != null) {
+          queryParams['actual_end'] = 'gte.${startDate.toIso8601String()}';
+        }
+        if (endDate != null) {
+          queryParams['actual_end'] = 'lte.${endDate.toIso8601String()}';
+        }
+        
+        final response = await apiClient.get(url, queryParameters: queryParams);
+        return (response.data as List)
+            .map((json) => VisitModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      },
+      fromJson: (data) => VisitModel.fromJson(data as Map<String, dynamic>),
+      mockData: useMockData ? () => VisitMockData.getMockCompletedVisits() : null,
+    );
+  }
+
   /// Start a visit - with offline support
   /// Uses REST API directly to avoid ES256 JWT issues
   Future<VisitModel> startVisit(String visitId) async {
@@ -288,6 +320,47 @@ class VisitRepository extends BaseRepository {
       checkConflict: true,
     );
   }
+
+  /// Upload completion images
+  /// 
+  /// Uploads job verification photos after visit completion.
+  /// Images are stored in: {org_id}/visits/{visit_id}/completion/{timestamp}_image.jpg
+  Future<void> uploadCompletionImages(String visitId, List<File> images) async {
+    if (_mediaUploadService == null) {
+      throw Exception('Media upload service not available');
+    }
+
+    if (images.isEmpty) {
+      return;
+    }
+
+    try {
+      // Get visit details to get org_id
+      final visit = await getVisitDetails(visitId);
+      
+      // Upload each image
+      final uploadedPaths = <String>[];
+      for (var i = 0; i < images.length; i++) {
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final fileName = '${timestamp}_completion_$i.jpg';
+        final storagePath = '${visit.orgId}/visits/$visitId/completion/$fileName';
+        
+        await _mediaUploadService!.uploadMedia(
+          file: images[i],
+          bucket: 'visits',
+          path: storagePath,
+        );
+        
+        uploadedPaths.add(storagePath);
+      }
+      
+      Logger.info('Uploaded ${uploadedPaths.length} completion images for visit $visitId');
+    } catch (e) {
+      Logger.error('Failed to upload completion images: $e');
+      rethrow;
+    }
+  }
+
 
   // ============ Notes Operations ============
 

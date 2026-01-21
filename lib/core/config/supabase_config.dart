@@ -72,23 +72,19 @@ class SupabaseConfig {
   
   // ============ Environment Detection ============
   
-  /// Check if we're in development mode
-  static bool get isDevelopment {
-    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
-    return env == 'development' || env == 'dev';
+  /// Get current environment name
+  static String get _rawEnvironment {
+    return const String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
   }
+
+  /// Check if we're in development mode
+  static bool get isDevelopment => _rawEnvironment == 'development' || _rawEnvironment == 'dev';
   
   /// Check if we're in staging mode
-  static bool get isStaging {
-    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'development');
-    return env == 'staging';
-  }
+  static bool get isStaging => _rawEnvironment == 'staging';
   
   /// Check if we're in production mode
-  static bool get isProduction {
-    const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'production');
-    return env == 'production' || env == 'prod';
-  }
+  static bool get isProduction => _rawEnvironment == 'production' || _rawEnvironment == 'prod';
   
   /// Get current environment name
   static String get environment {

@@ -26,6 +26,7 @@ enum PendingActionType {
   voidInvoice,
   sendMessage,
   updateBillingSettings,
+  recordPayment,
 }
 
 /// Action Priority Levels

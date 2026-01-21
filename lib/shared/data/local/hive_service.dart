@@ -239,3 +239,9 @@ final chatCacheProvider = Provider<CacheService>((ref) {
   return cache;
 });
 
+/// Billing Cache Provider
+final billingCacheProvider = Provider<CacheService>((ref) {
+  final cache = CacheService(StorageKeys.billingBox);
+  ref.onDispose(() => cache.close());
+  return cache;
+});

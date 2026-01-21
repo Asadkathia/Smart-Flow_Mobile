@@ -89,6 +89,8 @@ The mobile app **never writes directly to the database** except through authenti
 | media_upload | Generate signed upload URL for media/signatures |
 | media_confirm | Confirm media upload completion and create visit_media/visit_signatures record |
 | quotes_create | Create draft quote |
+| quotes_update | Update draft quote |
+| quotes_delete | Delete draft quote |
 | quotes_finalize | Lock quote |
 | invoices_create | Create invoice from quote |
 | payments_record | Record payment and update invoice status (web_admin only) |
@@ -101,6 +103,7 @@ The mobile app **never writes directly to the database** except through authenti
 | chat_group_create | Create group chat (admin only) |
 | chat_message_send | Send chat message |
 | ai_assist | AI assistant proxy + logging (supports image uploads) |
+| ai_web_search | AI-powered web search for technical documentation/troubleshooting |
 | invoice_create_draft | Create draft invoice (technician) |
 | invoice_preview | Generate invoice preview (technician) |
 | invite_employee | Create employee invitation (web_admin only) |
@@ -800,6 +803,12 @@ Technicians can create draft invoices and preview them before finalizing. This a
    - Edit invoice details (if still in draft)
    - Finalize invoice (changes status from draft to unpaid)
 
+### 9.2.1 Invoice Generation Method
+- Invoices are generated **client-side** in the mobile app.
+- System uses the `pdf` and `printing` packages to generate professional, formatted PDF documents.
+- PDF generation includes all calculated fields (subtotal, tax, grand total) and professional branding.
+- This ensures offline preview capability and immediate availability without server calls.
+
 ### 9.3 Invoice Preview
 - Preview shows formatted invoice with:
   - Invoice number
@@ -964,6 +973,7 @@ AI may:
 - Analyze uploaded images (for inventory price suggestions or general assistance)
 - Provide visual analysis of job-related photos
 - Auto-detect inventory item details from images (name, unit, price, SKU) and automatically create inventory items
+- **AI Web Search**: Perform real-time web searches for technical manuals, installation guides, and troubleshooting steps from trusted manufacturer sources.
 
 AI may NOT:
 - Create or modify quotes or invoices

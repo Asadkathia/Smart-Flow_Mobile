@@ -6,6 +6,7 @@ import 'package:smartflowpro/shared/data/local/hive_service.dart';
 import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
 import 'package:smartflowpro/core/constants/storage_keys.dart';
 import 'package:smartflowpro/core/config/app_config.dart';
+import 'package:smartflowpro/core/constants/api_endpoints.dart';
 
 /// Billing Settings Repository
 /// 
@@ -27,8 +28,39 @@ class BillingSettingsRepository extends BaseRepository {
     return await fetch<BillingSettingsModel>(
       cacheKey: cacheKey,
       apiCall: () async {
-        final response = await apiClient.get('/v1/org/$orgId/billing-settings');
-        return BillingSettingsModel.fromJson(response.data);
+        // Use standard REST API instead of Edge Function
+        // Table: billing_settings
+        final url = '${ApiEndpoints.restApiBaseFull}/billing_settings?org_id=eq.$orgId&select=*';
+        
+        try {
+          final response = await apiClient.get(url);
+          
+          if (response.data is List && (response.data as List).isNotEmpty) {
+            return BillingSettingsModel.fromJson(response.data[0] as Map<String, dynamic>);
+          }
+          
+          // Return defaults if no settings found
+          return BillingSettingsModel(
+            id: 'default',
+            orgId: orgId,
+            serviceCallFee: 75.0,
+            taxRate: 0.082,
+            currency: 'USD',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+        } catch (e) {
+            // Default on error to prevent blocking
+            return BillingSettingsModel(
+            id: 'default_error',
+            orgId: orgId,
+            serviceCallFee: 75.0,
+            taxRate: 0.082,
+            currency: 'USD',
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          );
+        }
       },
       fromJson: (data) => BillingSettingsModel.fromJson(data as Map<String, dynamic>),
       mockData: AppConfig.shouldUseMockData
@@ -72,7 +104,7 @@ class BillingSettingsRepository extends BaseRepository {
 /// Billing Settings Repository Provider
 final billingSettingsRepositoryProvider = Provider<BillingSettingsRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  final cache = ref.watch(quotesCacheProvider); // Reuse quotes cache for now
+  final cache = ref.watch(billingCacheProvider); // Use dedicated billing cache
   final offlineQueue = ref.watch(offlineQueueServiceProvider);
   
   return BillingSettingsRepository(

@@ -35,6 +35,9 @@ class QuoteModel with _$QuoteModel {
     @Default(1) int version,
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
+    String? notes,
+    String? terms,
+    @JsonKey(name: 'expiration_date') DateTime? expirationDate,
 
     // Relations
     @Default([]) List<LineItemModel> lineItems,

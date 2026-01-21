@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "297662077762",
+    "project_id": "ustahub-92de1",
+    "storage_bucket": "ustahub-92de1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:297662077762:android:123456789abc",
+        "android_client_info": {
+          "package_name": "com.Orbis.smartflowpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLj_onKuzLPLO3_55pMOLtsLqv4HXiEJA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

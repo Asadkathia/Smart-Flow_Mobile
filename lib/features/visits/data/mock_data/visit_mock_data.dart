@@ -183,6 +183,70 @@ class VisitMockData {
       ),
     ];
   }
+
+  /// Get mock completed visits list
+  static List<VisitModel> getMockCompletedVisits() {
+    final now = DateTime.now();
+    return [
+      VisitModel(
+        id: 'comp_1',
+        orgId: 'org_1',
+        jobId: 'job_comp_1',
+        technicianId: 'tech_1',
+        scheduledStart: now.subtract(const Duration(days: 1, hours: 4)),
+        scheduledEnd: now.subtract(const Duration(days: 1, hours: 2)),
+        actualStart: now.subtract(const Duration(days: 1, hours: 4, minutes: 5)),
+        actualEnd: now.subtract(const Duration(days: 1, hours: 2, minutes: 10)),
+        status: VisitStatus.completed,
+        createdAt: now.subtract(const Duration(days: 1, hours: 5)),
+        updatedAt: now.subtract(const Duration(days: 1, hours: 2)),
+        title: 'AC Maintenance',
+        customerName: 'Robert Wilson',
+        address: '246 Pine Lane, Phoenix, AZ',
+        latitude: 33.4484,
+        longitude: -112.0740,
+        notes: 'Annual maintenance. All parameters within range.',
+      ),
+      VisitModel(
+        id: 'comp_2',
+        orgId: 'org_1',
+        jobId: 'job_comp_2',
+        technicianId: 'tech_1',
+        scheduledStart: now.subtract(const Duration(days: 2, hours: 2)),
+        scheduledEnd: now.subtract(const Duration(days: 2)),
+        actualStart: now.subtract(const Duration(days: 2, hours: 1, minutes: 55)),
+        actualEnd: now.subtract(const Duration(days: 2, minutes: 5)),
+        status: VisitStatus.completed,
+        createdAt: now.subtract(const Duration(days: 2, hours: 3)),
+        updatedAt: now.subtract(const Duration(days: 2, minutes: 5)),
+        title: 'Heater Repair',
+        customerName: 'Mary Davis',
+        address: '789 Elm Street, Scottsdale, AZ',
+        latitude: 33.4942,
+        longitude: -111.9261,
+        notes: 'Fixed ignition issue. Replaced spark electrode.',
+      ),
+      VisitModel(
+        id: 'comp_3',
+        orgId: 'org_1',
+        jobId: 'job_comp_3',
+        technicianId: 'tech_1',
+        scheduledStart: now.subtract(const Duration(days: 3, hours: 5)),
+        scheduledEnd: now.subtract(const Duration(days: 3, hours: 3)),
+        actualStart: now.subtract(const Duration(days: 3, hours: 5)),
+        actualEnd: now.subtract(const Duration(days: 3, hours: 3, minutes: 5)),
+        status: VisitStatus.completed,
+        createdAt: now.subtract(const Duration(days: 3, hours: 6)),
+        updatedAt: now.subtract(const Duration(days: 3, hours: 3)),
+        title: 'Thermostat Installation',
+        customerName: 'Kevin White',
+        address: '555 Cedar Ave, Tempe, AZ',
+        latitude: 33.4148,
+        longitude: -111.9092,
+        notes: 'Installed Nest thermostat. Verified connectivity.',
+      ),
+    ];
+  }
 }
 
 

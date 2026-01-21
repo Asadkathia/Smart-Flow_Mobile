@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
@@ -13,6 +14,7 @@ import 'package:smartflowpro/router/app_router.dart';
 import 'package:smartflowpro/core/validation/validation_rules.dart';
 import 'package:smartflowpro/features/quotes/data/models/quote_model.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../invoices/data/repositories/invoice_repository.dart';
 import '../widgets/create_quotes/create_quotes_section_header.dart';
 import '../widgets/create_quotes/create_quotes_line_item.dart';
 import '../widgets/create_quotes/create_quotes_add_button.dart';
@@ -129,6 +131,74 @@ class CreateQuotesScreen extends ConsumerWidget {
 
             SizedBox(height: 16.h),
 
+            // Notes Section
+            CreateQuotesSectionHeader(
+              title: 'NOTES',
+            ),
+            CreateQuotesMessageRow(
+              message: quoteState.notes ?? 'Tap to add notes',
+              onTap: () => _showNotesEditor(context, ref),
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Terms Section
+            CreateQuotesSectionHeader(
+              title: 'TERMS',
+            ),
+            CreateQuotesMessageRow(
+              message: quoteState.terms ?? 'Tap to add terms',
+              onTap: () => _showTermsEditor(context, ref),
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Expiration Date Section
+            CreateQuotesSectionHeader(
+              title: 'EXPIRATION DATE',
+            ),
+            GestureDetector(
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: quoteState.expirationDate ?? DateTime.now().add(Duration(days: 30)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(Duration(days: 365)),
+                );
+                if (date != null) {
+                  quoteNotifier.updateExpirationDate(date);
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: AppColors.whiteColor,
+                  borderRadius: BorderRadius.circular(8.r),
+                  border: Border.all(color: AppColors.lightGray),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today, size: 20.sp, color: AppColors.greyColor),
+                    SizedBox(width: 12.w),
+                    Text(
+                      quoteState.expirationDate != null
+                          ? 'Valid until ${DateFormat('MMM d, yyyy').format(quoteState.expirationDate!)}'
+                          : 'Tap to set expiration date',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: quoteState.expirationDate != null 
+                            ? AppColors.primaryTextColor 
+                            : AppColors.greyColor,
+                      ),
+                    ),
+                    Spacer(),
+                    Icon(Icons.chevron_right, color: AppColors.greyColor),
+                  ],
+                ),
+              ),
+            ),
+
+            SizedBox(height: 16.h),
+
             // Subtotal
             CreateQuotesSummaryRow(
               label: 'Subtotal',
@@ -206,49 +276,23 @@ class CreateQuotesScreen extends ConsumerWidget {
       return;
     }
     
-    // Get orgId from auth provider, with fallback for development mode
-    final authState = ref.read(authProvider);
-    final orgId = authState.user?.orgId ?? 'org_1'; // Default orgId for development
-    
     // In development mode, allow proceeding without strict orgId check
     // In production, this should be required
     
-    await quoteNotifier.saveQuote(
-      visitId: visitId,
-      orgId: orgId,
-    );
-    if (context.mounted) {
-      context.showSuccessSnackBar('Quote saved');
-    }
-    
-    // Show dialog to create invoice
-    final createInvoice = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Quote Saved'),
-        content: Text('Would you like to create an invoice from this quote?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('Later'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-            ),
-            child: Text('Create Invoice'),
-          ),
-        ],
-      ),
-    );
-
-    if (createInvoice == true && context.mounted) {
-      // Navigate to invoice list
-      // TODO: Pass quote data to invoice creation screen
-      context.push(AppRoutePaths.invoiceList);
-    } else {
-      context.pop();
+    try {
+      // Save the quote and get the returned quote ID
+      final savedQuoteId = await quoteNotifier.saveQuote(
+        visitId: visitId,
+      );
+      
+      if (context.mounted) {
+        context.showSuccessSnackBar('Quote saved successfully');
+        context.pop(); // Return to previous screen
+      }
+    } catch (e) {
+      if (context.mounted) {
+        context.showErrorSnackBar('Failed to save quote: ${e.toString()}');
+      }
     }
   }
 
@@ -342,7 +386,7 @@ class CreateQuotesScreen extends ConsumerWidget {
         onSave: () {
           final message = messageController.text.trim();
           if (message.isNotEmpty) {
-            ref.read(createQuotesProvider.notifier).setEstimateMessage(message);
+            ref.read(createQuotesProvider.notifier).updateEstimateMessage(message);
             Navigator.pop(dialogContext);
           } else {
             CustomToast.error('Message cannot be empty');
@@ -351,5 +395,58 @@ class CreateQuotesScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
+  void _showNotesEditor(BuildContext context, WidgetRef ref) {
+    final quoteNotifier = ref.read(createQuotesProvider.notifier);
+    final currentNotes = ref.read(createQuotesProvider).notes ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Quote Notes'),
+        content: TextField(
+          controller: TextEditingController(text: currentNotes),
+          maxLines: 5,
+          decoration: InputDecoration(
+            hintText: 'Add any additional notes or instructions',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: quoteNotifier.updateNotes,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTermsEditor(BuildContext context, WidgetRef ref) {
+    final quoteNotifier = ref.read(createQuotesProvider.notifier);
+    final currentTerms = ref.read(createQuotesProvider).terms ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Terms & Conditions'),
+        content: TextField(
+          controller: TextEditingController(text: currentTerms),
+          maxLines: 5,
+          decoration: InputDecoration(
+            hintText: 'Payment terms, warranty info, etc.',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: quoteNotifier.updateTerms,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -23,24 +23,38 @@ mixin _$InvoiceModel {
   String get id => throw _privateConstructorUsedError;
   @JsonKey(name: 'org_id')
   String get orgId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'visit_id')
   String get visitId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'quote_id')
   String? get quoteId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'invoice_number')
   String get invoiceNumber => throw _privateConstructorUsedError;
   InvoiceStatus get status => throw _privateConstructorUsedError;
   double get total => throw _privateConstructorUsedError;
   double get subtotal => throw _privateConstructorUsedError;
+  @JsonKey(name: 'tax_amount')
   double get taxAmount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'line_items')
   List<LineItemModel> get lineItems => throw _privateConstructorUsedError;
+  @JsonKey(name: 'customer_name')
   String? get customerName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'customer_email')
   String? get customerEmail => throw _privateConstructorUsedError;
+  @JsonKey(name: 'customer_phone')
   String? get customerPhone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'property_address')
   String? get propertyAddress => throw _privateConstructorUsedError;
+  @JsonKey(name: 'visit_title')
   String? get visitTitle => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  @JsonKey(name: 'due_date')
   DateTime? get dueDate => throw _privateConstructorUsedError;
+  @JsonKey(name: 'paid_at')
   DateTime? get paidAt => throw _privateConstructorUsedError;
   int get version => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime? get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime? get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this InvoiceModel to a JSON map.
@@ -62,25 +76,25 @@ abstract class $InvoiceModelCopyWith<$Res> {
   $Res call(
       {String id,
       @JsonKey(name: 'org_id') String orgId,
-      String visitId,
-      String? quoteId,
-      String invoiceNumber,
+      @JsonKey(name: 'visit_id') String visitId,
+      @JsonKey(name: 'quote_id') String? quoteId,
+      @JsonKey(name: 'invoice_number') String invoiceNumber,
       InvoiceStatus status,
       double total,
       double subtotal,
-      double taxAmount,
-      List<LineItemModel> lineItems,
-      String? customerName,
-      String? customerEmail,
-      String? customerPhone,
-      String? propertyAddress,
-      String? visitTitle,
+      @JsonKey(name: 'tax_amount') double taxAmount,
+      @JsonKey(name: 'line_items') List<LineItemModel> lineItems,
+      @JsonKey(name: 'customer_name') String? customerName,
+      @JsonKey(name: 'customer_email') String? customerEmail,
+      @JsonKey(name: 'customer_phone') String? customerPhone,
+      @JsonKey(name: 'property_address') String? propertyAddress,
+      @JsonKey(name: 'visit_title') String? visitTitle,
       String? notes,
-      DateTime? dueDate,
-      DateTime? paidAt,
+      @JsonKey(name: 'due_date') DateTime? dueDate,
+      @JsonKey(name: 'paid_at') DateTime? paidAt,
       int version,
-      DateTime? createdAt,
-      DateTime? updatedAt});
+      @JsonKey(name: 'created_at') DateTime? createdAt,
+      @JsonKey(name: 'updated_at') DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -220,25 +234,25 @@ abstract class _$$InvoiceModelImplCopyWith<$Res>
   $Res call(
       {String id,
       @JsonKey(name: 'org_id') String orgId,
-      String visitId,
-      String? quoteId,
-      String invoiceNumber,
+      @JsonKey(name: 'visit_id') String visitId,
+      @JsonKey(name: 'quote_id') String? quoteId,
+      @JsonKey(name: 'invoice_number') String invoiceNumber,
       InvoiceStatus status,
       double total,
       double subtotal,
-      double taxAmount,
-      List<LineItemModel> lineItems,
-      String? customerName,
-      String? customerEmail,
-      String? customerPhone,
-      String? propertyAddress,
-      String? visitTitle,
+      @JsonKey(name: 'tax_amount') double taxAmount,
+      @JsonKey(name: 'line_items') List<LineItemModel> lineItems,
+      @JsonKey(name: 'customer_name') String? customerName,
+      @JsonKey(name: 'customer_email') String? customerEmail,
+      @JsonKey(name: 'customer_phone') String? customerPhone,
+      @JsonKey(name: 'property_address') String? propertyAddress,
+      @JsonKey(name: 'visit_title') String? visitTitle,
       String? notes,
-      DateTime? dueDate,
-      DateTime? paidAt,
+      @JsonKey(name: 'due_date') DateTime? dueDate,
+      @JsonKey(name: 'paid_at') DateTime? paidAt,
       int version,
-      DateTime? createdAt,
-      DateTime? updatedAt});
+      @JsonKey(name: 'created_at') DateTime? createdAt,
+      @JsonKey(name: 'updated_at') DateTime? updatedAt});
 }
 
 /// @nodoc
@@ -371,25 +385,26 @@ class _$InvoiceModelImpl implements _InvoiceModel {
   const _$InvoiceModelImpl(
       {required this.id,
       @JsonKey(name: 'org_id') required this.orgId,
-      required this.visitId,
-      this.quoteId,
-      required this.invoiceNumber,
+      @JsonKey(name: 'visit_id') required this.visitId,
+      @JsonKey(name: 'quote_id') this.quoteId,
+      @JsonKey(name: 'invoice_number') required this.invoiceNumber,
       required this.status,
       required this.total,
-      required this.subtotal,
-      required this.taxAmount,
-      required final List<LineItemModel> lineItems,
-      this.customerName,
-      this.customerEmail,
-      this.customerPhone,
-      this.propertyAddress,
-      this.visitTitle,
+      this.subtotal = 0.0,
+      @JsonKey(name: 'tax_amount') this.taxAmount = 0.0,
+      @JsonKey(name: 'line_items')
+      final List<LineItemModel> lineItems = const [],
+      @JsonKey(name: 'customer_name') this.customerName,
+      @JsonKey(name: 'customer_email') this.customerEmail,
+      @JsonKey(name: 'customer_phone') this.customerPhone,
+      @JsonKey(name: 'property_address') this.propertyAddress,
+      @JsonKey(name: 'visit_title') this.visitTitle,
       this.notes,
-      this.dueDate,
-      this.paidAt,
+      @JsonKey(name: 'due_date') this.dueDate,
+      @JsonKey(name: 'paid_at') this.paidAt,
       this.version = 1,
-      this.createdAt,
-      this.updatedAt})
+      @JsonKey(name: 'created_at') this.createdAt,
+      @JsonKey(name: 'updated_at') this.updatedAt})
       : _lineItems = lineItems;
 
   factory _$InvoiceModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -401,21 +416,27 @@ class _$InvoiceModelImpl implements _InvoiceModel {
   @JsonKey(name: 'org_id')
   final String orgId;
   @override
+  @JsonKey(name: 'visit_id')
   final String visitId;
   @override
+  @JsonKey(name: 'quote_id')
   final String? quoteId;
   @override
+  @JsonKey(name: 'invoice_number')
   final String invoiceNumber;
   @override
   final InvoiceStatus status;
   @override
   final double total;
   @override
+  @JsonKey()
   final double subtotal;
   @override
+  @JsonKey(name: 'tax_amount')
   final double taxAmount;
   final List<LineItemModel> _lineItems;
   @override
+  @JsonKey(name: 'line_items')
   List<LineItemModel> get lineItems {
     if (_lineItems is EqualUnmodifiableListView) return _lineItems;
     // ignore: implicit_dynamic_type
@@ -423,27 +444,36 @@ class _$InvoiceModelImpl implements _InvoiceModel {
   }
 
   @override
+  @JsonKey(name: 'customer_name')
   final String? customerName;
   @override
+  @JsonKey(name: 'customer_email')
   final String? customerEmail;
   @override
+  @JsonKey(name: 'customer_phone')
   final String? customerPhone;
   @override
+  @JsonKey(name: 'property_address')
   final String? propertyAddress;
   @override
+  @JsonKey(name: 'visit_title')
   final String? visitTitle;
   @override
   final String? notes;
   @override
+  @JsonKey(name: 'due_date')
   final DateTime? dueDate;
   @override
+  @JsonKey(name: 'paid_at')
   final DateTime? paidAt;
   @override
   @JsonKey()
   final int version;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime? createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime? updatedAt;
 
   @override
@@ -535,27 +565,28 @@ class _$InvoiceModelImpl implements _InvoiceModel {
 
 abstract class _InvoiceModel implements InvoiceModel {
   const factory _InvoiceModel(
-      {required final String id,
-      @JsonKey(name: 'org_id') required final String orgId,
-      required final String visitId,
-      final String? quoteId,
-      required final String invoiceNumber,
-      required final InvoiceStatus status,
-      required final double total,
-      required final double subtotal,
-      required final double taxAmount,
-      required final List<LineItemModel> lineItems,
-      final String? customerName,
-      final String? customerEmail,
-      final String? customerPhone,
-      final String? propertyAddress,
-      final String? visitTitle,
-      final String? notes,
-      final DateTime? dueDate,
-      final DateTime? paidAt,
-      final int version,
-      final DateTime? createdAt,
-      final DateTime? updatedAt}) = _$InvoiceModelImpl;
+          {required final String id,
+          @JsonKey(name: 'org_id') required final String orgId,
+          @JsonKey(name: 'visit_id') required final String visitId,
+          @JsonKey(name: 'quote_id') final String? quoteId,
+          @JsonKey(name: 'invoice_number') required final String invoiceNumber,
+          required final InvoiceStatus status,
+          required final double total,
+          final double subtotal,
+          @JsonKey(name: 'tax_amount') final double taxAmount,
+          @JsonKey(name: 'line_items') final List<LineItemModel> lineItems,
+          @JsonKey(name: 'customer_name') final String? customerName,
+          @JsonKey(name: 'customer_email') final String? customerEmail,
+          @JsonKey(name: 'customer_phone') final String? customerPhone,
+          @JsonKey(name: 'property_address') final String? propertyAddress,
+          @JsonKey(name: 'visit_title') final String? visitTitle,
+          final String? notes,
+          @JsonKey(name: 'due_date') final DateTime? dueDate,
+          @JsonKey(name: 'paid_at') final DateTime? paidAt,
+          final int version,
+          @JsonKey(name: 'created_at') final DateTime? createdAt,
+          @JsonKey(name: 'updated_at') final DateTime? updatedAt}) =
+      _$InvoiceModelImpl;
 
   factory _InvoiceModel.fromJson(Map<String, dynamic> json) =
       _$InvoiceModelImpl.fromJson;
@@ -566,10 +597,13 @@ abstract class _InvoiceModel implements InvoiceModel {
   @JsonKey(name: 'org_id')
   String get orgId;
   @override
+  @JsonKey(name: 'visit_id')
   String get visitId;
   @override
+  @JsonKey(name: 'quote_id')
   String? get quoteId;
   @override
+  @JsonKey(name: 'invoice_number')
   String get invoiceNumber;
   @override
   InvoiceStatus get status;
@@ -578,30 +612,41 @@ abstract class _InvoiceModel implements InvoiceModel {
   @override
   double get subtotal;
   @override
+  @JsonKey(name: 'tax_amount')
   double get taxAmount;
   @override
+  @JsonKey(name: 'line_items')
   List<LineItemModel> get lineItems;
   @override
+  @JsonKey(name: 'customer_name')
   String? get customerName;
   @override
+  @JsonKey(name: 'customer_email')
   String? get customerEmail;
   @override
+  @JsonKey(name: 'customer_phone')
   String? get customerPhone;
   @override
+  @JsonKey(name: 'property_address')
   String? get propertyAddress;
   @override
+  @JsonKey(name: 'visit_title')
   String? get visitTitle;
   @override
   String? get notes;
   @override
+  @JsonKey(name: 'due_date')
   DateTime? get dueDate;
   @override
+  @JsonKey(name: 'paid_at')
   DateTime? get paidAt;
   @override
   int get version;
   @override
+  @JsonKey(name: 'created_at')
   DateTime? get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime? get updatedAt;
 
   /// Create a copy of InvoiceModel

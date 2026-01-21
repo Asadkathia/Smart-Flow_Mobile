@@ -75,14 +75,19 @@ class SignatureUploadService {
     return uploadSignature(signatureFile, visitId);
   }
 
-  /// Delete signature
-  /// Note: Delete functionality not yet implemented in MediaUploadService
+  /// Delete signature from storage
+  /// 
+  /// [signaturePath] - Full storage path of the signature (e.g., 'visits/{visitId}/media/{filename}')
+  /// [visitId] - ID of the visit (for logging purposes)
   Future<void> deleteSignature(
-    String signatureUrl,
+    String signaturePath,
     String visitId,
   ) async {
-    // TODO: Implement signature deletion when MediaUploadService supports it
-    throw UnimplementedError('Signature deletion not yet implemented');
+    try {
+      await _mediaUploadService.deleteVisitMedia(storagePath: signaturePath);
+    } catch (e) {
+      throw ErrorHandler.handle(e);
+    }
   }
 }
 

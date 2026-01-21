@@ -9,6 +9,8 @@ import 'package:smartflowpro/router/app_router.dart';
 import '../../data/models/quote_model.dart';
 import '../../data/models/line_item_model.dart';
 import '../providers/quote_provider.dart';
+import '../providers/create_quotes_provider.dart';
+import '../../../invoices/presentation/providers/invoice_provider.dart';
 import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
 
 /// Quote Details Screen
@@ -50,6 +52,11 @@ class QuoteDetailsScreen extends ConsumerWidget {
             icon: Icon(Icons.more_vert, color: AppColors.whiteColor),
             onSelected: (value) {
               switch (value) {
+                case 'edit':
+                  if (quoteAsync.value?.canEdit ?? false) {
+                    _editQuote(context, ref, quoteAsync.value!);
+                  }
+                  break;
                 case 'finalize':
                   if (quoteAsync.value?.canFinalize ?? false) {
                     _finalizeQuote(context, ref, quoteAsync.value!);
@@ -63,6 +70,17 @@ class QuoteDetailsScreen extends ConsumerWidget {
               }
             },
             itemBuilder: (context) => [
+              if (quoteAsync.value?.canEdit ?? false)
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 20.sp),
+                      SizedBox(width: 12.w),
+                      Text('Edit Quote'),
+                    ],
+                  ),
+                ),
               if (quoteAsync.value?.canFinalize ?? false)
                 PopupMenuItem(
                   value: 'finalize',
@@ -127,6 +145,35 @@ class QuoteDetailsScreen extends ConsumerWidget {
 
           // Totals Section
           _buildTotalsSection(quote),
+          SizedBox(height: 32.h),
+
+          // Create Invoice Button (only for finalized quotes)
+          if (quote.status == QuoteStatus.finalized && quote.canInvoice)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => _createInvoiceFromQuote(context, ref, quote),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  elevation: 2,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.receipt_long, color: AppColors.whiteColor, size: 20.sp),
+                    SizedBox(width: 12.w),
+                    Text(
+                      'Create Invoice',
+                      style: AppTextStyles.buttonLarge.copyWith(color: AppColors.whiteColor),
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -486,6 +533,72 @@ class QuoteDetailsScreen extends ConsumerWidget {
         context.pop();
       } else if (context.mounted) {
         context.showErrorSnackBar('Failed to delete quote');
+      }
+    }
+  }
+
+  void _editQuote(BuildContext context, WidgetRef ref, QuoteModel quote) {
+    // Load quote into the creation provider
+    ref.read(createQuotesProvider.notifier).loadQuote(quote);
+    // Navigate to create quotes screen
+    context.push(AppRoutePaths.createQuotes, extra: {'visitId': quote.visitId});
+  }
+
+  Future<void> _createInvoiceFromQuote(
+    BuildContext context,
+    WidgetRef ref,
+    QuoteModel quote,
+  ) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Create Invoice'),
+        content: Text(
+          'Create an invoice from this quote? The quote will be marked as invoiced.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+            ),
+            child: Text('Create Invoice'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(child: CircularProgressIndicator()),
+      );
+
+      try {
+        final invoice = await ref.read(invoiceActionsProvider.notifier)
+            .createDraftFromQuote(quote.id);
+        
+        if (invoice != null && context.mounted) {
+          Navigator.pop(context); // Dismiss loading
+          context.showSuccessSnackBar('Invoice created successfully');
+          // Navigate to invoice preview
+          context.push('/invoice/${invoice.id}/preview');
+        } else if (context.mounted) {
+          Navigator.pop(context);
+          context.showErrorSnackBar('Failed to create invoice');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.pop(context);
+          context.showErrorSnackBar('Failed to create invoice: $e');
+        }
       }
     }
   }

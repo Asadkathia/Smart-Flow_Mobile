@@ -10,60 +10,61 @@ _$InvoiceModelImpl _$$InvoiceModelImplFromJson(Map<String, dynamic> json) =>
     _$InvoiceModelImpl(
       id: json['id'] as String,
       orgId: json['org_id'] as String,
-      visitId: json['visitId'] as String,
-      quoteId: json['quoteId'] as String?,
-      invoiceNumber: json['invoiceNumber'] as String,
+      visitId: json['visit_id'] as String,
+      quoteId: json['quote_id'] as String?,
+      invoiceNumber: json['invoice_number'] as String,
       status: $enumDecode(_$InvoiceStatusEnumMap, json['status']),
       total: (json['total'] as num).toDouble(),
-      subtotal: (json['subtotal'] as num).toDouble(),
-      taxAmount: (json['taxAmount'] as num).toDouble(),
-      lineItems: (json['lineItems'] as List<dynamic>)
-          .map((e) => LineItemModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      customerName: json['customerName'] as String?,
-      customerEmail: json['customerEmail'] as String?,
-      customerPhone: json['customerPhone'] as String?,
-      propertyAddress: json['propertyAddress'] as String?,
-      visitTitle: json['visitTitle'] as String?,
+      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0.0,
+      taxAmount: (json['tax_amount'] as num?)?.toDouble() ?? 0.0,
+      lineItems: (json['line_items'] as List<dynamic>?)
+              ?.map((e) => LineItemModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      customerName: json['customer_name'] as String?,
+      customerEmail: json['customer_email'] as String?,
+      customerPhone: json['customer_phone'] as String?,
+      propertyAddress: json['property_address'] as String?,
+      visitTitle: json['visit_title'] as String?,
       notes: json['notes'] as String?,
-      dueDate: json['dueDate'] == null
+      dueDate: json['due_date'] == null
           ? null
-          : DateTime.parse(json['dueDate'] as String),
-      paidAt: json['paidAt'] == null
+          : DateTime.parse(json['due_date'] as String),
+      paidAt: json['paid_at'] == null
           ? null
-          : DateTime.parse(json['paidAt'] as String),
+          : DateTime.parse(json['paid_at'] as String),
       version: (json['version'] as num?)?.toInt() ?? 1,
-      createdAt: json['createdAt'] == null
+      createdAt: json['created_at'] == null
           ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
+          : DateTime.parse(json['created_at'] as String),
+      updatedAt: json['updated_at'] == null
           ? null
-          : DateTime.parse(json['updatedAt'] as String),
+          : DateTime.parse(json['updated_at'] as String),
     );
 
 Map<String, dynamic> _$$InvoiceModelImplToJson(_$InvoiceModelImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
       'org_id': instance.orgId,
-      'visitId': instance.visitId,
-      'quoteId': instance.quoteId,
-      'invoiceNumber': instance.invoiceNumber,
+      'visit_id': instance.visitId,
+      'quote_id': instance.quoteId,
+      'invoice_number': instance.invoiceNumber,
       'status': _$InvoiceStatusEnumMap[instance.status]!,
       'total': instance.total,
       'subtotal': instance.subtotal,
-      'taxAmount': instance.taxAmount,
-      'lineItems': instance.lineItems,
-      'customerName': instance.customerName,
-      'customerEmail': instance.customerEmail,
-      'customerPhone': instance.customerPhone,
-      'propertyAddress': instance.propertyAddress,
-      'visitTitle': instance.visitTitle,
+      'tax_amount': instance.taxAmount,
+      'line_items': instance.lineItems,
+      'customer_name': instance.customerName,
+      'customer_email': instance.customerEmail,
+      'customer_phone': instance.customerPhone,
+      'property_address': instance.propertyAddress,
+      'visit_title': instance.visitTitle,
       'notes': instance.notes,
-      'dueDate': instance.dueDate?.toIso8601String(),
-      'paidAt': instance.paidAt?.toIso8601String(),
+      'due_date': instance.dueDate?.toIso8601String(),
+      'paid_at': instance.paidAt?.toIso8601String(),
       'version': instance.version,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
     };
 
 const _$InvoiceStatusEnumMap = {

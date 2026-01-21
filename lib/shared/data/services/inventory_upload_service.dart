@@ -13,7 +13,7 @@ import '../remote/api_client.dart';
 /// using the Supabase Storage API directly (works with ES256 JWT).
 class InventoryUploadService {
   final ApiClient _apiClient;
-  final SupabaseClient _supabase = Supabase.instance.client;
+  SupabaseClient get _supabase => Supabase.instance.client;
 
   InventoryUploadService(this._apiClient);
 

@@ -8,6 +8,7 @@ import 'package:smartflowpro/core/constants/api_endpoints.dart';
 import 'package:smartflowpro/core/config/app_config.dart';
 import 'package:smartflowpro/core/config/supabase_config.dart';
 import 'package:smartflowpro/core/services/logger.dart';
+import 'package:smartflowpro/core/services/rate_limiter_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
 
@@ -16,16 +17,23 @@ import 'package:dio/dio.dart';
 /// Handles all AI assistant-related data operations.
 /// Now calls OpenAI API directly instead of using Supabase Edge Functions
 /// to avoid ES256 JWT authentication issues.
+/// 
+/// Rate limited to 100 requests per hour per PRD Section 12.5.
 class AiRepository {
   final ApiClient _apiClient;
   final MediaUploadService? _mediaUploadService;
   final Dio _openaiClient;
-  final SupabaseClient _supabase;
+  final RateLimiterService _rateLimiter;
+  SupabaseClient get _supabase => Supabase.instance.client;
+  
+  static const String _rateLimitKey = 'ai_assistant_requests';
 
   AiRepository(
     this._apiClient, {
     MediaUploadService? mediaUploadService,
+    RateLimiterService? rateLimiter,
   })  : _mediaUploadService = mediaUploadService,
+        _rateLimiter = rateLimiter ?? RateLimiterService(maxRequestsPerHour: 100),
         _openaiClient = Dio(
           BaseOptions(
             baseUrl: 'https://api.openai.com/v1',
@@ -36,8 +44,7 @@ class AiRepository {
             connectTimeout: const Duration(seconds: 30),
             receiveTimeout: const Duration(seconds: 60),
           ),
-        ),
-        _supabase = Supabase.instance.client;
+        );
 
   /// Fetch visit context from Supabase REST API
   Future<String?> _fetchVisitContext(String visitId) async {
@@ -105,6 +112,20 @@ Current Job Context:
         throw Exception(
           'AI Assistant is not configured.\n\n'
           'Please set OPENAI_API_KEY environment variable to use this feature.'
+        );
+      }
+      
+      // Check rate limit (100 requests per hour per PRD Section 12.5)
+      final isAllowed = await _rateLimiter.checkAndRecord(_rateLimitKey);
+      if (!isAllowed) {
+        final remaining = await _rateLimiter.getRemainingRequests(_rateLimitKey);
+        final resetIn = await _rateLimiter.getTimeUntilReset(_rateLimitKey);
+        throw RateLimitException(
+          message: 'AI Assistant rate limit exceeded.\n\n'
+              'You have reached the limit of 100 requests per hour. '
+              'Please try again ${resetIn != null ? 'in ${resetIn.inMinutes} minutes' : 'later'}.',
+          retryAfter: resetIn,
+          remaining: remaining,
         );
       }
 

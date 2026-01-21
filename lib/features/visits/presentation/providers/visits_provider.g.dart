@@ -562,7 +562,7 @@ class _VisitNotesProviderElement
   String get visitId => (origin as VisitNotesProvider).visitId;
 }
 
-String _$visitActionsHash() => r'f5ecca8360a1d933fad02b8f3ce45325bd3f4f89';
+String _$visitActionsHash() => r'946549980617e53ce0223e503fa62950e63d42fd';
 
 /// Visit Actions Provider
 ///

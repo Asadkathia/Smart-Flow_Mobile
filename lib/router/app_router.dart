@@ -38,6 +38,7 @@ import '../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
 import '../shared/presentation/screens/conflict_resolution_screen.dart';
 import '../features/inventory/presentation/screens/inventory_details_screen.dart';
 import '../features/invoices/presentation/screens/invoice_preview_screen.dart';
+import '../features/visits/presentation/screens/completed_visits_screen.dart';
 
 /// Route paths as constants
 class AppRoutePaths {
@@ -51,6 +52,7 @@ class AppRoutePaths {
   static const String schedule = '/main/schedule';
   static const String jobDetails = '/job-details/:id';
   static const String profile = '/profile';
+  static const String settings = '/settings';
   static const String onMyWay = '/on-my-way';
   static const String createQuotes = '/create-quotes';
   static const String quotesList = '/quotes-list';
@@ -65,6 +67,7 @@ class AppRoutePaths {
   static const String quoteDetails = '/quote/:id';
   static const String inventoryDetails = '/inventory/:id';
   static const String invoicePreview = '/invoice/:id/preview';
+  static const String completedVisits = '/visits/completed';
 }
 
 /// Navigation helper extension
@@ -129,6 +132,11 @@ extension GoRouterExtension on BuildContext {
   /// Navigate to invoice preview
   void goToInvoicePreview(String invoiceId) {
     push('/invoice/$invoiceId/preview');
+  }
+
+  /// Navigate to completed visits
+  void goToCompletedVisits() {
+    push(AppRoutePaths.completedVisits);
   }
 
   /// Show snackbar
@@ -424,6 +432,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
+      ),
+
+      // Completed Visits
+      GoRoute(
+        path: AppRoutePaths.completedVisits,
+        name: 'completedVisits',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const CompletedVisitsScreen(),
+          transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

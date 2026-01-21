@@ -44,7 +44,12 @@ mixin _$QuoteModel {
   @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updated_at')
-  DateTime get updatedAt => throw _privateConstructorUsedError; // Relations
+  DateTime get updatedAt => throw _privateConstructorUsedError;
+  String? get notes => throw _privateConstructorUsedError;
+  String? get terms => throw _privateConstructorUsedError;
+  @JsonKey(name: 'expiration_date')
+  DateTime? get expirationDate =>
+      throw _privateConstructorUsedError; // Relations
   List<LineItemModel> get lineItems => throw _privateConstructorUsedError;
 
   /// Serializes this QuoteModel to a JSON map.
@@ -79,6 +84,9 @@ abstract class $QuoteModelCopyWith<$Res> {
       int version,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt,
+      String? notes,
+      String? terms,
+      @JsonKey(name: 'expiration_date') DateTime? expirationDate,
       List<LineItemModel> lineItems});
 }
 
@@ -112,6 +120,9 @@ class _$QuoteModelCopyWithImpl<$Res, $Val extends QuoteModel>
     Object? version = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? notes = freezed,
+    Object? terms = freezed,
+    Object? expirationDate = freezed,
     Object? lineItems = null,
   }) {
     return _then(_value.copyWith(
@@ -175,6 +186,18 @@ class _$QuoteModelCopyWithImpl<$Res, $Val extends QuoteModel>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      notes: freezed == notes
+          ? _value.notes
+          : notes // ignore: cast_nullable_to_non_nullable
+              as String?,
+      terms: freezed == terms
+          ? _value.terms
+          : terms // ignore: cast_nullable_to_non_nullable
+              as String?,
+      expirationDate: freezed == expirationDate
+          ? _value.expirationDate
+          : expirationDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       lineItems: null == lineItems
           ? _value.lineItems
           : lineItems // ignore: cast_nullable_to_non_nullable
@@ -207,6 +230,9 @@ abstract class _$$QuoteModelImplCopyWith<$Res>
       int version,
       @JsonKey(name: 'created_at') DateTime createdAt,
       @JsonKey(name: 'updated_at') DateTime updatedAt,
+      String? notes,
+      String? terms,
+      @JsonKey(name: 'expiration_date') DateTime? expirationDate,
       List<LineItemModel> lineItems});
 }
 
@@ -238,6 +264,9 @@ class __$$QuoteModelImplCopyWithImpl<$Res>
     Object? version = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? notes = freezed,
+    Object? terms = freezed,
+    Object? expirationDate = freezed,
     Object? lineItems = null,
   }) {
     return _then(_$QuoteModelImpl(
@@ -301,6 +330,18 @@ class __$$QuoteModelImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      notes: freezed == notes
+          ? _value.notes
+          : notes // ignore: cast_nullable_to_non_nullable
+              as String?,
+      terms: freezed == terms
+          ? _value.terms
+          : terms // ignore: cast_nullable_to_non_nullable
+              as String?,
+      expirationDate: freezed == expirationDate
+          ? _value.expirationDate
+          : expirationDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       lineItems: null == lineItems
           ? _value._lineItems
           : lineItems // ignore: cast_nullable_to_non_nullable
@@ -328,6 +369,9 @@ class _$QuoteModelImpl implements _QuoteModel {
       this.version = 1,
       @JsonKey(name: 'created_at') required this.createdAt,
       @JsonKey(name: 'updated_at') required this.updatedAt,
+      this.notes,
+      this.terms,
+      @JsonKey(name: 'expiration_date') this.expirationDate,
       final List<LineItemModel> lineItems = const []})
       : _lineItems = lineItems;
 
@@ -377,6 +421,13 @@ class _$QuoteModelImpl implements _QuoteModel {
   @override
   @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
+  @override
+  final String? notes;
+  @override
+  final String? terms;
+  @override
+  @JsonKey(name: 'expiration_date')
+  final DateTime? expirationDate;
 // Relations
   final List<LineItemModel> _lineItems;
 // Relations
@@ -390,7 +441,7 @@ class _$QuoteModelImpl implements _QuoteModel {
 
   @override
   String toString() {
-    return 'QuoteModel(id: $id, orgId: $orgId, visitId: $visitId, quoteNumber: $quoteNumber, status: $status, taxable: $taxable, subtotal: $subtotal, discountTotal: $discountTotal, taxTotal: $taxTotal, grandTotal: $grandTotal, lockedAt: $lockedAt, lockedBy: $lockedBy, version: $version, createdAt: $createdAt, updatedAt: $updatedAt, lineItems: $lineItems)';
+    return 'QuoteModel(id: $id, orgId: $orgId, visitId: $visitId, quoteNumber: $quoteNumber, status: $status, taxable: $taxable, subtotal: $subtotal, discountTotal: $discountTotal, taxTotal: $taxTotal, grandTotal: $grandTotal, lockedAt: $lockedAt, lockedBy: $lockedBy, version: $version, createdAt: $createdAt, updatedAt: $updatedAt, notes: $notes, terms: $terms, expirationDate: $expirationDate, lineItems: $lineItems)';
   }
 
   @override
@@ -422,30 +473,38 @@ class _$QuoteModelImpl implements _QuoteModel {
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
                 other.updatedAt == updatedAt) &&
+            (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.terms, terms) || other.terms == terms) &&
+            (identical(other.expirationDate, expirationDate) ||
+                other.expirationDate == expirationDate) &&
             const DeepCollectionEquality()
                 .equals(other._lineItems, _lineItems));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      orgId,
-      visitId,
-      quoteNumber,
-      status,
-      taxable,
-      subtotal,
-      discountTotal,
-      taxTotal,
-      grandTotal,
-      lockedAt,
-      lockedBy,
-      version,
-      createdAt,
-      updatedAt,
-      const DeepCollectionEquality().hash(_lineItems));
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        id,
+        orgId,
+        visitId,
+        quoteNumber,
+        status,
+        taxable,
+        subtotal,
+        discountTotal,
+        taxTotal,
+        grandTotal,
+        lockedAt,
+        lockedBy,
+        version,
+        createdAt,
+        updatedAt,
+        notes,
+        terms,
+        expirationDate,
+        const DeepCollectionEquality().hash(_lineItems)
+      ]);
 
   /// Create a copy of QuoteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -480,6 +539,9 @@ abstract class _QuoteModel implements QuoteModel {
       final int version,
       @JsonKey(name: 'created_at') required final DateTime createdAt,
       @JsonKey(name: 'updated_at') required final DateTime updatedAt,
+      final String? notes,
+      final String? terms,
+      @JsonKey(name: 'expiration_date') final DateTime? expirationDate,
       final List<LineItemModel> lineItems}) = _$QuoteModelImpl;
 
   factory _QuoteModel.fromJson(Map<String, dynamic> json) =
@@ -524,7 +586,14 @@ abstract class _QuoteModel implements QuoteModel {
   DateTime get createdAt;
   @override
   @JsonKey(name: 'updated_at')
-  DateTime get updatedAt; // Relations
+  DateTime get updatedAt;
+  @override
+  String? get notes;
+  @override
+  String? get terms;
+  @override
+  @JsonKey(name: 'expiration_date')
+  DateTime? get expirationDate; // Relations
   @override
   List<LineItemModel> get lineItems;
 

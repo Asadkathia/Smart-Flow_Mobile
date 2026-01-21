@@ -188,11 +188,18 @@ class ApiClient {
       }
     }
     
+    // Add Prefer header for Supabase to return created data
+    final effectiveOptions = options ?? Options();
+    effectiveOptions.headers = {
+      ...?effectiveOptions.headers,
+      'Prefer': 'return=representation', // Force Supabase to return created data
+    };
+    
     return _dio.post<T>(
       path,
       data: data,
       queryParameters: queryParameters,
-      options: options,
+      options: effectiveOptions,
     );
   }
 
@@ -218,11 +225,18 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     Options? options,
   }) async {
+    // Add Prefer header for Supabase to return updated data
+    final effectiveOptions = options ?? Options();
+    effectiveOptions.headers = {
+      ...?effectiveOptions.headers,
+      'Prefer': 'return=representation', // Force Supabase to return updated data
+    };
+    
     return _dio.patch<T>(
       path,
       data: data,
       queryParameters: queryParameters,
-      options: options,
+      options: effectiveOptions,
     );
   }
 

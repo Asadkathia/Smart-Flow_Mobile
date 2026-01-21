@@ -126,7 +126,9 @@ class _VisitsMapWidgetState extends State<VisitsMapWidget> {
           AppConstants.defaultLatitude,
           AppConstants.defaultLongitude,
         ),
-        zoom: AppConstants.defaultZoom,
+        zoom: 16.0,           // Closer zoom for better 3D effect
+        tilt: 45.0,           // 3D perspective tilt
+        bearing: 0.0,         // North-facing by default
       ),
       markers: _markers,
       onMapCreated: (controller) {
@@ -135,6 +137,13 @@ class _VisitsMapWidgetState extends State<VisitsMapWidget> {
           Future.delayed(const Duration(milliseconds: 500), _fitBounds);
         }
       },
+      // 3D Features
+      tiltGesturesEnabled: true,      // Allow 3D tilt gestures
+      rotateGesturesEnabled: true,    // Allow rotation
+      buildingsEnabled: true,         // Show 3D buildings
+      compassEnabled: true,           // Show compass when rotated
+      
+      // Keep existing
       myLocationEnabled: true,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,

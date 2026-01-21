@@ -11,6 +11,8 @@ import 'package:smartflowpro/shared/presentation/widgets/signature_capture_widge
 import '../../providers/visits_provider.dart';
 import '../../providers/job_details_provider.dart';
 import '../../../data/models/visit_model.dart';
+import '../../../../quotes/data/repositories/quote_repository.dart';
+import '../dialogs/post_completion_upload_dialog.dart';
 
 class JobDetailsScheduleWidget extends ConsumerWidget {
   const JobDetailsScheduleWidget({super.key});
@@ -138,8 +140,17 @@ class JobDetailsScheduleWidget extends ConsumerWidget {
                           final success = await ref
                               .read(visitActionsProvider.notifier)
                               .completeVisit(effectiveVisitId, signaturePath: signaturePath);
+                          
                           if (success && context.mounted) {
                             context.showSuccessSnackBar('Visit completed');
+                            
+                            // Show post-completion upload dialog
+                            await showDialog(
+                              context: context,
+                              builder: (context) => PostCompletionUploadDialog(
+                                visitId: effectiveVisitId,
+                              ),
+                            );
                           }
                         }
                       : null,
@@ -235,9 +246,35 @@ class JobDetailsScheduleWidget extends ConsumerWidget {
               leading: Icon(Icons.description, color: AppColors.primaryColor),
               title: Text('Quote'),
               subtitle: Text('Create a quote for this visit'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(dialogContext);
-                context.goToCreateQuotes(visitId);
+                
+                // key: "Create Quote Check"
+                // Check if quote exists for this visit
+                try {
+                  // Show loading indicator if needed or just wait (fast enough usually)
+                  // Ideally show a small global loading overlay, but for now simple await
+                  
+                  // Use repository directly to check
+                  // We need to import QuoteRepository for this
+                  final quoteRepo = ref.read(quoteRepositoryProvider);
+                  final quotes = await quoteRepo.getQuotes(visitId: visitId);
+                  
+                  if (context.mounted) {
+                    if (quotes.isNotEmpty) {
+                      // Navigate to existing quote (latest one is first due to desc sort)
+                      context.goToQuoteDetails(quotes.first.id);
+                    } else {
+                      // Create new quote
+                      context.goToCreateQuotes(visitId);
+                    }
+                  }
+                } catch (e) {
+                  // Fallback to create if check fails
+                  if (context.mounted) {
+                     context.goToCreateQuotes(visitId);
+                  }
+                }
               },
             ),
           ],
@@ -297,8 +334,17 @@ class JobDetailsScheduleWidget extends ConsumerWidget {
         final success = await ref
             .read(visitActionsProvider.notifier)
             .completeVisit(visitId, signaturePath: signaturePath);
+        
         if (success && context.mounted) {
           context.showSuccessSnackBar('Visit completed');
+          
+          // Show post-completion upload dialog
+          await showDialog(
+            context: context,
+            builder: (context) => PostCompletionUploadDialog(
+              visitId: visitId,
+            ),
+          );
         }
       } else if (context.mounted) {
         // Just save signature for later

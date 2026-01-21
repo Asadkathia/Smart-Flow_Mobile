@@ -577,6 +577,11 @@ class Auth extends _$Auth {
   void clearError() {
     state = state.copyWith(error: null);
   }
+
+  /// Get current user organization ID
+  String? getUserOrgId() {
+    return state.user?.orgId;
+  }
 }
 
 /// Current User Provider

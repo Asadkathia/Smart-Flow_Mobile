@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/models/visit_model.dart';
 import '../../data/models/note_model.dart';
 import '../../data/repositories/visit_repository.dart';
+import 'completed_visits_provider.dart';
 import '../../data/mock_data/visit_mock_data.dart';
 import 'package:smartflowpro/shared/data/services/signature_upload_service.dart';
 
@@ -307,12 +308,33 @@ class VisitActions extends _$VisitActions {
       
       ref.invalidate(todayVisitsProvider);
       ref.invalidate(visitDetailsProvider(visitId));
+      ref.invalidate(completedVisitsProvider);
+      ref.invalidate(completedVisitsNotifierProvider);
       
       return true;
     }).then((result) {
       state = result;
       return !result.hasError;
     });
+  }
+
+  /// Upload completion images
+  /// 
+  /// Uploads job verification photos after visit completion.
+  /// This is optional and only done with customer permission.
+  Future<void> uploadCompletionImages(String visitId, List<File> images) async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(visitRepositoryProvider);
+      await repository.uploadCompletionImages(visitId, images);
+      
+      // Refresh visit details to show updated images
+      ref.invalidate(visitDetailsProvider(visitId));
+    });
+    
+    if (state.hasError) {
+      throw state.error!;
+    }
   }
 }
 

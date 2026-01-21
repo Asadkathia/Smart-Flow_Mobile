@@ -148,6 +148,46 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
       return false;
     }
   }
+
+  /// Record payment for invoice
+  Future<PaymentModel?> recordPayment({
+    required String invoiceId,
+    required double amount,
+    required PaymentMethod method,
+    String? reference,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      final authState = _ref.read(authProvider);
+      final orgId = authState.user?.orgId;
+      final userId = authState.user?.id;
+      
+      if (orgId == null || userId == null) {
+        throw Exception('User session invalid');
+      }
+
+      final payment = await _repository.recordPayment(
+        invoiceId: invoiceId,
+        orgId: orgId,
+        amount: amount,
+        method: method,
+        receivedBy: userId,
+        reference: reference,
+      );
+      
+      state = const AsyncValue.data(null);
+      
+      // Invalidate providers to refresh UI
+      _ref.invalidate(invoiceDetailProvider(invoiceId));
+      _ref.invalidate(invoicePaymentsProvider(invoiceId));
+      _ref.invalidate(invoiceListProvider);
+      
+      return payment;
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
+  }
 }
 
 final invoiceActionsProvider = StateNotifierProvider<InvoiceActionsNotifier, AsyncValue<void>>((ref) {

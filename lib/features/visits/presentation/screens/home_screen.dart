@@ -38,7 +38,7 @@ class HomeScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Greeting Section
-                _buildGreetingSection(currentUser?.fullName.split(' ').first ?? 'there'),
+                _buildGreetingSection(context, currentUser?.fullName.split(' ').first ?? 'there'),
                 
                 // Map View
                 SizedBox(
@@ -118,29 +118,57 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGreetingSection(String userName) {
+  Widget _buildGreetingSection(BuildContext context, String userName) {
     final now = DateTime.now();
     final dateFormat = DateFormat('EEEE, MMMM d');
     final greeting = _getGreeting(now.hour);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          10.verticalSpace,
-          Text(
-            dateFormat.format(now),
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.secondaryTextColor,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              10.verticalSpace,
+              Text(
+                dateFormat.format(now),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.secondaryTextColor,
+                ),
+              ),
+              5.verticalSpace,
+              Text(
+                '$greeting, $userName',
+                style: AppTextStyles.heading3.copyWith(
+                  color: AppColors.primaryTextColor,
+                ),
+              ),
+            ],
           ),
-          5.verticalSpace,
-          Text(
-            '$greeting, $userName',
-            style: AppTextStyles.heading3.copyWith(
-              color: AppColors.primaryTextColor,
-            ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => context.push(AppRoutePaths.quotesList),
+                icon: Icon(
+                  Icons.request_quote_outlined,
+                  color: AppColors.primaryColor,
+                  size: 28.sp,
+                ),
+                tooltip: 'All Quotes',
+              ),
+              IconButton(
+                onPressed: () => context.goToCompletedVisits(),
+                icon: Icon(
+                  Icons.history,
+                  color: AppColors.primaryColor,
+                  size: 28.sp,
+                ),
+                tooltip: 'Completed Visits',
+              ),
+            ],
           ),
         ],
       ),

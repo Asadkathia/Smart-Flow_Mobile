@@ -48,7 +48,18 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
-      return widget.fallback ?? _buildErrorScreen();
+      final errorWidget = widget.fallback ?? _buildErrorScreen();
+      
+      // If we're at the top level (no Directionality yet), wrap with MaterialApp
+      try {
+        Directionality.of(context);
+        return errorWidget;
+      } catch (_) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: errorWidget,
+        );
+      }
     }
     return widget.child;
   }
@@ -131,10 +142,10 @@ class _ErrorBoundaryState extends State<ErrorBoundary> {
 /// 
 /// Custom error widget builder for Flutter errors
 Widget buildErrorWidget(FlutterErrorDetails details) {
-  return ErrorBoundary(
-    child: Container(
-      color: AppColors.whiteColor,
-      padding: EdgeInsets.all(16.w),
+  final content = Container(
+    color: AppColors.whiteColor,
+    padding: EdgeInsets.all(16.w),
+    child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -156,12 +167,17 @@ Widget buildErrorWidget(FlutterErrorDetails details) {
               color: AppColors.greyColor,
             ),
             textAlign: TextAlign.center,
-            maxLines: 3,
+            maxLines: 5,
             overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     ),
+  );
+
+  return MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: Scaffold(body: content),
   );
 }
 

@@ -18,12 +18,12 @@ class PaginatedQuotesListNotifier extends StateNotifier<AsyncValue<List<QuoteMod
     this._visitId,
     this._status,
     this._pageSize,
-  ) : super(const AsyncValue.loading()) {
+  ) : super(const AsyncValue.data([])) {
     _loadPage(1);
   }
 
   Future<void> _loadPage(int page) async {
-    if (state.isLoading) return;
+    // if (state.isLoading) return; // Allow reload to prevent stuck state
 
     state = const AsyncValue.loading();
     try {

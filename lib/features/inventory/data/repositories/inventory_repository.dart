@@ -274,21 +274,49 @@ class InventoryRepository extends BaseRepository {
         // Call actual Edge Function: tech-inventory-ai-detect
         final endpoint = '${ApiEndpoints.baseUrl}/${ApiEndpoints.inventoryAiDetectFunction}';
         
-        // Convert image to base64 if we have a local file
+        // Convert image to base64 if we have a local file, or get public URL if uploaded
         String? imageBase64;
+        String? publicImageUrl;
+        
         if (imageUrl == null || imageUrl == 'pending_upload') {
+          // Image not uploaded yet, send as base64
           try {
             final imageBytes = await image.readAsBytes();
             imageBase64 = base64Encode(imageBytes);
           } catch (e) {
             throw Exception('Failed to encode image: $e');
           }
+        } else {
+          // Image already uploaded to storage, get public URL
+          if (_inventoryUploadService != null) {
+            try {
+              publicImageUrl = await _inventoryUploadService!.getPublicUrl(storagePath: imageUrl);
+              Logger.info('Generated public URL for AI detection: $publicImageUrl');
+            } catch (e) {
+              Logger.error('Failed to get public URL, falling back to base64: $e');
+              // Fallback: try to read the image as base64
+              try {
+                final imageBytes = await image.readAsBytes();
+                imageBase64 = base64Encode(imageBytes);
+              } catch (e2) {
+                throw Exception('Failed to process image: $e2');
+              }
+            }
+          } else {
+            // No upload service available, try to read as base64
+            try {
+              final imageBytes = await image.readAsBytes();
+              imageBase64 = base64Encode(imageBytes);
+            } catch (e) {
+              throw Exception('Failed to process image: $e');
+            }
+          }
         }
         
         final response = await apiClient.post(
           endpoint,
           data: {
-            if (imageUrl != null && imageUrl != 'pending_upload') 'image_url': imageUrl,
+            if (publicImageUrl != null) 'image_url': publicImageUrl,
             if (imageBase64 != null) 'image_base64': imageBase64,
             // hint_text is optional - can be used to provide context about the item
           },
