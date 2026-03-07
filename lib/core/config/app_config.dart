@@ -26,13 +26,12 @@ class AppConfig {
       return true;
     }
     
-    // Check for explicit environment variable override
-    const envValue = bool.fromEnvironment('USE_MOCK_DATA', defaultValue: false);
-    if (envValue) {
-      return true;
+    // Check if USE_MOCK_DATA is explicitly set in environment
+    if (const bool.hasEnvironment('USE_MOCK_DATA')) {
+      return const bool.fromEnvironment('USE_MOCK_DATA');
     }
     
-    // In development mode, default to mock data
+    // In development mode, default to mock data if not set
     if (SupabaseConfig.isDevelopment) {
       return true;
     }
