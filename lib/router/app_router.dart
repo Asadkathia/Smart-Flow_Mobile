@@ -15,7 +15,8 @@ import '../features/auth/presentation/providers/auth_provider.dart';
 import '../core/splash/splash_screen.dart';
 // Auth screens - migrated to features/auth/presentation/screens
 import '../features/auth/presentation/screens/auth_screen.dart';
-import '../features/auth/presentation/screens/forget_password_screen.dart' show ForgotPasswordScreen;
+import '../features/auth/presentation/screens/forget_password_screen.dart'
+    show ForgotPasswordScreen;
 import '../features/auth/presentation/screens/verify_otp_screen.dart';
 import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../shared/navigation/screens/main_navigation_screen.dart';
@@ -90,18 +91,34 @@ extension GoRouterExtension on BuildContext {
     required double latitude,
     required double longitude,
   }) {
-    push(AppRoutePaths.onMyWay, extra: {
-      'visitId': visitId,
-      'customerName': customerName,
-      'address': address,
-      'latitude': latitude,
-      'longitude': longitude,
-    });
+    push(
+      AppRoutePaths.onMyWay,
+      extra: {
+        'visitId': visitId,
+        'customerName': customerName,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+      },
+    );
   }
 
   /// Navigate to create quotes
-  void goToCreateQuotes(String visitId) {
-    push(AppRoutePaths.createQuotes, extra: {'visitId': visitId});
+  void goToCreateQuotes(
+    String visitId, {
+    String mode = 'create',
+    String? quoteId,
+    String? sourceQuoteId,
+  }) {
+    push(
+      AppRoutePaths.createQuotes,
+      extra: {
+        'visitId': visitId,
+        'mode': mode,
+        if (quoteId != null) 'quoteId': quoteId,
+        if (sourceQuoteId != null) 'sourceQuoteId': sourceQuoteId,
+      },
+    );
   }
 
   /// Navigate to conflict resolution screen
@@ -178,7 +195,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isLoggedIn = authState.isAuthenticated;
-      final isAuthRoute = state.matchedLocation == AppRoutePaths.auth ||
+      final isAuthRoute =
+          state.matchedLocation == AppRoutePaths.auth ||
           state.matchedLocation == AppRoutePaths.forgetPassword ||
           state.matchedLocation == AppRoutePaths.verifyOtp ||
           state.matchedLocation == AppRoutePaths.resetPassword;
@@ -223,9 +241,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: 'verifyOtp',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          return VerifyOtpScreen(
-            email: extra?['email'] ?? '',
-          );
+          return VerifyOtpScreen(email: extra?['email'] ?? '');
         },
       ),
       GoRoute(
@@ -250,7 +266,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             key: state.pageKey,
             child: JobDetailsScreen(visitId: jobId),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -283,7 +300,8 @@ final routerProvider = Provider<GoRouter>((ref) {
               latitude: extra?['latitude'] ?? 0.0,
               longitude: extra?['longitude'] ?? 0.0,
             ),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -299,8 +317,12 @@ final routerProvider = Provider<GoRouter>((ref) {
             key: state.pageKey,
             child: CreateQuotesScreen(
               visitId: extra?['visitId'] ?? '',
+              mode: extra?['mode'] ?? 'create',
+              quoteId: extra?['quoteId'],
+              sourceQuoteId: extra?['sourceQuoteId'],
             ),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -369,7 +391,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             key: state.pageKey,
             child: ChatThreadScreen(chatId: chatId, chatName: chatName),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -398,7 +421,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             key: state.pageKey,
             child: QuoteDetailsScreen(quoteId: quoteId),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -413,7 +437,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             key: state.pageKey,
             child: InventoryDetailsScreen(itemId: itemId),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -428,7 +453,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return CustomTransitionPage(
             key: state.pageKey,
             child: InvoicePreviewScreen(invoiceId: invoiceId),
-            transitionsBuilder: app_animations.AppPageTransitions.slideTransition,
+            transitionsBuilder:
+                app_animations.AppPageTransitions.slideTransition,
             transitionDuration: const Duration(milliseconds: 300),
           );
         },
@@ -476,4 +502,3 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 /// Navigator key for accessing navigator from anywhere
 final navigatorKey = GlobalKey<NavigatorState>();
-

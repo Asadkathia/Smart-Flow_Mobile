@@ -30,25 +30,28 @@ class ApiInterceptor extends Interceptor {
     options.headers['apikey'] = SupabaseConfig.supabaseAnonKey;
 
     // Add auth token if available (Supabase JWT)
-    // Priority: Supabase session > Secure storage
+    // When Supabase is configured, only trust the live Supabase session token.
+    // Falling back to secure storage here can send stale JWTs from a different user.
     String? token;
-    
+
     if (SupabaseConfig.isValid) {
-      // Try to get token from Supabase session first
+      // Use Supabase session as single source of truth.
       final session = Supabase.instance.client.auth.currentSession;
       if (session != null) {
         token = session.accessToken;
+      } else {
+        Logger.warning('No Supabase session available for authenticated request');
       }
-    }
-    
-    // Fallback to secure storage if Supabase token not available
-    if (token == null || token.isEmpty) {
+    } else {
+      // Fallback for non-Supabase/mock flows only
       final authStorage = AuthStorage.instance;
       token = await authStorage.getAccessToken();
     }
-    
+
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
+    } else {
+      Logger.warning('No auth token attached to request');
     }
 
     // Add common headers
@@ -236,5 +239,3 @@ class ApiInterceptor extends Interceptor {
     }
   }
 }
-
-

@@ -14,19 +14,17 @@ import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
 import '../widgets/record_payment_dialog.dart';
 
 /// Invoice Preview Screen
-/// 
+///
 /// Displays a formatted invoice with print and share functionality.
 class InvoicePreviewScreen extends ConsumerWidget {
   final String invoiceId;
 
-  const InvoicePreviewScreen({
-    super.key,
-    required this.invoiceId,
-  });
+  const InvoicePreviewScreen({super.key, required this.invoiceId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final invoiceAsync = ref.watch(invoiceDetailProvider(invoiceId));
+    final paymentsAsync = ref.watch(invoicePaymentsProvider(invoiceId));
     final actionsState = ref.watch(invoiceActionsProvider);
 
     return Scaffold(
@@ -102,9 +100,26 @@ class InvoicePreviewScreen extends ConsumerWidget {
         ],
       ),
       body: invoiceAsync.when(
-        data: (invoice) => SingleChildScrollView(
-          child: _buildInvoiceContent(context, ref, invoice),
-        ),
+        data: (invoice) {
+          final payments = paymentsAsync.valueOrNull ?? const <PaymentModel>[];
+          final paidAmount = payments.fold<double>(
+            0.0,
+            (sum, payment) => sum + payment.amount,
+          );
+          final remainingBalance = (invoice.total - paidAmount)
+              .clamp(0.0, invoice.total)
+              .toDouble();
+
+          return SingleChildScrollView(
+            child: _buildInvoiceContent(
+              context,
+              ref,
+              invoice,
+              paidAmount: paidAmount,
+              remainingBalance: remainingBalance,
+            ),
+          );
+        },
         loading: () => StandardLoadingState(message: 'Loading invoice...'),
         error: (error, stack) => StandardErrorState(
           title: 'Failed to load invoice',
@@ -115,7 +130,13 @@ class InvoicePreviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInvoiceContent(BuildContext context, WidgetRef ref, InvoiceModel invoice) {
+  Widget _buildInvoiceContent(
+    BuildContext context,
+    WidgetRef ref,
+    InvoiceModel invoice, {
+    required double paidAmount,
+    required double remainingBalance,
+  }) {
     return Container(
       color: AppColors.whiteColor,
       padding: EdgeInsets.all(24.w),
@@ -131,14 +152,10 @@ class InvoicePreviewScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Customer Info
-              Expanded(
-                child: _buildCustomerSection(invoice),
-              ),
+              Expanded(child: _buildCustomerSection(invoice)),
               SizedBox(width: 32.w),
               // Invoice Info
-              Expanded(
-                child: _buildInvoiceInfoSection(invoice),
-              ),
+              Expanded(child: _buildInvoiceInfoSection(invoice)),
             ],
           ),
           SizedBox(height: 32.h),
@@ -148,7 +165,11 @@ class InvoicePreviewScreen extends ConsumerWidget {
           SizedBox(height: 32.h),
 
           // Totals Section
-          _buildTotalsSection(invoice),
+          _buildTotalsSection(
+            invoice,
+            paidAmount: paidAmount,
+            remainingBalance: remainingBalance,
+          ),
           SizedBox(height: 32.h),
 
           // Notes Section
@@ -156,15 +177,16 @@ class InvoicePreviewScreen extends ConsumerWidget {
             _buildNotesSection(invoice.notes!),
 
           // Record Payment Button
-          if (invoice.status != InvoiceStatus.paid && 
-              invoice.status != InvoiceStatus.void_ && 
+          if (invoice.status != InvoiceStatus.paid &&
+              invoice.status != InvoiceStatus.void_ &&
               invoice.status != InvoiceStatus.draft)
             Padding(
               padding: EdgeInsets.only(top: 32.h),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => _showRecordPaymentDialog(context, ref, invoice),
+                  onPressed: () =>
+                      _showRecordPaymentDialog(context, ref, invoice),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -175,7 +197,9 @@ class InvoicePreviewScreen extends ConsumerWidget {
                   ),
                   child: Text(
                     'Record Payment',
-                    style: AppTextStyles.buttonLarge.copyWith(color: AppColors.whiteColor),
+                    style: AppTextStyles.buttonLarge.copyWith(
+                      color: AppColors.whiteColor,
+                    ),
                   ),
                 ),
               ),
@@ -251,24 +275,15 @@ class InvoicePreviewScreen extends ConsumerWidget {
           ),
         if (invoice.propertyAddress != null) ...[
           SizedBox(height: 4.h),
-          Text(
-            invoice.propertyAddress!,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(invoice.propertyAddress!, style: AppTextStyles.bodyMedium),
         ],
         if (invoice.customerEmail != null) ...[
           SizedBox(height: 4.h),
-          Text(
-            invoice.customerEmail!,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(invoice.customerEmail!, style: AppTextStyles.bodyMedium),
         ],
         if (invoice.customerPhone != null) ...[
           SizedBox(height: 4.h),
-          Text(
-            invoice.customerPhone!,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(invoice.customerPhone!, style: AppTextStyles.bodyMedium),
         ],
       ],
     );
@@ -278,15 +293,24 @@ class InvoicePreviewScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildInfoRow('Invoice Date:', invoice.createdAt != null
-            ? DateFormat('MMM d, yyyy').format(invoice.createdAt!)
-            : 'N/A'),
+        _buildInfoRow(
+          'Invoice Date:',
+          invoice.createdAt != null
+              ? DateFormat('MMM d, yyyy').format(invoice.createdAt!)
+              : 'N/A',
+        ),
         if (invoice.dueDate != null)
-          _buildInfoRow('Due Date:', DateFormat('MMM d, yyyy').format(invoice.dueDate!)),
+          _buildInfoRow(
+            'Due Date:',
+            DateFormat('MMM d, yyyy').format(invoice.dueDate!),
+          ),
         if (invoice.visitTitle != null)
           _buildInfoRow('Service:', invoice.visitTitle!),
         if (invoice.paidAt != null)
-          _buildInfoRow('Paid Date:', DateFormat('MMM d, yyyy').format(invoice.paidAt!)),
+          _buildInfoRow(
+            'Paid Date:',
+            DateFormat('MMM d, yyyy').format(invoice.paidAt!),
+          ),
       ],
     );
   }
@@ -335,11 +359,51 @@ class InvoicePreviewScreen extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Expanded(flex: 3, child: Text('Description', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
-              Expanded(child: Text('Qty', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('Unit', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('Price', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
-              Expanded(child: Text('Total', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  'Description',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Qty',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Unit',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Price',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Total',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              ),
             ],
           ),
         ),
@@ -348,16 +412,13 @@ class InvoicePreviewScreen extends ConsumerWidget {
           final index = entry.key;
           final item = entry.value;
           final isLast = index == invoice.lineItems.length - 1;
-          
+
           return Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: AppColors.whiteColor,
               border: Border(
-                bottom: BorderSide(
-                  color: AppColors.lightGray,
-                  width: 1,
-                ),
+                bottom: BorderSide(color: AppColors.lightGray, width: 1),
               ),
             ),
             child: Row(
@@ -368,11 +429,9 @@ class InvoicePreviewScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        item.description,
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                      if (item.type == LineItemType.material && item.referenceId != null)
+                      Text(item.description, style: AppTextStyles.bodyMedium),
+                      if (item.type == LineItemType.material &&
+                          item.referenceId != null)
                         Text(
                           'SKU: ${item.referenceId}',
                           style: AppTextStyles.caption.copyWith(
@@ -420,7 +479,11 @@ class InvoicePreviewScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTotalsSection(InvoiceModel invoice) {
+  Widget _buildTotalsSection(
+    InvoiceModel invoice, {
+    required double paidAmount,
+    required double remainingBalance,
+  }) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -430,25 +493,32 @@ class InvoicePreviewScreen extends ConsumerWidget {
       child: Column(
         children: [
           _buildTotalRow('Subtotal:', invoice.subtotal),
-          if (invoice.taxAmount > 0)
-            _buildTotalRow('Tax:', invoice.taxAmount),
+          if (invoice.taxAmount > 0) _buildTotalRow('Tax:', invoice.taxAmount),
           Divider(height: 24.h),
-          _buildTotalRow(
-            'Total:',
-            invoice.total,
-            isTotal: true,
-          ),
-          if (invoice.status == InvoiceStatus.partiallyPaid) ...[
+          _buildTotalRow('Total:', invoice.total, isTotal: true),
+          if (invoice.status != InvoiceStatus.draft &&
+              invoice.status != InvoiceStatus.void_ &&
+              invoice.status != InvoiceStatus.refunded &&
+              paidAmount > 0) ...[
             SizedBox(height: 8.h),
-            _buildTotalRow('Paid:', invoice.paidAmount, color: AppColors.successGreen),
-            _buildTotalRow('Remaining:', invoice.remainingBalance, color: AppColors.errorRed),
+            _buildTotalRow('Paid:', paidAmount, color: AppColors.successGreen),
+            _buildTotalRow(
+              'Remaining:',
+              remainingBalance,
+              color: AppColors.errorRed,
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildTotalRow(String label, double amount, {bool isTotal = false, Color? color}) {
+  Widget _buildTotalRow(
+    String label,
+    double amount, {
+    bool isTotal = false,
+    Color? color,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
@@ -457,19 +527,16 @@ class InvoicePreviewScreen extends ConsumerWidget {
           Text(
             label,
             style: isTotal
-                ? AppTextStyles.heading5.copyWith(
-                    fontWeight: FontWeight.w700,
-                  )
+                ? AppTextStyles.heading5.copyWith(fontWeight: FontWeight.w700)
                 : AppTextStyles.bodyMedium,
           ),
           Text(
             '\$${amount.toStringAsFixed(2)}',
-            style: (isTotal
-                ? AppTextStyles.heading5
-                : AppTextStyles.bodyMedium).copyWith(
-              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
-              color: color,
-            ),
+            style: (isTotal ? AppTextStyles.heading5 : AppTextStyles.bodyMedium)
+                .copyWith(
+                  fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
+                  color: color,
+                ),
           ),
         ],
       ),
@@ -493,10 +560,7 @@ class InvoicePreviewScreen extends ConsumerWidget {
             ),
           ),
           SizedBox(height: 8.h),
-          Text(
-            notes,
-            style: AppTextStyles.bodyMedium,
-          ),
+          Text(notes, style: AppTextStyles.bodyMedium),
         ],
       ),
     );
@@ -538,7 +602,9 @@ class InvoicePreviewScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Finalize Invoice'),
-        content: Text('Are you sure you want to finalize this invoice? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to finalize this invoice? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -556,7 +622,9 @@ class InvoicePreviewScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      final result = await ref.read(invoiceActionsProvider.notifier).finalize(invoice.id);
+      final result = await ref
+          .read(invoiceActionsProvider.notifier)
+          .finalize(invoice.id);
       if (result != null && context.mounted) {
         context.showSuccessSnackBar('Invoice finalized successfully');
         ref.invalidate(invoiceDetailProvider(invoiceId));
@@ -571,10 +639,28 @@ class InvoicePreviewScreen extends ConsumerWidget {
     WidgetRef ref,
     InvoiceModel invoice,
   ) async {
+    double remainingBalance = invoice.total;
+    try {
+      final payments = await ref.read(
+        invoicePaymentsProvider(invoice.id).future,
+      );
+      final paidAmount = payments.fold<double>(
+        0.0,
+        (sum, payment) => sum + payment.amount,
+      );
+      remainingBalance = (invoice.total - paidAmount)
+          .clamp(0.0, invoice.total)
+          .toDouble();
+    } catch (_) {
+      // Keep fallback remaining value; server-side validation still prevents overpayment.
+    }
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => RecordPaymentDialog(
-        remainingBalance: invoice.remainingBalance,
+        remainingBalance: remainingBalance,
         onRecord: (amount, method, reference) async {
           // Show loading
           showDialog(
@@ -584,13 +670,15 @@ class InvoicePreviewScreen extends ConsumerWidget {
           );
 
           try {
-            await ref.read(invoiceActionsProvider.notifier).recordPayment(
-              invoiceId: invoice.id,
-              amount: amount,
-              method: method,
-              reference: reference,
-            );
-            
+            await ref
+                .read(invoiceActionsProvider.notifier)
+                .recordPayment(
+                  invoiceId: invoice.id,
+                  amount: amount,
+                  method: method,
+                  reference: reference,
+                );
+
             if (context.mounted) {
               Navigator.pop(context); // Dismiss loading
               context.showSuccessSnackBar('Payment recorded successfully');
@@ -608,4 +696,3 @@ class InvoicePreviewScreen extends ConsumerWidget {
     );
   }
 }
-

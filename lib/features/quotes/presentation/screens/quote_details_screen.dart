@@ -9,20 +9,17 @@ import 'package:smartflowpro/router/app_router.dart';
 import '../../data/models/quote_model.dart';
 import '../../data/models/line_item_model.dart';
 import '../providers/quote_provider.dart';
-import '../providers/create_quotes_provider.dart';
 import '../../../invoices/presentation/providers/invoice_provider.dart';
+import '../../../visits/presentation/providers/visit_documents_workflow_provider.dart';
 import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
 
 /// Quote Details Screen
-/// 
+///
 /// Displays a formatted quote with finalize and delete functionality.
 class QuoteDetailsScreen extends ConsumerWidget {
   final String quoteId;
 
-  const QuoteDetailsScreen({
-    super.key,
-    required this.quoteId,
-  });
+  const QuoteDetailsScreen({super.key, required this.quoteId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -97,7 +94,11 @@ class QuoteDetailsScreen extends ConsumerWidget {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete, size: 20.sp, color: AppColors.errorRed),
+                      Icon(
+                        Icons.delete,
+                        size: 20.sp,
+                        color: AppColors.errorRed,
+                      ),
                       SizedBox(width: 12.w),
                       Text(
                         'Delete Quote',
@@ -111,9 +112,16 @@ class QuoteDetailsScreen extends ConsumerWidget {
         ],
       ),
       body: quoteAsync.when(
-        data: (quote) => SingleChildScrollView(
-          child: _buildQuoteContent(context, ref, quote),
-        ),
+        data: (quote) {
+          final workflowAsync = ref.watch(
+            visitDocumentsWorkflowProvider(quote.visitId),
+          );
+          final workflow = workflowAsync.valueOrNull;
+
+          return SingleChildScrollView(
+            child: _buildQuoteContent(context, ref, quote, workflow),
+          );
+        },
         loading: () => StandardLoadingState(message: 'Loading quote...'),
         error: (error, stack) => StandardErrorState(
           title: 'Failed to load quote',
@@ -124,7 +132,12 @@ class QuoteDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuoteContent(BuildContext context, WidgetRef ref, QuoteModel quote) {
+  Widget _buildQuoteContent(
+    BuildContext context,
+    WidgetRef ref,
+    QuoteModel quote,
+    VisitDocumentsWorkflowState? workflow,
+  ) {
     return Container(
       color: AppColors.whiteColor,
       padding: EdgeInsets.all(24.w),
@@ -147,36 +160,90 @@ class QuoteDetailsScreen extends ConsumerWidget {
           _buildTotalsSection(quote),
           SizedBox(height: 32.h),
 
-          // Create Invoice Button (only for finalized quotes)
-          if (quote.status == QuoteStatus.finalized && quote.canInvoice)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => _createInvoiceFromQuote(context, ref, quote),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  elevation: 2,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.receipt_long, color: AppColors.whiteColor, size: 20.sp),
-                    SizedBox(width: 12.w),
-                    Text(
-                      'Create Invoice',
-                      style: AppTextStyles.buttonLarge.copyWith(color: AppColors.whiteColor),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          if (quote.status == QuoteStatus.finalized ||
+              quote.status == QuoteStatus.invoiced)
+            _buildDocumentActions(context, ref, quote, workflow),
         ],
       ),
     );
+  }
+
+  Widget _buildDocumentActions(
+    BuildContext context,
+    WidgetRef ref,
+    QuoteModel quote,
+    VisitDocumentsWorkflowState? workflow,
+  ) {
+    final invoiceButtonText = _invoiceActionLabel(workflow);
+    final canCreateRevision =
+        workflow?.finalizedQuoteId == quote.id &&
+        workflow?.draftQuoteId == null;
+
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () =>
+                _handleInvoiceAction(context, ref, quote, workflow),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              padding: EdgeInsets.symmetric(vertical: 16.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              elevation: 2,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.receipt_long,
+                  color: AppColors.whiteColor,
+                  size: 20.sp,
+                ),
+                SizedBox(width: 12.w),
+                Text(
+                  invoiceButtonText,
+                  style: AppTextStyles.buttonLarge.copyWith(
+                    color: AppColors.whiteColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (canCreateRevision) ...[
+          SizedBox(height: 12.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () => _createRevisionFromQuote(context, ref, quote),
+              style: OutlinedButton.styleFrom(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: Text('Create Revision Quote'),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _invoiceActionLabel(VisitDocumentsWorkflowState? workflow) {
+    if (workflow == null) {
+      return 'Create Invoice';
+    }
+    if (workflow.finalizedInvoiceId != null) {
+      return 'View Invoice';
+    }
+    if (workflow.draftInvoiceId != null) {
+      return 'Continue Draft Invoice';
+    }
+    return 'Create Invoice';
   }
 
   Widget _buildHeader(QuoteModel quote) {
@@ -234,10 +301,19 @@ class QuoteDetailsScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow('Quote Date:', DateFormat('MMM d, yyyy').format(quote.createdAt)),
-          _buildInfoRow('Last Updated:', DateFormat('MMM d, yyyy').format(quote.updatedAt)),
+          _buildInfoRow(
+            'Quote Date:',
+            DateFormat('MMM d, yyyy').format(quote.createdAt),
+          ),
+          _buildInfoRow(
+            'Last Updated:',
+            DateFormat('MMM d, yyyy').format(quote.updatedAt),
+          ),
           if (quote.lockedAt != null)
-            _buildInfoRow('Finalized At:', DateFormat('MMM d, yyyy h:mm a').format(quote.lockedAt!)),
+            _buildInfoRow(
+              'Finalized At:',
+              DateFormat('MMM d, yyyy h:mm a').format(quote.lockedAt!),
+            ),
           if (quote.version > 1)
             _buildInfoRow('Version:', quote.version.toString()),
         ],
@@ -307,11 +383,51 @@ class QuoteDetailsScreen extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Expanded(flex: 3, child: Text('Description', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600))),
-              Expanded(child: Text('Qty', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('Unit', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.center)),
-              Expanded(child: Text('Price', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
-              Expanded(child: Text('Total', style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600), textAlign: TextAlign.right)),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  'Description',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Qty',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Unit',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Price',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  'Total',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.right,
+                ),
+              ),
             ],
           ),
         ),
@@ -319,16 +435,13 @@ class QuoteDetailsScreen extends ConsumerWidget {
         ...quote.lineItems.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
-          
+
           return Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: AppColors.whiteColor,
               border: Border(
-                bottom: BorderSide(
-                  color: AppColors.lightGray,
-                  width: 1,
-                ),
+                bottom: BorderSide(color: AppColors.lightGray, width: 1),
               ),
             ),
             child: Row(
@@ -339,11 +452,9 @@ class QuoteDetailsScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        item.description,
-                        style: AppTextStyles.bodyMedium,
-                      ),
-                      if (item.type == LineItemType.material && item.referenceId != null)
+                      Text(item.description, style: AppTextStyles.bodyMedium),
+                      if (item.type == LineItemType.material &&
+                          item.referenceId != null)
                         Text(
                           'SKU: ${item.referenceId}',
                           style: AppTextStyles.caption.copyWith(
@@ -409,21 +520,25 @@ class QuoteDetailsScreen extends ConsumerWidget {
         children: [
           _buildTotalRow('Subtotal:', quote.subtotal),
           if (quote.discountTotal > 0)
-            _buildTotalRow('Discount:', -quote.discountTotal, color: AppColors.successGreen),
-          if (quote.taxTotal > 0)
-            _buildTotalRow('Tax:', quote.taxTotal),
+            _buildTotalRow(
+              'Discount:',
+              -quote.discountTotal,
+              color: AppColors.successGreen,
+            ),
+          if (quote.taxTotal > 0) _buildTotalRow('Tax:', quote.taxTotal),
           Divider(height: 24.h),
-          _buildTotalRow(
-            'Grand Total:',
-            quote.grandTotal,
-            isTotal: true,
-          ),
+          _buildTotalRow('Grand Total:', quote.grandTotal, isTotal: true),
         ],
       ),
     );
   }
 
-  Widget _buildTotalRow(String label, double amount, {bool isTotal = false, Color? color}) {
+  Widget _buildTotalRow(
+    String label,
+    double amount, {
+    bool isTotal = false,
+    Color? color,
+  }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
@@ -432,19 +547,16 @@ class QuoteDetailsScreen extends ConsumerWidget {
           Text(
             label,
             style: isTotal
-                ? AppTextStyles.heading5.copyWith(
-                    fontWeight: FontWeight.w700,
-                  )
+                ? AppTextStyles.heading5.copyWith(fontWeight: FontWeight.w700)
                 : AppTextStyles.bodyMedium,
           ),
           Text(
             '\$${amount.abs().toStringAsFixed(2)}',
-            style: (isTotal
-                ? AppTextStyles.heading5
-                : AppTextStyles.bodyMedium).copyWith(
-              fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
-              color: color,
-            ),
+            style: (isTotal ? AppTextStyles.heading5 : AppTextStyles.bodyMedium)
+                .copyWith(
+                  fontWeight: isTotal ? FontWeight.w700 : FontWeight.w600,
+                  color: color,
+                ),
           ),
         ],
       ),
@@ -471,7 +583,9 @@ class QuoteDetailsScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Finalize Quote'),
-        content: Text('Are you sure you want to finalize this quote? Once finalized, it cannot be edited.'),
+        content: Text(
+          'Are you sure you want to finalize this quote? Once finalized, it cannot be edited.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -489,7 +603,9 @@ class QuoteDetailsScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      final result = await ref.read(quoteActionsProvider.notifier).finalize(quote.id);
+      final result = await ref
+          .read(quoteActionsProvider.notifier)
+          .finalize(quote.id);
       if (result != null && context.mounted) {
         context.showSuccessSnackBar('Quote finalized successfully');
         ref.invalidate(quoteDetailProvider(quoteId));
@@ -508,7 +624,9 @@ class QuoteDetailsScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Delete Quote'),
-        content: Text('Are you sure you want to delete this quote? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete this quote? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -526,7 +644,9 @@ class QuoteDetailsScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      final result = await ref.read(quoteActionsProvider.notifier).delete(quote.id);
+      final result = await ref
+          .read(quoteActionsProvider.notifier)
+          .delete(quote.id);
       if (result && context.mounted) {
         context.showSuccessSnackBar('Quote deleted successfully');
         // Navigate back to quotes list
@@ -538,24 +658,44 @@ class QuoteDetailsScreen extends ConsumerWidget {
   }
 
   void _editQuote(BuildContext context, WidgetRef ref, QuoteModel quote) {
-    // Load quote into the creation provider
-    ref.read(createQuotesProvider.notifier).loadQuote(quote);
-    // Navigate to create quotes screen
-    context.push(AppRoutePaths.createQuotes, extra: {'visitId': quote.visitId});
+    context.goToCreateQuotes(quote.visitId, mode: 'edit', quoteId: quote.id);
   }
 
-  Future<void> _createInvoiceFromQuote(
+  void _createRevisionFromQuote(
     BuildContext context,
     WidgetRef ref,
     QuoteModel quote,
+  ) {
+    context.goToCreateQuotes(
+      quote.visitId,
+      mode: 'revision',
+      sourceQuoteId: quote.id,
+    );
+  }
+
+  Future<void> _handleInvoiceAction(
+    BuildContext context,
+    WidgetRef ref,
+    QuoteModel quote,
+    VisitDocumentsWorkflowState? workflow,
   ) async {
+    if (workflow?.finalizedInvoiceId != null) {
+      context.goToInvoicePreview(workflow!.finalizedInvoiceId!);
+      return;
+    }
+
+    if (workflow?.draftInvoiceId != null) {
+      context.goToInvoicePreview(workflow!.draftInvoiceId!);
+      return;
+    }
+
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Create Invoice'),
         content: Text(
-          'Create an invoice from this quote? The quote will be marked as invoiced.',
+          'Open an invoice for this quote? If one already exists for this job, it will be reused.',
         ),
         actions: [
           TextButton(
@@ -582,14 +722,14 @@ class QuoteDetailsScreen extends ConsumerWidget {
       );
 
       try {
-        final invoice = await ref.read(invoiceActionsProvider.notifier)
+        final invoice = await ref
+            .read(invoiceActionsProvider.notifier)
             .createDraftFromQuote(quote.id);
-        
+
         if (invoice != null && context.mounted) {
           Navigator.pop(context); // Dismiss loading
-          context.showSuccessSnackBar('Invoice created successfully');
-          // Navigate to invoice preview
-          context.push('/invoice/${invoice.id}/preview');
+          context.showSuccessSnackBar('Invoice opened successfully');
+          context.goToInvoicePreview(invoice.id);
         } else if (context.mounted) {
           Navigator.pop(context);
           context.showErrorSnackBar('Failed to create invoice');
