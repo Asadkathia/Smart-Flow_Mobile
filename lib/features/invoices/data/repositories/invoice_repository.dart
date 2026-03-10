@@ -545,6 +545,32 @@ class InvoiceRepository extends BaseRepository {
     );
   }
 
+  /// Resolve user full names for payment audit display.
+  Future<Map<String, String>> getUserNamesByIds(List<String> userIds) async {
+    if (userIds.isEmpty) return const {};
+
+    final ids = userIds.toSet().toList();
+    final url =
+        '${ApiEndpoints.restApiBaseFull}/users?id=in.(${ids.join(',')})&select=id,full_name';
+    final response = await apiClient.get(url);
+
+    if (response.data is! List) {
+      return const {};
+    }
+
+    final result = <String, String>{};
+    for (final row in (response.data as List)) {
+      if (row is Map<String, dynamic>) {
+        final id = row['id'] as String?;
+        final fullName = row['full_name'] as String?;
+        if (id != null && fullName != null && fullName.trim().isNotEmpty) {
+          result[id] = fullName.trim();
+        }
+      }
+    }
+    return result;
+  }
+
   /// Void an unpaid invoice - with offline support
   ///
   /// Per PRD Section 18: Only unpaid invoices (with no payments) can be voided.

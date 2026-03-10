@@ -25,7 +25,9 @@ class InvoicePreviewScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final invoiceAsync = ref.watch(invoiceDetailProvider(invoiceId));
     final paymentsAsync = ref.watch(invoicePaymentsProvider(invoiceId));
-    final actionsState = ref.watch(invoiceActionsProvider);
+    final collectorsAsync = ref.watch(
+      invoicePaymentCollectorsProvider(invoiceId),
+    );
 
     return Scaffold(
       backgroundColor: AppColors.whiteColor,
@@ -102,6 +104,8 @@ class InvoicePreviewScreen extends ConsumerWidget {
       body: invoiceAsync.when(
         data: (invoice) {
           final payments = paymentsAsync.valueOrNull ?? const <PaymentModel>[];
+          final collectors =
+              collectorsAsync.valueOrNull ?? const <String, String>{};
           final paidAmount = payments.fold<double>(
             0.0,
             (sum, payment) => sum + payment.amount,
@@ -115,6 +119,8 @@ class InvoicePreviewScreen extends ConsumerWidget {
               context,
               ref,
               invoice,
+              payments: payments,
+              collectors: collectors,
               paidAmount: paidAmount,
               remainingBalance: remainingBalance,
             ),
@@ -134,6 +140,8 @@ class InvoicePreviewScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     InvoiceModel invoice, {
+    required List<PaymentModel> payments,
+    required Map<String, String> collectors,
     required double paidAmount,
     required double remainingBalance,
   }) {
@@ -171,6 +179,12 @@ class InvoicePreviewScreen extends ConsumerWidget {
             remainingBalance: remainingBalance,
           ),
           SizedBox(height: 32.h),
+
+          // Payment History (audit log)
+          if (payments.isNotEmpty) ...[
+            _buildPaymentHistory(payments, collectors),
+            SizedBox(height: 32.h),
+          ],
 
           // Notes Section
           if (invoice.notes != null && invoice.notes!.isNotEmpty)
@@ -561,6 +575,90 @@ class InvoicePreviewScreen extends ConsumerWidget {
           ),
           SizedBox(height: 8.h),
           Text(notes, style: AppTextStyles.bodyMedium),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentHistory(
+    List<PaymentModel> payments,
+    Map<String, String> collectors,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.lightGray.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Payment History',
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryTextColor,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          ...payments.map((payment) {
+            final shortId = payment.receivedBy.length > 8
+                ? payment.receivedBy.substring(0, 8)
+                : payment.receivedBy;
+            final collectedBy =
+                collectors[payment.receivedBy] ?? 'Technician ($shortId)';
+            return Container(
+              margin: EdgeInsets.only(bottom: 10.h),
+              padding: EdgeInsets.all(12.w),
+              decoration: BoxDecoration(
+                color: AppColors.whiteColor,
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(color: AppColors.lightGray),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '\$${payment.amount.toStringAsFixed(2)}',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.successGreen,
+                        ),
+                      ),
+                      Text(
+                        DateFormat(
+                          'MMM d, yyyy • h:mm a',
+                        ).format(payment.receivedAt),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.secondaryTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'Collected by: $collectedBy',
+                    style: AppTextStyles.bodySmall,
+                  ),
+                  Text(
+                    'Method: ${payment.method.displayName}',
+                    style: AppTextStyles.bodySmall,
+                  ),
+                  if (payment.reference != null &&
+                      payment.reference!.trim().isNotEmpty)
+                    Text(
+                      'Reference: ${payment.reference}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.secondaryTextColor,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );

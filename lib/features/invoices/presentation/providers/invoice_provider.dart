@@ -4,53 +4,74 @@ import '../../data/repositories/invoice_repository.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 
 /// Invoice List Provider
-/// 
+///
 /// Provides the list of all invoices.
-final invoiceListProvider = FutureProvider.autoDispose<List<InvoiceModel>>((ref) async {
+final invoiceListProvider = FutureProvider.autoDispose<List<InvoiceModel>>((
+  ref,
+) async {
   final repository = ref.watch(invoiceRepositoryProvider);
   return repository.getInvoices();
 });
 
 /// Filtered Invoice List Provider
-/// 
+///
 /// Provides filtered invoices based on status.
-final filteredInvoiceProvider = FutureProvider.autoDispose.family<List<InvoiceModel>, InvoiceStatus?>((ref, status) async {
-  final repository = ref.watch(invoiceRepositoryProvider);
-  return repository.getInvoices(status: status);
-});
+final filteredInvoiceProvider = FutureProvider.autoDispose
+    .family<List<InvoiceModel>, InvoiceStatus?>((ref, status) async {
+      final repository = ref.watch(invoiceRepositoryProvider);
+      return repository.getInvoices(status: status);
+    });
 
 /// Draft Invoices Provider
-/// 
+///
 /// Provides draft invoices only.
-final draftInvoicesProvider = FutureProvider.autoDispose<List<InvoiceModel>>((ref) async {
+final draftInvoicesProvider = FutureProvider.autoDispose<List<InvoiceModel>>((
+  ref,
+) async {
   final repository = ref.watch(invoiceRepositoryProvider);
   return repository.getDraftInvoices();
 });
 
 /// Invoice Detail Provider
-/// 
+///
 /// Provides a single invoice by ID.
-final invoiceDetailProvider = FutureProvider.autoDispose.family<InvoiceModel, String>((ref, id) async {
-  final repository = ref.watch(invoiceRepositoryProvider);
-  return repository.getInvoice(id);
-});
+final invoiceDetailProvider = FutureProvider.autoDispose
+    .family<InvoiceModel, String>((ref, id) async {
+      final repository = ref.watch(invoiceRepositoryProvider);
+      return repository.getInvoice(id);
+    });
 
 /// Invoice Payments Provider
-/// 
+///
 /// Provides payments for a specific invoice.
-final invoicePaymentsProvider = FutureProvider.autoDispose.family<List<PaymentModel>, String>((ref, invoiceId) async {
-  final repository = ref.watch(invoiceRepositoryProvider);
-  return repository.getInvoicePayments(invoiceId);
-});
+final invoicePaymentsProvider = FutureProvider.autoDispose
+    .family<List<PaymentModel>, String>((ref, invoiceId) async {
+      final repository = ref.watch(invoiceRepositoryProvider);
+      return repository.getInvoicePayments(invoiceId, ignoreCache: true);
+    });
+
+/// Collector names for payments on a specific invoice.
+/// Maps user_id -> full_name for audit-friendly invoice preview display.
+final invoicePaymentCollectorsProvider = FutureProvider.autoDispose
+    .family<Map<String, String>, String>((ref, invoiceId) async {
+      final repository = ref.watch(invoiceRepositoryProvider);
+      final payments = await repository.getInvoicePayments(
+        invoiceId,
+        ignoreCache: true,
+      );
+      final userIds = payments.map((p) => p.receivedBy).toSet().toList();
+      return repository.getUserNamesByIds(userIds);
+    });
 
 /// Invoice Actions Provider
-/// 
+///
 /// Handles invoice creation, update, and finalization.
 class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
   final InvoiceRepository _repository;
   final Ref _ref;
 
-  InvoiceActionsNotifier(this._repository, this._ref) : super(const AsyncValue.data(null));
+  InvoiceActionsNotifier(this._repository, this._ref)
+    : super(const AsyncValue.data(null));
 
   /// Create draft invoice from quote
   Future<InvoiceModel?> createDraftFromQuote(String quoteId) async {
@@ -62,17 +83,17 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
       if (orgId == null) {
         throw Exception('Organization ID not found');
       }
-      
+
       final invoice = await _repository.createDraftInvoiceFromQuote(
         quoteId: quoteId,
         orgId: orgId,
       );
       state = const AsyncValue.data(null);
-      
+
       // Refresh invoice lists
       _ref.invalidate(invoiceListProvider);
       _ref.invalidate(draftInvoicesProvider);
-      
+
       return invoice;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -96,12 +117,12 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
         dueDate: dueDate,
       );
       state = const AsyncValue.data(null);
-      
+
       // Refresh invoice detail and lists
       _ref.invalidate(invoiceDetailProvider(id));
       _ref.invalidate(invoiceListProvider);
       _ref.invalidate(draftInvoicesProvider);
-      
+
       return true;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -115,13 +136,13 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       final invoice = await _repository.finalizeInvoice(id);
       state = const AsyncValue.data(null);
-      
+
       // Refresh invoice detail and lists
       _ref.invalidate(invoiceDetailProvider(id));
       _ref.invalidate(invoiceListProvider);
       _ref.invalidate(draftInvoicesProvider);
       _ref.invalidate(filteredInvoiceProvider(InvoiceStatus.unpaid));
-      
+
       return invoice;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -135,13 +156,13 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       await _repository.voidInvoice(id);
       state = const AsyncValue.data(null);
-      
+
       // Refresh invoice detail and lists
       _ref.invalidate(invoiceDetailProvider(id));
       _ref.invalidate(invoiceListProvider);
       _ref.invalidate(filteredInvoiceProvider(InvoiceStatus.unpaid));
       _ref.invalidate(filteredInvoiceProvider(InvoiceStatus.void_));
-      
+
       return true;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -161,7 +182,7 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
       final authState = _ref.read(authProvider);
       final orgId = authState.user?.orgId;
       final userId = authState.user?.id;
-      
+
       if (orgId == null || userId == null) {
         throw Exception('User session invalid');
       }
@@ -174,14 +195,14 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
         receivedBy: userId,
         reference: reference,
       );
-      
+
       state = const AsyncValue.data(null);
-      
+
       // Invalidate providers to refresh UI
       _ref.invalidate(invoiceDetailProvider(invoiceId));
       _ref.invalidate(invoicePaymentsProvider(invoiceId));
       _ref.invalidate(invoiceListProvider);
-      
+
       return payment;
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -190,13 +211,15 @@ class InvoiceActionsNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final invoiceActionsProvider = StateNotifierProvider<InvoiceActionsNotifier, AsyncValue<void>>((ref) {
-  final repository = ref.watch(invoiceRepositoryProvider);
-  return InvoiceActionsNotifier(repository, ref);
-});
+final invoiceActionsProvider =
+    StateNotifierProvider<InvoiceActionsNotifier, AsyncValue<void>>((ref) {
+      final repository = ref.watch(invoiceRepositoryProvider);
+      return InvoiceActionsNotifier(repository, ref);
+    });
 
 /// Invoice Filter State Provider
-/// 
+///
 /// Manages the current filter state for the invoice list.
-final invoiceFilterProvider = StateProvider.autoDispose<InvoiceStatus?>((ref) => null);
-
+final invoiceFilterProvider = StateProvider.autoDispose<InvoiceStatus?>(
+  (ref) => null,
+);
