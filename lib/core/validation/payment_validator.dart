@@ -1,15 +1,14 @@
 import '../../features/invoices/data/models/invoice_model.dart';
-import '../../features/invoices/data/models/payment_model.dart';
 import '../errors/app_exceptions.dart';
 
 /// Payment Validator
-/// 
+///
 /// Validates payment operations per PRD Section 18 requirements.
 class PaymentValidator {
   PaymentValidator._();
 
   /// Validate payment amount
-  /// 
+  ///
   /// PRD Rule: Payment amount must be > 0
   static void validateAmount(double amount) {
     if (amount <= 0) {
@@ -18,7 +17,7 @@ class PaymentValidator {
   }
 
   /// Validate payment doesn't exceed remaining balance
-  /// 
+  ///
   /// PRD Rule: Payment amount cannot exceed remaining invoice balance.
   /// Sum of all payments for an invoice cannot exceed invoice total.
   static void validatePaymentAmount(
@@ -50,7 +49,7 @@ class PaymentValidator {
   }
 
   /// Calculate remaining balance for an invoice
-  /// 
+  ///
   /// Returns the amount still owed on the invoice.
   static double calculateRemainingBalance(
     InvoiceModel invoice,
@@ -66,7 +65,7 @@ class PaymentValidator {
   }
 
   /// Validate invoice can receive payment
-  /// 
+  ///
   /// PRD Rule: Only unpaid or partially_paid invoices can receive payments.
   static void validateCanReceivePayment(InvoiceModel invoice) {
     if (invoice.status == InvoiceStatus.paid) {
@@ -85,11 +84,10 @@ class PaymentValidator {
 
     if (invoice.status == InvoiceStatus.draft) {
       throw ValidationException(
-        message: 'Cannot record payment for draft invoice. Please finalize the invoice first.',
+        message:
+            'Cannot record payment for draft invoice. Please finalize the invoice first.',
         code: 'INVOICE_DRAFT',
       );
     }
   }
 }
-
-

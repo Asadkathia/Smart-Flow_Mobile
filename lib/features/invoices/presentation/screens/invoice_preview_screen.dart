@@ -9,7 +9,6 @@ import 'package:smartflowpro/router/app_router.dart';
 import '../../data/models/invoice_model.dart';
 import '../../../quotes/data/models/line_item_model.dart';
 import '../providers/invoice_provider.dart';
-import 'package:smartflowpro/core/validation/validation_rules.dart';
 import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
 import '../widgets/record_payment_dialog.dart';
 
@@ -422,11 +421,7 @@ class InvoicePreviewScreen extends ConsumerWidget {
           ),
         ),
         // Table Rows
-        ...invoice.lineItems.asMap().entries.map((entry) {
-          final index = entry.key;
-          final item = entry.value;
-          final isLast = index == invoice.lineItems.length - 1;
-
+        ...invoice.lineItems.map((item) {
           return Container(
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(

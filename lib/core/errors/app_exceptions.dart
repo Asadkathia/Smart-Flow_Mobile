@@ -1,6 +1,7 @@
 /// Custom exceptions for SmartFlowPro
 /// 
 /// These exceptions provide structured error handling throughout the app.
+library;
 
 /// Base exception class for all app exceptions
 abstract class AppException implements Exception {

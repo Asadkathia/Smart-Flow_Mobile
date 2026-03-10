@@ -4,21 +4,20 @@ import '../../../../core/services/supabase_realtime_service.dart';
 import '../../../../core/services/logger.dart';
 
 /// Visit Real-time Provider
-/// 
+///
 /// Manages real-time updates for visits using Supabase Realtime.
-/// 
+///
 /// Per PRD Section 29.3: Real-time updates via Supabase Realtime channels.
 /// Channel structure: `visits:{org_id}` for organization-wide updates.
 class VisitsRealtimeNotifier extends StateNotifier<List<VisitModel>> {
   final SupabaseRealtimeService _realtimeService;
   String? _currentOrgId;
-  String? _subscriptionId;
   bool _isConnected = false;
 
   VisitsRealtimeNotifier(this._realtimeService) : super([]);
 
   /// Connect to real-time channel
-  /// 
+  ///
   /// Subscribes to visit updates for the organization.
   /// Channel: visits:{org_id}
   /// Events: INSERT, UPDATE, DELETE
@@ -36,44 +35,20 @@ class VisitsRealtimeNotifier extends StateNotifier<List<VisitModel>> {
 
     try {
       final channelName = 'visits:$orgId';
-      
-      _subscriptionId = await _realtimeService.subscribe(
-        channelName: channelName,
-        onInsert: (data) {
-          try {
-            final visit = VisitModel.fromJson(data);
-            _handleVisitStatusChange(visit);
-            Logger.debug('Visits Realtime: Visit inserted - ${visit.id}');
-          } catch (e, stackTrace) {
-            Logger.error('Visits Realtime: Error handling INSERT', e, stackTrace);
-          }
-        },
-        onUpdate: (data) {
-          try {
-            final visit = VisitModel.fromJson(data);
-            _handleVisitStatusChange(visit);
-            Logger.debug('Visits Realtime: Visit updated - ${visit.id}');
-          } catch (e, stackTrace) {
-            Logger.error('Visits Realtime: Error handling UPDATE', e, stackTrace);
-          }
-        },
-        onDelete: (data) {
-          try {
-            final visitId = data['id'] as String?;
-            if (visitId != null) {
-              state = state.where((v) => v.id != visitId).toList();
-              Logger.debug('Visits Realtime: Visit deleted - $visitId');
-            }
-          } catch (e, stackTrace) {
-            Logger.error('Visits Realtime: Error handling DELETE', e, stackTrace);
-          }
-        },
-        filter: {
-          'table': 'visits',
-          'column': 'org_id',
-          'value': orgId,
-        },
-      );
+
+      await _realtimeService.subscribeToVisits(orgId, (data) {
+        try {
+          final visit = VisitModel.fromJson(data);
+          _handleVisitStatusChange(visit);
+          Logger.debug('Visits Realtime: Visit changed - ${visit.id}');
+        } catch (e, stackTrace) {
+          Logger.error(
+            'Visits Realtime: Error handling change event',
+            e,
+            stackTrace,
+          );
+        }
+      });
 
       _currentOrgId = orgId;
       _isConnected = true;
@@ -93,8 +68,7 @@ class VisitsRealtimeNotifier extends StateNotifier<List<VisitModel>> {
     try {
       final channelName = 'visits:$_currentOrgId';
       await _realtimeService.unsubscribe(channelName);
-      
-      _subscriptionId = null;
+
       _currentOrgId = null;
       _isConnected = false;
       Logger.info('Visits Realtime: Disconnected from $channelName');
@@ -113,11 +87,6 @@ class VisitsRealtimeNotifier extends StateNotifier<List<VisitModel>> {
     }
   }
 
-  /// Handle visit assignment update
-  void _handleVisitAssignment(VisitModel visit) {
-    _handleVisitStatusChange(visit);
-  }
-
   /// Get connection status
   bool get isConnected => _isConnected;
 
@@ -126,15 +95,14 @@ class VisitsRealtimeNotifier extends StateNotifier<List<VisitModel>> {
 }
 
 /// Visits Real-time Provider
-final visitsRealtimeProvider = StateNotifierProvider<VisitsRealtimeNotifier, List<VisitModel>>((ref) {
-  final realtimeService = ref.watch(supabaseRealtimeServiceProvider);
-  return VisitsRealtimeNotifier(realtimeService);
-});
+final visitsRealtimeProvider =
+    StateNotifierProvider<VisitsRealtimeNotifier, List<VisitModel>>((ref) {
+      final realtimeService = ref.watch(supabaseRealtimeServiceProvider);
+      return VisitsRealtimeNotifier(realtimeService);
+    });
 
 /// Connection Status Provider
 final visitsRealtimeConnectionStatusProvider = Provider<bool>((ref) {
   final notifier = ref.watch(visitsRealtimeProvider.notifier);
   return notifier.isConnected;
 });
-
-

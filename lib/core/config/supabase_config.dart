@@ -65,7 +65,7 @@ class SupabaseConfig {
   static String get realtimeUrl {
     final url = supabaseUrl;
     if (url.contains('supabase.co')) {
-      return url.replaceAll('https://', 'wss://').replaceAll('http://', 'ws://') + '/realtime/v1';
+      return '${url.replaceAll('https://', 'wss://').replaceAll('http://', 'ws://')}/realtime/v1';
     }
     return 'wss://your-project.supabase.co/realtime/v1';
   }

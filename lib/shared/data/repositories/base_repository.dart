@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:uuid/uuid.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/errors/app_exceptions.dart';
@@ -29,7 +27,7 @@ abstract class BaseRepository {
     this._cache,
     this._offlineQueue, {
     bool? useMockData,
-  }) : _useMockData = useMockData ?? AppConfig.shouldUseMockData {}
+  }) : _useMockData = useMockData ?? AppConfig.shouldUseMockData;
 
   // ============ Protected Getters ============
   

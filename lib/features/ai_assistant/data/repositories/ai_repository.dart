@@ -13,38 +13,37 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
 
 /// AI Assistant Repository
-/// 
+///
 /// Handles all AI assistant-related data operations.
 /// Now calls OpenAI API directly instead of using Supabase Edge Functions
 /// to avoid ES256 JWT authentication issues.
-/// 
+///
 /// Rate limited to 100 requests per hour per PRD Section 12.5.
 class AiRepository {
   final ApiClient _apiClient;
-  final MediaUploadService? _mediaUploadService;
   final Dio _openaiClient;
   final RateLimiterService _rateLimiter;
   SupabaseClient get _supabase => Supabase.instance.client;
-  
+
   static const String _rateLimitKey = 'ai_assistant_requests';
 
   AiRepository(
     this._apiClient, {
     MediaUploadService? mediaUploadService,
     RateLimiterService? rateLimiter,
-  })  : _mediaUploadService = mediaUploadService,
-        _rateLimiter = rateLimiter ?? RateLimiterService(maxRequestsPerHour: 100),
-        _openaiClient = Dio(
-          BaseOptions(
-            baseUrl: 'https://api.openai.com/v1',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ${SupabaseConfig.openaiApiKey}',
-            },
-            connectTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 60),
-          ),
-        );
+  }) : _rateLimiter =
+           rateLimiter ?? RateLimiterService(maxRequestsPerHour: 100),
+       _openaiClient = Dio(
+         BaseOptions(
+           baseUrl: 'https://api.openai.com/v1',
+           headers: {
+             'Content-Type': 'application/json',
+             'Authorization': 'Bearer ${SupabaseConfig.openaiApiKey}',
+           },
+           connectTimeout: const Duration(seconds: 30),
+           receiveTimeout: const Duration(seconds: 60),
+         ),
+       );
 
   /// Fetch visit context from Supabase REST API
   Future<String?> _fetchVisitContext(String visitId) async {
@@ -52,13 +51,15 @@ class AiRepository {
       if (visitId == 'default-visit') return null;
 
       // Fetch visit with job, customer, and property details
-      final visitUrl = '${ApiEndpoints.restApiBaseFull}/visits'
+      final visitUrl =
+          '${ApiEndpoints.restApiBaseFull}/visits'
           '?id=eq.$visitId'
           '&select=*,job:jobs(*,customer:customers(name,phone,email),property:properties(address,latitude,longitude))';
-      
+
       final visitResponse = await _apiClient.get(visitUrl);
-      
-      if (visitResponse.data is List && (visitResponse.data as List).isNotEmpty) {
+
+      if (visitResponse.data is List &&
+          (visitResponse.data as List).isNotEmpty) {
         final visit = (visitResponse.data as List)[0] as Map<String, dynamic>;
         final job = visit['job'] as Map<String, dynamic>?;
         final customer = job?['customer'] as Map<String, dynamic>?;
@@ -67,14 +68,19 @@ class AiRepository {
         // Fetch recent notes
         String notesContext = '';
         try {
-          final notesUrl = '${ApiEndpoints.restApiBaseFull}/notes'
+          final notesUrl =
+              '${ApiEndpoints.restApiBaseFull}/notes'
               '?visit_id=eq.$visitId'
               '&order=created_at.desc'
               '&limit=5';
           final notesResponse = await _apiClient.get(notesUrl);
-          if (notesResponse.data is List && (notesResponse.data as List).isNotEmpty) {
-            final notes = (notesResponse.data as List).map((n) => n as Map<String, dynamic>).toList();
-            notesContext = '\n\nRecent Notes:\n${notes.map((n) => '- ${n['body']} (${n['created_at']})').join('\n')}';
+          if (notesResponse.data is List &&
+              (notesResponse.data as List).isNotEmpty) {
+            final notes = (notesResponse.data as List)
+                .map((n) => n as Map<String, dynamic>)
+                .toList();
+            notesContext =
+                '\n\nRecent Notes:\n${notes.map((n) => '- ${n['body']} (${n['created_at']})').join('\n')}';
           }
         } catch (e) {
           // Notes fetch failed, continue without them
@@ -111,17 +117,20 @@ Current Job Context:
       if (!SupabaseConfig.isOpenAiConfigured) {
         throw Exception(
           'AI Assistant is not configured.\n\n'
-          'Please set OPENAI_API_KEY environment variable to use this feature.'
+          'Please set OPENAI_API_KEY environment variable to use this feature.',
         );
       }
-      
+
       // Check rate limit (100 requests per hour per PRD Section 12.5)
       final isAllowed = await _rateLimiter.checkAndRecord(_rateLimitKey);
       if (!isAllowed) {
-        final remaining = await _rateLimiter.getRemainingRequests(_rateLimitKey);
+        final remaining = await _rateLimiter.getRemainingRequests(
+          _rateLimitKey,
+        );
         final resetIn = await _rateLimiter.getTimeUntilReset(_rateLimitKey);
         throw RateLimitException(
-          message: 'AI Assistant rate limit exceeded.\n\n'
+          message:
+              'AI Assistant rate limit exceeded.\n\n'
               'You have reached the limit of 100 requests per hour. '
               'Please try again ${resetIn != null ? 'in ${resetIn.inMinutes} minutes' : 'later'}.',
           retryAfter: resetIn,
@@ -154,7 +163,8 @@ Current Job Context:
       final messages = <Map<String, dynamic>>[
         {
           'role': 'system',
-          'content': 'You are a helpful assistant for field service technicians. Provide clear, concise, and actionable advice based on the job context provided.${visitContext != null ? '\n\nYou have access to the current job information above.' : ''}',
+          'content':
+              'You are a helpful assistant for field service technicians. Provide clear, concise, and actionable advice based on the job context provided.${visitContext != null ? '\n\nYou have access to the current job information above.' : ''}',
         },
       ];
 
@@ -178,9 +188,7 @@ Current Job Context:
       if (imageBase64 != null) {
         (userMessage['content'] as List<Map<String, dynamic>>).add({
           'type': 'image_url',
-          'image_url': {
-            'url': 'data:image/jpeg;base64,$imageBase64',
-          },
+          'image_url': {'url': 'data:image/jpeg;base64,$imageBase64'},
         });
       }
 
@@ -188,7 +196,9 @@ Current Job Context:
 
       // Determine model based on whether image is present
       final hasImage = imageBase64 != null;
-      final model = hasImage ? 'gpt-4o-mini' : 'gpt-4o-mini'; // Use gpt-4o-mini for both text and images
+      final model = hasImage
+          ? 'gpt-4o-mini'
+          : 'gpt-4o-mini'; // Use gpt-4o-mini for both text and images
 
       // Call OpenAI API directly
       Logger.info('Calling OpenAI API with model: $model');
@@ -227,27 +237,27 @@ Current Job Context:
       );
     } catch (e) {
       Logger.error('AI Assistant error', e);
-      
+
       // Provide user-friendly error messages
       final errorString = e.toString();
       if (errorString.contains('401') || errorString.contains('Unauthorized')) {
         throw Exception(
           'AI Assistant authentication failed.\n\n'
-          'Please check that OPENAI_API_KEY is correctly configured.'
+          'Please check that OPENAI_API_KEY is correctly configured.',
         );
       }
-      
+
       if (errorString.contains('429') || errorString.contains('rate limit')) {
         throw Exception(
           'AI Assistant rate limit exceeded.\n\n'
-          'Please try again in a few moments.'
+          'Please try again in a few moments.',
         );
       }
-      
+
       if (errorString.contains('not configured')) {
         throw Exception(errorString);
       }
-      
+
       throw Exception('Failed to get AI response: ${e.toString()}');
     }
   }
@@ -265,13 +275,14 @@ Current Job Context:
       if (userId == null) return;
 
       // Get user's org_id from users table
-      final userUrl = '${ApiEndpoints.restApiBaseFull}/users?id=eq.$userId&select=org_id';
+      final userUrl =
+          '${ApiEndpoints.restApiBaseFull}/users?id=eq.$userId&select=org_id';
       final userResponse = await _apiClient.get(userUrl);
-      
+
       if (userResponse.data is List && (userResponse.data as List).isNotEmpty) {
         final user = (userResponse.data as List)[0] as Map<String, dynamic>;
         final orgId = user['org_id'] as String?;
-        
+
         if (orgId != null) {
           // Insert into ai_interaction_logs table
           final logUrl = '${ApiEndpoints.restApiBaseFull}/ai_interaction_logs';
@@ -297,16 +308,14 @@ Current Job Context:
   }
 
   /// Get AI suggestions for the current visit
-  Future<List<AiSuggestion>> getSuggestions({
-    required String visitId,
-  }) async {
+  Future<List<AiSuggestion>> getSuggestions({required String visitId}) async {
     try {
       // Use mock data if configured, otherwise call real API
       if (AppConfig.useMockData && !SupabaseConfig.isValid) {
         await Future.delayed(const Duration(milliseconds: 800));
         return AiMockData.getMockSuggestions();
       }
-      
+
       // Suggestions feature not yet implemented
       // Return mock suggestions for now
       return AiMockData.getMockSuggestions();
@@ -324,7 +333,9 @@ Current Job Context:
     // Use sendMessage with image
     return sendMessage(
       visitId: visitId,
-      message: question ?? 'What do you see in this image? Please analyze it and provide recommendations.',
+      message:
+          question ??
+          'What do you see in this image? Please analyze it and provide recommendations.',
       image: image,
     );
   }

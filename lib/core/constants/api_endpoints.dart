@@ -43,7 +43,7 @@ class ApiEndpoints {
   }
   
   /// Full REST API Base
-  static String get restApiBaseFull => '$restApiBase';
+  static String get restApiBaseFull => restApiBase;
   
   // ============ Helper Methods ============
   

@@ -104,7 +104,7 @@ class _DayViewWidgetState extends ConsumerState<DayViewWidget> {
             );
           },
           loading: () => const UserStatsWidget(userName: "Tony", statsText: "0/0"),
-          error: (_, __) => const UserStatsWidget(userName: "Tony", statsText: "0/0"),
+          error: (_, _) => const UserStatsWidget(userName: "Tony", statsText: "0/0"),
         ),
         10.verticalSpace,
         Expanded(

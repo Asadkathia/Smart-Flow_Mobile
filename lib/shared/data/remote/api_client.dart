@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide Response, MultipartFile;
+import 'package:supabase_flutter/supabase_flutter.dart' hide MultipartFile;
 import '../../../core/constants/api_endpoints.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/config/supabase_config.dart';
@@ -20,7 +20,8 @@ final dioProvider = Provider<Dio>((ref) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'apikey': SupabaseConfig.supabaseAnonKey, // Supabase requires apikey header
+        'apikey':
+            SupabaseConfig.supabaseAnonKey, // Supabase requires apikey header
       },
     ),
   );
@@ -32,11 +33,12 @@ final dioProvider = Provider<Dio>((ref) {
   // Only log errors, not full request/response details
   dio.interceptors.add(
     PrettyDioLogger(
-      requestHeader: false,  // Disabled - headers already logged by ApiInterceptor
-      requestBody: false,    // Disabled - too verbose
-      responseBody: false,   // Disabled - too verbose  
+      requestHeader:
+          false, // Disabled - headers already logged by ApiInterceptor
+      requestBody: false, // Disabled - too verbose
+      responseBody: false, // Disabled - too verbose
       responseHeader: false,
-      error: true,           // Keep error logging
+      error: true, // Keep error logging
       compact: true,
       maxWidth: 90,
     ),
@@ -46,7 +48,7 @@ final dioProvider = Provider<Dio>((ref) {
 });
 
 /// API Client for SmartFlowPro
-/// 
+///
 /// Provides type-safe API methods for all endpoints.
 /// - Uses Supabase functions.invoke() for Edge Functions (handles ES256 JWT auth)
 /// - Uses Dio for REST API and other endpoints
@@ -54,12 +56,12 @@ class ApiClient {
   final Dio _dio;
 
   ApiClient(this._dio);
-  
+
   /// Check if path is an Edge Function call
   bool _isEdgeFunction(String path) {
     return path.contains('/functions/v1/') || path.startsWith('tech-');
   }
-  
+
   /// Extract function name from path
   String _extractFunctionName(String path) {
     // Handle full URL: https://xxx.supabase.co/functions/v1/tech-visits-today
@@ -73,7 +75,7 @@ class ApiClient {
     // Handle relative path: tech-visits-today
     return path.split('?')[0];
   }
-  
+
   /// Convert query parameters to string map
   Map<String, String>? _toStringMap(Map<String, dynamic>? params) {
     if (params == null || params.isEmpty) return null;
@@ -93,21 +95,28 @@ class ApiClient {
     if (_isEdgeFunction(path)) {
       final functionName = _extractFunctionName(path);
       Logger.debug('GET Edge Function via Supabase client: $functionName');
-      
+
       try {
-        final response = await Supabase.instance.client.functions.invoke(
-          functionName,
-          headers: {'X-Channel': 'mobile_technician'},
-          method: HttpMethod.get,
-          queryParameters: _toStringMap(queryParameters),
-        ).timeout(
-          const Duration(seconds: 30),
-          onTimeout: () {
-            Logger.error('Edge Function GET timeout: $functionName after 30 seconds');
-            throw TimeoutException('Edge Function request timed out', const Duration(seconds: 30));
-          },
-        );
-        
+        final response = await Supabase.instance.client.functions
+            .invoke(
+              functionName,
+              headers: {'X-Channel': 'mobile_technician'},
+              method: HttpMethod.get,
+              queryParameters: _toStringMap(queryParameters),
+            )
+            .timeout(
+              const Duration(seconds: 30),
+              onTimeout: () {
+                Logger.error(
+                  'Edge Function GET timeout: $functionName after 30 seconds',
+                );
+                throw TimeoutException(
+                  'Edge Function request timed out',
+                  const Duration(seconds: 30),
+                );
+              },
+            );
+
         // Convert to Dio Response format for compatibility
         return Response<T>(
           requestOptions: RequestOptions(path: path),
@@ -137,7 +146,7 @@ class ApiClient {
         );
       }
     }
-    
+
     return _dio.get<T>(
       path,
       queryParameters: queryParameters,
@@ -157,7 +166,7 @@ class ApiClient {
     if (_isEdgeFunction(path)) {
       final functionName = _extractFunctionName(path);
       Logger.debug('POST Edge Function via Supabase client: $functionName');
-      
+
       try {
         final response = await Supabase.instance.client.functions.invoke(
           functionName,
@@ -165,7 +174,7 @@ class ApiClient {
           headers: {'X-Channel': 'mobile_technician'},
           method: HttpMethod.post,
         );
-        
+
         // Convert to Dio Response format for compatibility
         return Response<T>(
           requestOptions: RequestOptions(path: path),
@@ -187,14 +196,15 @@ class ApiClient {
         );
       }
     }
-    
+
     // Add Prefer header for Supabase to return created data
     final effectiveOptions = options ?? Options();
     effectiveOptions.headers = {
       ...?effectiveOptions.headers,
-      'Prefer': 'return=representation', // Force Supabase to return created data
+      'Prefer':
+          'return=representation', // Force Supabase to return created data
     };
-    
+
     return _dio.post<T>(
       path,
       data: data,
@@ -229,9 +239,10 @@ class ApiClient {
     final effectiveOptions = options ?? Options();
     effectiveOptions.headers = {
       ...?effectiveOptions.headers,
-      'Prefer': 'return=representation', // Force Supabase to return updated data
+      'Prefer':
+          'return=representation', // Force Supabase to return updated data
     };
-    
+
     return _dio.patch<T>(
       path,
       data: data,
@@ -272,9 +283,7 @@ class ApiClient {
       path,
       data: formData,
       onSendProgress: onSendProgress,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
+      options: Options(contentType: 'multipart/form-data'),
     );
   }
 
@@ -290,18 +299,13 @@ class ApiClient {
       filePaths.map((path) => MultipartFile.fromFile(path)),
     );
 
-    final formData = FormData.fromMap({
-      fieldName: files,
-      ...?additionalData,
-    });
+    final formData = FormData.fromMap({fieldName: files, ...?additionalData});
 
     return _dio.post<T>(
       path,
       data: formData,
       onSendProgress: onSendProgress,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
+      options: Options(contentType: 'multipart/form-data'),
     );
   }
 }
@@ -311,5 +315,3 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   final dio = ref.watch(dioProvider);
   return ApiClient(dio);
 });
-
-

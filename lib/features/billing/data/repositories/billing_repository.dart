@@ -15,11 +15,11 @@ import 'package:smartflowpro/core/constants/api_endpoints.dart';
 /// API → Cache → Mock (dev only)
 class BillingSettingsRepository extends BaseRepository {
   BillingSettingsRepository(
-    ApiClient apiClient,
-    CacheService cache,
-    OfflineQueueService offlineQueue, {
-    bool? useMockData,
-  }) : super(apiClient, cache, offlineQueue, useMockData: useMockData);
+    super.apiClient,
+    super.cache,
+    super.offlineQueue, {
+    super.useMockData,
+  });
 
   /// Get billing settings for an organization - unified pattern
   Future<BillingSettingsModel> getBillingSettings(String orgId) async {

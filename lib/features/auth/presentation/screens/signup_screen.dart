@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smartflowpro/shared/presentation/widgets/build_form_field.dart';
 import 'package:smartflowpro/shared/presentation/widgets/build_basic_button.dart';
-import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../providers/signup_provider.dart';
 import '../providers/auth_provider.dart';
 import 'package:smartflowpro/router/app_router.dart';

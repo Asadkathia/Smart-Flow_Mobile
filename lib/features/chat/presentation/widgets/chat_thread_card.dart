@@ -148,10 +148,8 @@ class ChatThreadCard extends StatelessWidget {
   }
 
   String _getFormattedTime() {
-    if (thread.updatedAt == null) return '';
-    
     final now = DateTime.now();
-    final diff = now.difference(thread.updatedAt!);
+    final diff = now.difference(thread.updatedAt);
 
     if (diff.inMinutes < 1) {
       return 'Now';
@@ -162,7 +160,7 @@ class ChatThreadCard extends StatelessWidget {
     } else if (diff.inDays < 7) {
       return '${diff.inDays}d';
     } else {
-      return DateFormat('MMM d').format(thread.updatedAt!);
+      return DateFormat('MMM d').format(thread.updatedAt);
     }
   }
 }

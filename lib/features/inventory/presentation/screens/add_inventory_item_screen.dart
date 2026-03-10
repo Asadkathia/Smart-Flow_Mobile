@@ -300,7 +300,7 @@ class _AddInventoryItemScreenState extends ConsumerState<AddInventoryItemScreen>
 
             // Unit Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedUnit,
+              initialValue: _selectedUnit,
               decoration: InputDecoration(
                 labelText: 'Unit *',
                 border: OutlineInputBorder(
@@ -361,7 +361,7 @@ class _AddInventoryItemScreenState extends ConsumerState<AddInventoryItemScreen>
 
             // Category Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: InputDecoration(
                 labelText: 'Category (Optional)',
                 border: OutlineInputBorder(

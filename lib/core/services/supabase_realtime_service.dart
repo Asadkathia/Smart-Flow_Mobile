@@ -43,10 +43,8 @@ class SupabaseRealtimeService {
           ),
           callback: (payload) {
             Logger.debug('Visit update received: ${payload.eventType}');
-            if (payload.newRecord != null) {
-              onUpdate(payload.newRecord);
-            }
-          },
+            onUpdate(payload.newRecord);
+                    },
         )
         .subscribe();
 
@@ -85,10 +83,8 @@ class SupabaseRealtimeService {
           ),
           callback: (payload) {
             Logger.debug('Chat message received: ${payload.eventType}');
-            if (payload.newRecord != null) {
-              onMessage(payload.newRecord);
-            }
-          },
+            onMessage(payload.newRecord);
+                    },
         )
         .subscribe();
 
@@ -127,10 +123,8 @@ class SupabaseRealtimeService {
           ),
           callback: (payload) {
             Logger.debug('Quote update received: ${payload.eventType}');
-            if (payload.newRecord != null) {
-              onUpdate(payload.newRecord);
-            }
-          },
+            onUpdate(payload.newRecord);
+                    },
         )
         .subscribe();
 

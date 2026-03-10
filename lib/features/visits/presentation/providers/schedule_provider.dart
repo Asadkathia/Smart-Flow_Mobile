@@ -66,7 +66,7 @@ Future<List<VisitModel>> scheduleVisitsForDate(Ref ref, DateTime date) async {
       }).toList();
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 }
 
@@ -89,7 +89,7 @@ Future<List<VisitModel>> scheduleVisitsForDateRange(
       }).toList();
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 }
 

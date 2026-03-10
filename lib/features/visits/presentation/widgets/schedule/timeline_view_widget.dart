@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import '../../../data/models/visit_model.dart';
-import '../visit_card_widget.dart';
 
 /// Timeline View Widget
 /// 

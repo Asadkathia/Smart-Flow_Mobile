@@ -89,7 +89,7 @@ class Auth extends _$Auth {
       final supabase = Supabase.instance.client;
       final session = supabase.auth.currentSession;
       
-      if (session != null && session.user != null) {
+      if (session != null) {
         Logger.debug('Supabase session found - fetching user profile');
         
         try {
@@ -101,7 +101,7 @@ class Auth extends _$Auth {
               .maybeSingle();
 
           if (profileResponse != null) {
-            final user = UserModel.fromJson(profileResponse as Map<String, dynamic>);
+            final user = UserModel.fromJson(profileResponse);
             
             // Verify user is a technician and active
             if (user.role == UserRole.technician && user.status == UserStatus.active) {
@@ -176,7 +176,7 @@ class Auth extends _$Auth {
             throw Exception('User profile not found');
           }
 
-          final user = UserModel.fromJson(profileResponse as Map<String, dynamic>);
+          final user = UserModel.fromJson(profileResponse);
           
           // Verify user is a technician (PRD Section 4.1)
           if (user.role != UserRole.technician) {
@@ -216,7 +216,7 @@ class Auth extends _$Auth {
           return true;
         } catch (e) {
           Logger.error('Supabase login error', e);
-          throw e;
+          rethrow;
         }
       } else if (useMock) {
         debugPrint('✅ Using MOCK DATA for login');

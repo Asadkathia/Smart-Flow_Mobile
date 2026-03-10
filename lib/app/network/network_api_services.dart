@@ -1,21 +1,20 @@
-
 import 'package:http/http.dart' as http;
 
 import '../export/exports.dart';
-import '../../core/errors/app_exceptions.dart';
+import 'base_api_services.dart';
 import '../../core/services/logger.dart';
 
 /// @deprecated This class uses the legacy `http` package and is not integrated
 /// with the modern Dio-based API client. Use `Dio` from `lib/shared/data/remote/api_client.dart`
 /// instead, which includes authentication, retry logic, and proper error handling.
-/// 
+///
 /// This class will be removed in a future version.
 @Deprecated('Use Dio from lib/shared/data/remote/api_client.dart instead')
 class NetworkApiServices extends BaseApiServices {
   @override
   Future<dynamic> getApi(String url, {Map<String, String>? headersData}) async {
     Logger.network('GET', url, headersData ?? {});
-    
+
     try {
       final response = await http.get(
         Uri.parse(url),
@@ -41,10 +40,11 @@ class NetworkApiServices extends BaseApiServices {
     }
   }
 
+  @override
   Future<dynamic> postApi(var data, String url, dynamic headerData) async {
     Logger.network('POST', url, headerData as Map<String, dynamic>? ?? {});
     Logger.debug('POST data: $data');
-    
+
     dynamic response;
     try {
       response = await http.post(
@@ -85,7 +85,7 @@ class NetworkApiServices extends BaseApiServices {
       var uri = Uri.parse(url);
       var request = http.MultipartRequest('POST', uri);
       request.fields.addAll(fields);
-      if (headers != null || headers!.isNotEmpty) {
+      if (headers != null && headers.isNotEmpty) {
         request.headers.addAll(headers);
       }
 

@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
-import '../../data/models/ai_models.dart';
 import '../providers/ai_provider.dart';
 import '../widgets/ai_message_bubble.dart';
 

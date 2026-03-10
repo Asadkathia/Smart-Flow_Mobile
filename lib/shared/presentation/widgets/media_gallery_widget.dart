@@ -41,7 +41,7 @@ class MediaGalleryWidget extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: scrollDirection,
         itemCount: imageUrls.length,
-        separatorBuilder: (_, __) => SizedBox(
+        separatorBuilder: (_, _) => SizedBox(
           width: scrollDirection == Axis.horizontal ? 10.w : 0,
           height: scrollDirection == Axis.vertical ? 10.h : 0,
         ),
@@ -282,7 +282,7 @@ class MediaGalleryWithProgress extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: mediaItems.length,
-        separatorBuilder: (_, __) => SizedBox(width: 10.w),
+        separatorBuilder: (_, _) => SizedBox(width: 10.w),
         itemBuilder: (context, index) {
           final item = mediaItems[index];
           return _MediaGalleryItemWithProgress(

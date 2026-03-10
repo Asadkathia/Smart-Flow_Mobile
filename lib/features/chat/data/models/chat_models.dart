@@ -141,10 +141,8 @@ extension ChatMessageModelX on ChatMessageModel {
 
   /// Get formatted time
   String getFormattedTime() {
-    if (createdAt == null) return '';
-    
     final now = DateTime.now();
-    final diff = now.difference(createdAt!);
+    final diff = now.difference(createdAt);
 
     if (diff.inMinutes < 1) {
       return 'Just now';
@@ -155,7 +153,7 @@ extension ChatMessageModelX on ChatMessageModel {
     } else if (diff.inDays < 7) {
       return '${diff.inDays}d ago';
     } else {
-      return '${createdAt!.month}/${createdAt!.day}/${createdAt!.year}';
+      return '${createdAt.month}/${createdAt.day}/${createdAt.year}';
     }
   }
 

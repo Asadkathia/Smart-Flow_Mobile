@@ -146,7 +146,7 @@ class ChatRealtimeNotifier extends StateNotifier<bool> {
         (data) {
           try {
             if (onNewMessage != null) {
-              final message = ChatMessageModel.fromJson(data as Map<String, dynamic>);
+              final message = ChatMessageModel.fromJson(data);
               onNewMessage(message);
               Logger.debug('Chat Realtime: New message received - ${message.id}');
             }

@@ -1,13 +1,9 @@
 import 'package:smartflowpro/app/export/exports.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../providers/quotes_paginated_provider.dart';
 import 'package:smartflowpro/features/quotes/data/models/quote_model.dart';
 import 'package:smartflowpro/router/app_router.dart';
-import 'package:smartflowpro/shared/presentation/widgets/loading_skeleton.dart';
 import 'package:smartflowpro/shared/presentation/widgets/animations.dart';
-import 'package:smartflowpro/shared/presentation/widgets/conflict_banner.dart';
-import 'package:smartflowpro/shared/presentation/widgets/standard_states.dart';
 import 'package:smartflowpro/shared/presentation/providers/conflict_provider.dart';
 
 /// Quotes List Screen - Riverpod Version with Pagination
@@ -126,7 +122,7 @@ class QuotesListScreen extends ConsumerWidget {
                           ),
                         ),
                         title: Text(
-                          '$quoteNumber',
+                          quoteNumber,
                           style: AppTextStyles.heading4,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

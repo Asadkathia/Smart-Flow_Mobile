@@ -368,7 +368,7 @@ List<VisitModel> filteredVisits(Ref ref, VisitStatus? status) {
       return visits.where((v) => v.status == status).toList();
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 }
 
@@ -390,7 +390,7 @@ VisitModel? activeVisit(Ref ref) {
       }
     },
     loading: () => null,
-    error: (_, __) => null,
+    error: (_, _) => null,
   );
 }
 

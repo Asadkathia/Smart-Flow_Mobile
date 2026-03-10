@@ -108,7 +108,7 @@ class _MapViewWidgetState extends ConsumerState<MapViewWidget> {
             );
           },
           loading: () => const UserStatsWidget(userName: "Tony", statsText: "0/0"),
-          error: (_, __) => const UserStatsWidget(userName: "Tony", statsText: "0/0"),
+          error: (_, _) => const UserStatsWidget(userName: "Tony", statsText: "0/0"),
         ),
         Expanded(
           child: visitsAsync.when(

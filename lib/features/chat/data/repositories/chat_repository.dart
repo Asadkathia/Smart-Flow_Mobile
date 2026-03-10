@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:convert';
 import '../models/chat_models.dart';
 import '../datasources/chat_mock_data.dart';
 import 'package:smartflowpro/shared/data/remote/api_client.dart';
@@ -18,11 +16,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// API → Cache → Mock (dev only)
 class ChatRepository extends BaseRepository {
   ChatRepository(
-    ApiClient apiClient,
-    CacheService cache,
-    OfflineQueueService offlineQueue, {
-    bool? useMockData,
-  }) : super(apiClient, cache, offlineQueue, useMockData: useMockData);
+    super.apiClient,
+    super.cache,
+    super.offlineQueue, {
+    super.useMockData,
+  });
 
   /// Get all chat threads for current user - unified pattern
   /// 

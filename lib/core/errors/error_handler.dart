@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'app_exceptions.dart';
 
 /// Error Handler for SmartFlowPro
-/// 
+///
 /// Centralizes error handling and converts various error types
 /// to appropriate AppException subclasses.
 class ErrorHandler {
@@ -57,7 +57,6 @@ class ErrorHandler {
         );
 
       case DioExceptionType.unknown:
-      default:
         if (error.error is SocketException) {
           return NetworkException.noConnection();
         }
@@ -79,21 +78,22 @@ class ErrorHandler {
     try {
       final data = response.data;
       if (data is Map) {
-        message = data['message'] as String? ??
+        message =
+            data['message'] as String? ??
             data['error'] as String? ??
             data['error_description'] as String?;
-        
+
         // Extract field-specific errors (for 422 validation errors)
         if (data['errors'] is Map) {
           fieldErrors = Map<String, String>.from(
-            (data['errors'] as Map).map((key, value) => 
-              MapEntry(key.toString(), value.toString())
+            (data['errors'] as Map).map(
+              (key, value) => MapEntry(key.toString(), value.toString()),
             ),
           );
         } else if (data['field_errors'] is Map) {
           fieldErrors = Map<String, String>.from(
-            (data['field_errors'] as Map).map((key, value) => 
-              MapEntry(key.toString(), value.toString())
+            (data['field_errors'] as Map).map(
+              (key, value) => MapEntry(key.toString(), value.toString()),
             ),
           );
         }
@@ -174,15 +174,15 @@ class ErrorHandler {
     if (error is AppException) {
       return error.message;
     }
-    
+
     if (error is DioException) {
       return _handleDioErrorString(error);
     }
-    
+
     if (error is Exception) {
       return error.toString().replaceAll('Exception: ', '');
     }
-    
+
     return 'An unexpected error occurred. Please try again.';
   }
 
@@ -192,16 +192,16 @@ class ErrorHandler {
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
         return 'Connection timeout. Please check your internet connection.';
-      
+
       case DioExceptionType.badResponse:
         return _handleResponseErrorString(error.response);
-      
+
       case DioExceptionType.cancel:
         return 'Request was cancelled.';
-      
+
       case DioExceptionType.connectionError:
         return 'No internet connection. Please check your network.';
-      
+
       default:
         return 'Network error. Please try again.';
     }
@@ -209,7 +209,7 @@ class ErrorHandler {
 
   static String _handleResponseErrorString(Response? response) {
     if (response == null) return 'Server error. Please try again.';
-    
+
     switch (response.statusCode) {
       case 400:
         return 'Invalid request. Please check your input.';
@@ -237,7 +237,8 @@ class ErrorHandler {
 
   /// Get retry delay based on error
   static Duration getRetryDelay(dynamic error, int retryCount) {
-    if (error is DioException && error.type == DioExceptionType.connectionError) {
+    if (error is DioException &&
+        error.type == DioExceptionType.connectionError) {
       // Exponential backoff for connection errors
       return Duration(seconds: (2 * retryCount).clamp(2, 30));
     }
@@ -269,4 +270,3 @@ class ErrorHandler {
     return false;
   }
 }
-

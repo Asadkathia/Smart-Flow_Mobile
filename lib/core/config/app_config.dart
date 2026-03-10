@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'supabase_config.dart';
 
 /// App Configuration

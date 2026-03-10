@@ -4,21 +4,20 @@ import '../../../../core/services/supabase_realtime_service.dart';
 import '../../../../core/services/logger.dart';
 
 /// Quote Real-time Provider
-/// 
+///
 /// Manages real-time updates for quotes using Supabase Realtime.
-/// 
+///
 /// Per PRD Section 29.3: Real-time updates via Supabase Realtime channels.
 /// Channel structure: `quotes:{visit_id}` for visit-specific quote updates.
 class QuotesRealtimeNotifier extends StateNotifier<List<QuoteModel>> {
   final SupabaseRealtimeService _realtimeService;
   String? _currentVisitId;
-  String? _subscriptionId;
   bool _isConnected = false;
 
   QuotesRealtimeNotifier(this._realtimeService) : super([]);
 
   /// Connect to real-time channel for a visit
-  /// 
+  ///
   /// Subscribes to quote updates for a specific visit.
   /// Channel: quotes:{visit_id}
   /// Events: INSERT, UPDATE
@@ -36,33 +35,20 @@ class QuotesRealtimeNotifier extends StateNotifier<List<QuoteModel>> {
 
     try {
       final channelName = 'quotes:$visitId';
-      
-      _subscriptionId = await _realtimeService.subscribe(
-        channelName: channelName,
-        onInsert: (data) {
-          try {
-            final quote = QuoteModel.fromJson(data);
-            _handleQuoteStatusChange(quote);
-            Logger.debug('Quotes Realtime: Quote inserted - ${quote.id}');
-          } catch (e, stackTrace) {
-            Logger.error('Quotes Realtime: Error handling INSERT', e, stackTrace);
-          }
-        },
-        onUpdate: (data) {
-          try {
-            final quote = QuoteModel.fromJson(data);
-            _handleQuoteStatusChange(quote);
-            Logger.debug('Quotes Realtime: Quote updated - ${quote.id}');
-          } catch (e, stackTrace) {
-            Logger.error('Quotes Realtime: Error handling UPDATE', e, stackTrace);
-          }
-        },
-        filter: {
-          'table': 'quotes',
-          'column': 'visit_id',
-          'value': visitId,
-        },
-      );
+
+      await _realtimeService.subscribeToQuotes(visitId, (data) {
+        try {
+          final quote = QuoteModel.fromJson(data);
+          _handleQuoteStatusChange(quote);
+          Logger.debug('Quotes Realtime: Quote changed - ${quote.id}');
+        } catch (e, stackTrace) {
+          Logger.error(
+            'Quotes Realtime: Error handling change event',
+            e,
+            stackTrace,
+          );
+        }
+      });
 
       _currentVisitId = visitId;
       _isConnected = true;
@@ -82,8 +68,7 @@ class QuotesRealtimeNotifier extends StateNotifier<List<QuoteModel>> {
     try {
       final channelName = 'quotes:$_currentVisitId';
       await _realtimeService.unsubscribe(channelName);
-      
-      _subscriptionId = null;
+
       _currentVisitId = null;
       _isConnected = false;
       Logger.info('Quotes Realtime: Disconnected from $channelName');
@@ -110,15 +95,14 @@ class QuotesRealtimeNotifier extends StateNotifier<List<QuoteModel>> {
 }
 
 /// Quotes Real-time Provider
-final quotesRealtimeProvider = StateNotifierProvider<QuotesRealtimeNotifier, List<QuoteModel>>((ref) {
-  final realtimeService = ref.watch(supabaseRealtimeServiceProvider);
-  return QuotesRealtimeNotifier(realtimeService);
-});
+final quotesRealtimeProvider =
+    StateNotifierProvider<QuotesRealtimeNotifier, List<QuoteModel>>((ref) {
+      final realtimeService = ref.watch(supabaseRealtimeServiceProvider);
+      return QuotesRealtimeNotifier(realtimeService);
+    });
 
 /// Connection Status Provider
 final quotesRealtimeConnectionStatusProvider = Provider<bool>((ref) {
   final notifier = ref.watch(quotesRealtimeProvider.notifier);
   return notifier.isConnected;
 });
-
-

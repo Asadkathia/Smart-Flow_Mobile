@@ -24,7 +24,6 @@ class QuoteDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final quoteAsync = ref.watch(quoteDetailProvider(quoteId));
-    final actionsState = ref.watch(quoteActionsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.whiteColor,
@@ -433,7 +432,6 @@ class QuoteDetailsScreen extends ConsumerWidget {
         ),
         // Table Rows
         ...quote.lineItems.asMap().entries.map((entry) {
-          final index = entry.key;
           final item = entry.value;
 
           return Container(

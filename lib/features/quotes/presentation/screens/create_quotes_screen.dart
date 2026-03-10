@@ -349,9 +349,7 @@ class _CreateQuotesScreenState extends ConsumerState<CreateQuotesScreen> {
 
     try {
       // Save the quote and get the returned quote ID
-      final savedQuoteId = await quoteNotifier.saveQuote(
-        visitId: widget.visitId,
-      );
+      await quoteNotifier.saveQuote(visitId: widget.visitId);
 
       if (context.mounted) {
         context.showSuccessSnackBar('Quote saved successfully');

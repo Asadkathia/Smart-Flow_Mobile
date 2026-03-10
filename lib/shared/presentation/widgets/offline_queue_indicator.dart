@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../data/local/sync_processor.dart';
-import '../../data/local/offline_queue_service.dart';
 
 /// Offline Queue Indicator Widget
 /// 
@@ -108,7 +107,7 @@ class OfflineQueueIndicator extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

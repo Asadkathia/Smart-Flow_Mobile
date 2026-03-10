@@ -26,13 +26,12 @@ class VisitRepository extends BaseRepository {
   final MediaUploadService? _mediaUploadService;
 
   VisitRepository(
-    ApiClient apiClient,
-    CacheService cache,
-    OfflineQueueService offlineQueue, {
-    bool? useMockData,
+    super.apiClient,
+    super.cache,
+    super.offlineQueue, {
+    super.useMockData,
     MediaUploadService? mediaUploadService,
-  }) : _mediaUploadService = mediaUploadService,
-       super(apiClient, cache, offlineQueue, useMockData: useMockData);
+  }) : _mediaUploadService = mediaUploadService;
 
   // ============ Visit Operations ============
 
@@ -345,7 +344,7 @@ class VisitRepository extends BaseRepository {
         final fileName = '${timestamp}_completion_$i.jpg';
         final storagePath = '${visit.orgId}/visits/$visitId/completion/$fileName';
         
-        await _mediaUploadService!.uploadMedia(
+        await _mediaUploadService.uploadMedia(
           file: images[i],
           bucket: 'visits',
           path: storagePath,
@@ -393,7 +392,7 @@ class VisitRepository extends BaseRepository {
         // Upload each image individually
         for (final file in imageFiles) {
           try {
-            final path = await _mediaUploadService!.uploadVisitMedia(
+            final path = await _mediaUploadService.uploadVisitMedia(
               visitId: visitId,
               file: file,
               fileType: 'image',

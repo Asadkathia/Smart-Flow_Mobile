@@ -2,22 +2,18 @@
 // Handles file uploads to Supabase Storage directly
 
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/constants/api_endpoints.dart';
 import '../../../core/services/logger.dart';
-import '../remote/api_client.dart';
 
 /// Media Upload Service
-/// 
+///
 /// Handles uploading media files (images, videos, PDFs) to Supabase Storage
 /// using the Supabase Storage API directly (works with ES256 JWT).
 class MediaUploadService {
-  final ApiClient _apiClient;
   SupabaseClient get _supabase => Supabase.instance.client;
 
-  MediaUploadService(this._apiClient);
+  MediaUploadService();
 
   /// Generic media upload to any bucket
   Future<String> uploadMedia({
@@ -28,8 +24,10 @@ class MediaUploadService {
   }) async {
     try {
       final fileBytes = await file.readAsBytes();
-      
-      await _supabase.storage.from(bucket).uploadBinary(
+
+      await _supabase.storage
+          .from(bucket)
+          .uploadBinary(
             path,
             fileBytes,
             fileOptions: FileOptions(
@@ -37,7 +35,7 @@ class MediaUploadService {
               upsert: false,
             ),
           );
-      
+
       return path;
     } catch (e, stackTrace) {
       Logger.error('Media upload failed to $bucket/$path', e, stackTrace);
@@ -46,10 +44,10 @@ class MediaUploadService {
   }
 
   /// Upload visit media (image, video, or PDF)
-  /// 
+  ///
   /// Uses Supabase Storage API directly (works with ES256 JWT).
   /// Uploads to: visits/{visitId}/media/{timestamp}_{filename}
-  /// 
+  ///
   /// Returns the file path in storage.
   Future<String> uploadVisitMedia({
     required String visitId,
@@ -58,21 +56,21 @@ class MediaUploadService {
   }) async {
     try {
       Logger.info('Uploading media for visit: $visitId');
-      
+
       // Generate unique filename with timestamp
       final fileExtension = file.path.split('.').last.toLowerCase();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final filename = '${timestamp}_${fileType}.$fileExtension';
-      
+      final filename = '${timestamp}_$fileType.$fileExtension';
+
       // Storage path: visits/{visitId}/media/{filename}
       final storagePath = 'visits/$visitId/media/$filename';
-      
+
       // Read file bytes
       final fileBytes = await file.readAsBytes();
-      
+
       // Upload directly to Supabase Storage
       // The 'visit-media' bucket should exist in Supabase Storage
-      final uploadResult = await _supabase.storage
+      await _supabase.storage
           .from('visit-media')
           .uploadBinary(
             storagePath,
@@ -82,9 +80,9 @@ class MediaUploadService {
               upsert: false,
             ),
           );
-      
+
       Logger.info('Media uploaded successfully: $storagePath');
-      
+
       // Return the public URL or path
       // For signatures and media, we typically use the path
       return storagePath;
@@ -102,15 +100,16 @@ class MediaUploadService {
     String? entityType,
   }) async {
     final uploadedPaths = <String>[];
-    
+
     for (final file in files) {
       try {
         // Extract visit ID from prefix if format is 'visits/{visitId}/media'
-        final visitId = entityId ?? prefix.split('/').firstWhere(
-          (part) => part.isNotEmpty,
-          orElse: () => '',
-        );
-        
+        final visitId =
+            entityId ??
+            prefix
+                .split('/')
+                .firstWhere((part) => part.isNotEmpty, orElse: () => '');
+
         if (visitId.isEmpty) {
           throw Exception('Cannot determine visit ID from prefix: $prefix');
         }
@@ -126,7 +125,7 @@ class MediaUploadService {
         // Continue with other files
       }
     }
-    
+
     return uploadedPaths;
   }
 
@@ -162,7 +161,7 @@ class MediaUploadService {
   }
 
   /// Delete media from a bucket
-  /// 
+  ///
   /// [bucket] - Storage bucket name
   /// [path] - File path within the bucket
   Future<void> deleteMedia({
@@ -171,9 +170,9 @@ class MediaUploadService {
   }) async {
     try {
       Logger.info('Deleting media from $bucket/$path');
-      
+
       await _supabase.storage.from(bucket).remove([path]);
-      
+
       Logger.info('Media deleted successfully: $bucket/$path');
     } catch (e, stackTrace) {
       Logger.error('Media deletion failed: $bucket/$path', e, stackTrace);
@@ -182,14 +181,14 @@ class MediaUploadService {
   }
 
   /// Delete visit media (image, video, PDF, or signature)
-  /// 
+  ///
   /// [storagePath] - Full path in storage (e.g., 'visits/{visitId}/media/{filename}')
   Future<void> deleteVisitMedia({required String storagePath}) async {
     try {
       Logger.info('Deleting visit media: $storagePath');
-      
+
       await _supabase.storage.from('visit-media').remove([storagePath]);
-      
+
       Logger.info('Visit media deleted successfully: $storagePath');
     } catch (e, stackTrace) {
       Logger.error('Visit media deletion failed: $storagePath', e, stackTrace);
@@ -200,6 +199,5 @@ class MediaUploadService {
 
 /// Media Upload Service Provider
 final mediaUploadServiceProvider = Provider<MediaUploadService>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  return MediaUploadService(apiClient);
+  return MediaUploadService();
 });

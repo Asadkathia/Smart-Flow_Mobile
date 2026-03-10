@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:smartflowpro/core/theme/app_colors.dart';
 import 'package:smartflowpro/core/theme/app_text_styles.dart';
 import 'package:smartflowpro/shared/data/services/media_service.dart';
@@ -12,7 +11,7 @@ import '../../providers/visits_provider.dart' as visits_provider;
 import '../../../data/models/note_model.dart';
 
 /// Notes Tab for Job Details Screen
-/// 
+///
 /// Displays notes for the selected visit and allows adding new notes.
 /// Uses Riverpod providers for state management.
 class JobDetailsNotesTab extends ConsumerWidget {
@@ -21,11 +20,13 @@ class JobDetailsNotesTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final visitId = ref.watch(selectedVisitIdProvider);
-    
+
     // Fallback: use first visit from today's visits if no visitId
     final todayVisits = ref.watch(visits_provider.todayVisitsProvider).value;
-    final effectiveVisitId = visitId ?? (todayVisits?.isNotEmpty == true ? todayVisits!.first.id : null);
-    
+    final effectiveVisitId =
+        visitId ??
+        (todayVisits?.isNotEmpty == true ? todayVisits!.first.id : null);
+
     if (effectiveVisitId == null) {
       return Center(
         child: Text(
@@ -35,8 +36,10 @@ class JobDetailsNotesTab extends ConsumerWidget {
       );
     }
 
-    final notesAsync = ref.watch(visits_provider.visitNotesProvider(effectiveVisitId));
-    
+    final notesAsync = ref.watch(
+      visits_provider.visitNotesProvider(effectiveVisitId),
+    );
+
     return Column(
       children: [
         Row(
@@ -120,12 +123,12 @@ class JobDetailsNotesTab extends ConsumerWidget {
                 ),
               );
             }
-            
+
             return ListView.separated(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemCount: notes.length,
-              separatorBuilder: (_, __) => SizedBox(height: 18.h),
+              separatorBuilder: (_, _) => SizedBox(height: 18.h),
               itemBuilder: (context, index) {
                 final note = notes[index];
                 return _buildNoteCard(context, note);
@@ -134,9 +137,7 @@ class JobDetailsNotesTab extends ConsumerWidget {
           },
           loading: () => SizedBox(
             height: 200.h,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: Center(child: CircularProgressIndicator()),
           ),
           error: (error, stack) => SizedBox(
             height: 200.h,
@@ -159,7 +160,9 @@ class JobDetailsNotesTab extends ConsumerWidget {
                   SizedBox(height: 8.h),
                   TextButton(
                     onPressed: () {
-                      ref.invalidate(visits_provider.visitNotesProvider(effectiveVisitId));
+                      ref.invalidate(
+                        visits_provider.visitNotesProvider(effectiveVisitId),
+                      );
                     },
                     child: Text('Retry'),
                   ),
@@ -257,7 +260,7 @@ class JobDetailsNotesTab extends ConsumerWidget {
                 }
 
                 Navigator.pop(dialogContext);
-                
+
                 // Show loading
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 scaffoldMessenger.showSnackBar(
@@ -278,11 +281,13 @@ class JobDetailsNotesTab extends ConsumerWidget {
                 );
 
                 // Add note
-                await ref.read(visits_provider.visitNotesProvider(visitId).notifier).addNote(
-                  visitId,
-                  textController.text.trim(),
-                  isInternal: isInternal,
-                );
+                await ref
+                    .read(visits_provider.visitNotesProvider(visitId).notifier)
+                    .addNote(
+                      visitId,
+                      textController.text.trim(),
+                      isInternal: isInternal,
+                    );
 
                 // Show success
                 scaffoldMessenger.hideCurrentSnackBar();
@@ -335,11 +340,15 @@ class JobDetailsNotesTab extends ConsumerWidget {
     );
   }
 
-  Future<void> _handleCameraCapture(BuildContext context, WidgetRef ref, String visitId) async {
+  Future<void> _handleCameraCapture(
+    BuildContext context,
+    WidgetRef ref,
+    String visitId,
+  ) async {
     try {
       final mediaService = ref.read(mediaServiceProvider);
       final XFile? image = await mediaService.pickImageFromCamera();
-      
+
       if (image != null) {
         // Show dialog to add note with image
         _showAddNoteWithImageDialog(context, ref, visitId, image.path);
@@ -356,11 +365,15 @@ class JobDetailsNotesTab extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleGalleryPick(BuildContext context, WidgetRef ref, String visitId) async {
+  Future<void> _handleGalleryPick(
+    BuildContext context,
+    WidgetRef ref,
+    String visitId,
+  ) async {
     try {
       final mediaService = ref.read(mediaServiceProvider);
       final XFile? image = await mediaService.pickImageFromGallery();
-      
+
       if (image != null) {
         // Show dialog to add note with image
         _showAddNoteWithImageDialog(context, ref, visitId, image.path);
@@ -377,7 +390,12 @@ class JobDetailsNotesTab extends ConsumerWidget {
     }
   }
 
-  void _showAddNoteWithImageDialog(BuildContext context, WidgetRef ref, String visitId, String imagePath) {
+  void _showAddNoteWithImageDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String visitId,
+    String imagePath,
+  ) {
     final textController = TextEditingController();
     bool isInternal = false;
 
@@ -432,7 +450,7 @@ class JobDetailsNotesTab extends ConsumerWidget {
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(dialogContext);
-                
+
                 // Show loading
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 scaffoldMessenger.showSnackBar(
@@ -455,14 +473,16 @@ class JobDetailsNotesTab extends ConsumerWidget {
                 // Add note with image
                 // Convert path to File and pass to repository for upload
                 final imageFile = File(imagePath);
-                await ref.read(visits_provider.visitNotesProvider(visitId).notifier).addNote(
-                  visitId,
-                  textController.text.trim().isEmpty 
-                      ? 'Image attached' 
-                      : textController.text.trim(),
-                  isInternal: isInternal,
-                  imageFiles: [imageFile], // Pass File object for upload
-                );
+                await ref
+                    .read(visits_provider.visitNotesProvider(visitId).notifier)
+                    .addNote(
+                      visitId,
+                      textController.text.trim().isEmpty
+                          ? 'Image attached'
+                          : textController.text.trim(),
+                      isInternal: isInternal,
+                      imageFiles: [imageFile], // Pass File object for upload
+                    );
 
                 // Show success
                 scaffoldMessenger.hideCurrentSnackBar();
@@ -480,49 +500,4 @@ class JobDetailsNotesTab extends ConsumerWidget {
       ),
     );
   }
-
-  void _showImageFullScreen(BuildContext context, String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (_) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: InteractiveViewer(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: imageUrl.startsWith('http')
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => Container(
-                        color: Colors.black54,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.black54,
-                        child: Center(
-                          child: Icon(
-                            Icons.error,
-                            color: Colors.white,
-                            size: 48.sp,
-                          ),
-                        ),
-                      ),
-                    )
-                  : Image.file(
-                      File(imageUrl),
-                      fit: BoxFit.contain,
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
-

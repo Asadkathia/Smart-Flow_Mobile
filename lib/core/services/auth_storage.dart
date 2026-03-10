@@ -37,9 +37,7 @@ class AuthStorage {
   
   /// Initialize SharedPreferences fallback if needed
   Future<void> _ensureFallback() async {
-    if (_prefs == null) {
-      _prefs = await SharedPreferences.getInstance();
-    }
+    _prefs ??= await SharedPreferences.getInstance();
   }
   
   /// Try secure storage, fallback to SharedPreferences if it fails

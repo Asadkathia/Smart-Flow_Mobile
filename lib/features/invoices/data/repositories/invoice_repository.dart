@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/invoice_model.dart';
@@ -33,11 +31,11 @@ class InvoiceRepository extends BaseRepository {
   ];
 
   InvoiceRepository(
-    ApiClient apiClient,
-    CacheService cache,
-    OfflineQueueService offlineQueue, {
-    bool? useMockData,
-  }) : super(apiClient, cache, offlineQueue, useMockData: useMockData);
+    super.apiClient,
+    super.cache,
+    super.offlineQueue, {
+    super.useMockData,
+  });
 
   /// Get all invoices - unified pattern
   ///

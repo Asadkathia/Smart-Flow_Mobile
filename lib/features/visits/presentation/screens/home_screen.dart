@@ -53,7 +53,7 @@ class HomeScreen extends ConsumerWidget {
                         loading: () => const Center(
                           child: CircularProgressIndicator(),
                         ),
-                        error: (_, __) => const Center(
+                        error: (_, _) => const Center(
                           child: Icon(Icons.map_outlined, size: 48),
                         ),
                       ),
@@ -218,7 +218,7 @@ class HomeScreen extends ConsumerWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: visits.length,
-            separatorBuilder: (_, __) => SizedBox(width: 10.w),
+            separatorBuilder: (_, _) => SizedBox(width: 10.w),
             itemBuilder: (context, index) {
               return SizedBox(
                 width: 300.w,

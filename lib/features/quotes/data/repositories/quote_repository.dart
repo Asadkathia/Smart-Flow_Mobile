@@ -1,15 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import '../models/quote_model.dart';
 import '../models/line_item_model.dart';
 import 'package:smartflowpro/shared/data/remote/api_client.dart';
 import 'package:smartflowpro/shared/data/local/offline_queue_service.dart';
 import 'package:smartflowpro/shared/data/local/hive_service.dart';
 import 'package:smartflowpro/shared/data/repositories/base_repository.dart';
-import 'package:smartflowpro/core/constants/storage_keys.dart';
 import 'package:smartflowpro/core/constants/api_endpoints.dart';
 import 'package:smartflowpro/core/errors/error_handler.dart';
-import 'package:smartflowpro/core/validation/validation_rules.dart';
 import 'package:smartflowpro/core/validation/quote_validator.dart';
 
 /// Quote Repository
@@ -19,11 +16,11 @@ import 'package:smartflowpro/core/validation/quote_validator.dart';
 /// API → Cache → Mock (dev only)
 class QuoteRepository extends BaseRepository {
   QuoteRepository(
-    ApiClient apiClient,
-    CacheService cache,
-    OfflineQueueService offlineQueue, {
-    bool? useMockData,
-  }) : super(apiClient, cache, offlineQueue, useMockData: useMockData);
+    super.apiClient,
+    super.cache,
+    super.offlineQueue, {
+    super.useMockData,
+  });
 
   /// Convert line items to JSON for API requests
   ///
